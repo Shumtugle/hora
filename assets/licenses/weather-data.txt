@@ -1,0 +1,2 @@
+Weather data by Open-Meteo, licensed under CC BY 4.0 (Creative Commons Attribution 4.0 International).
+Place search by the same service, under the same licence.

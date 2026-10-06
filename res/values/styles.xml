@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sheets per look: the floating toolbar of selected text takes these colors instead of the system grey. -->
+    <style name="Sheet" parent="@android:style/Theme.Material.Dialog.NoActionBar">
+        <item name="android:colorBackgroundFloating">#FF3A1C22</item>
+        <item name="android:textColorPrimary">#FFF3E7CF</item>
+    </style>
+    <style name="Sheet.Contrast">
+        <item name="android:colorBackgroundFloating">#FF333333</item>
+        <item name="android:textColorPrimary">#FFFFFFFF</item>
+    </style>
+    <style name="Sheet.Lamp">
+        <item name="android:colorBackgroundFloating">#FF223129</item>
+        <item name="android:textColorPrimary">#FFEFE6D2</item>
+    </style>
+    <style name="Sheet.Ink">
+        <item name="android:colorBackgroundFloating">#FF232943</item>
+        <item name="android:textColorPrimary">#FFECE7DC</item>
+    </style>
+</resources>

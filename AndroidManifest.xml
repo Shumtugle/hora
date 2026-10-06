@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.shumtugle.hora"
+    android:versionCode="161"
+    android:versionName="0.68.0">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN"/>
+            <category android:name="android.intent.category.LAUNCHER"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+    <application
+        android:name=".HoraApp"
+        android:networkSecurityConfig="@xml/network_security"
+        android:localeConfig="@xml/locales_config"
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@android:style/Theme.Material.NoActionBar"
+        android:allowBackup="false"
+        android:extractNativeLibs="true"
+        android:allowAudioPlaybackCapture="false">
+        <activity android:name=".MainActivity" android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".ExportActivity" android:exported="false"
+            android:label="@string/export_title"/>
+        <service android:name=".ExportJob" android:exported="false"
+            android:process=":voice"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <activity android:name=".RestoreActivity" android:exported="false"
+            android:label="@string/transfer_title"/>
+        <activity android:name=".LanguagesActivity" android:exported="false"
+            android:label="@string/lang_title"/>
+        <receiver android:name=".PackReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
+            </intent-filter>
+        </receiver>
+        <activity android:name=".FirstRunActivity" android:exported="false"/>
+        <activity android:name=".IntroActivity" android:exported="false"
+            android:label="@string/intro_open"/>
+        <activity android:name=".SettingsActivity" android:exported="true"
+            android:label="@string/settings"/>
+        <receiver android:name=".SceneWidget" android:exported="false"
+            android:label="@string/widget_scene_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/scene_widget"/>
+        </receiver>
+        <receiver android:name=".BookmarkWidget" android:exported="false"
+            android:label="@string/widget_bookmark_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/bookmark_widget"/>
+        </receiver>
+        <receiver android:name=".ExlibrisWidget" android:exported="false"
+            android:label="@string/widget_exlibris_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/exlibris_widget"/>
+        </receiver>
+        <activity android:name=".ShelfActivity" android:exported="false"
+            android:label="@string/shelf_title" android:launchMode="singleTop"/>
+        <activity android:name=".BrainActivity" android:exported="false"
+            android:label="@string/brain_title" android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".LabActivity" android:exported="false"
+            android:label="@string/lab_title" android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".TalkActivity" android:exported="false"
+            android:label="@string/talk_title" android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".SearchActivity" android:exported="false"/>
+        <activity android:name=".PlaceActivity" android:exported="false"
+            android:label="@string/place_title" android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".BookActivity" android:exported="false"
+            android:label="@string/nav_book" android:launchMode="singleTop"/>
+        <activity android:name=".RolesActivity" android:exported="false"
+            android:label="@string/roles_title"/>
+        <activity android:name=".WorkshopActivity" android:exported="false"
+            android:label="@string/workshop"/>
+        <activity android:name=".JournalActivity" android:exported="false"/>
+        <activity android:name=".TextCheckActivity" android:exported="false"
+            android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".TtsDataActivity" android:exported="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:excludeFromRecents="true">
+            <intent-filter>
+                <action android:name="android.speech.tts.engine.CHECK_TTS_DATA"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.speech.tts.engine.GET_SAMPLE_TEXT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".LexiconActivity" android:exported="true"
+            android:label="@string/to_lexicon"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".ShelveActivity" android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:excludeFromRecents="true"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="content"/>
+                <data android:mimeType="text/plain"/>
+                <data android:mimeType="text/markdown"/>
+                <data android:mimeType="text/html"/>
+                <data android:mimeType="application/xhtml+xml"/>
+                <data android:mimeType="application/epub+zip"/>
+                <data android:mimeType="application/x-fictionbook+xml"/>
+                <data android:mimeType="application/x-fictionbook"/>
+                <data android:mimeType="application/x-fictionbook3+zip"/>
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
+                <data android:mimeType="application/vnd.oasis.opendocument.text"/>
+                <data android:mimeType="application/rtf"/>
+                <data android:mimeType="text/rtf"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".ReadActivity" android:exported="true"
+            android:label="@string/share_label"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:excludeFromRecents="true"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+                <data android:mimeType="text/markdown"/>
+                <data android:mimeType="text/html"/>
+                <data android:mimeType="application/xhtml+xml"/>
+                <data android:mimeType="application/epub+zip"/>
+                <data android:mimeType="application/x-fictionbook+xml"/>
+                <data android:mimeType="application/x-fictionbook"/>
+                <data android:mimeType="application/x-fictionbook3+zip"/>
+                <data android:mimeType="application/x-zip-compressed"/>
+                <data android:mimeType="application/zip"/>
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
+                <data android:mimeType="application/vnd.oasis.opendocument.text"/>
+                <data android:mimeType="application/rtf"/>
+                <data android:mimeType="text/rtf"/>
+                <data android:mimeType="application/octet-stream"/>
+            </intent-filter>
+        </activity>
+        <activity-alias android:name=".ReadSelection" android:exported="true"
+            android:targetActivity=".ReadActivity"
+            android:label="@string/read_aloud">
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+        </activity-alias>
+        <service android:name=".BookPlayer" android:exported="false"
+            android:process=":voice"
+            android:foregroundServiceType="mediaPlayback"/>
+        <service android:name=".VoiceService" android:exported="false"
+            android:process=":voice"
+            android:foregroundServiceType="mediaPlayback"/>
+        <service android:name=".HoraTtsService" android:exported="true"
+            android:process=":voice"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.TTS_SERVICE"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <meta-data android:name="android.speech.tts" android:resource="@xml/tts_engine"/>
+        </service>
+        <activity android:name=".HeraldActivity" android:exported="true"
+            android:label="@string/herald_title">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES"/>
+            </intent-filter>
+        </activity>
+        <service android:name=".HushTile" android:exported="true"
+            android:label="@string/tile_hush"
+            android:icon="@drawable/ic_hush"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE"/>
+            </intent-filter>
+        </service>
+        <service android:name=".Herald" android:exported="true"
+            android:process=":voice"
+            android:label="@string/herald_service"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService"/>
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

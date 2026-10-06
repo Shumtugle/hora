@@ -1,0 +1,2255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ask">Который час?</string>
+    <string name="preparing">Готовлю голос…</string>
+    <string name="ready">Нажми, чтобы спросить</string>
+    <string name="failed">Голос не загрузился</string>
+    <!-- Spoken text only. An acute accent after a vowel marks stress where the voice would guess wrong. -->
+    <string name="time_phrase">Сейчас %1$s %2$s.</string>
+    <string name="minutes_zero">ровно</string>
+    <plurals name="hours">
+        <item quantity="one">%s час</item>
+        <item quantity="few">%s часа́</item>
+        <item quantity="many">%s часов</item>
+        <item quantity="other">%s часа́</item>
+    </plurals>
+    <plurals name="minutes">
+        <item quantity="one">%s минута</item>
+        <item quantity="few">%s минуты</item>
+        <item quantity="many">%s минут</item>
+        <item quantity="other">%s минуты</item>
+    </plurals>
+    <string-array name="numbers_masculine">
+        <item>ноль</item>
+        <item>один</item>
+        <item>два</item>
+        <item>три</item>
+        <item>четыре</item>
+        <item>пять</item>
+        <item>шесть</item>
+        <item>семь</item>
+        <item>восемь</item>
+        <item>девять</item>
+        <item>десять</item>
+        <item>одиннадцать</item>
+        <item>двенадцать</item>
+        <item>тринадцать</item>
+        <item>четырнадцать</item>
+        <item>пятнадцать</item>
+        <item>шестнадцать</item>
+        <item>семнадцать</item>
+        <item>восемнадцать</item>
+        <item>девятнадцать</item>
+        <item>двадцать</item>
+        <item>двадцать один</item>
+        <item>двадцать два</item>
+        <item>двадцать три</item>
+        <item>двадцать четыре</item>
+        <item>двадцать пять</item>
+        <item>двадцать шесть</item>
+        <item>двадцать семь</item>
+        <item>двадцать восемь</item>
+        <item>двадцать девять</item>
+        <item>тридцать</item>
+        <item>тридцать один</item>
+        <item>тридцать два</item>
+        <item>тридцать три</item>
+        <item>тридцать четыре</item>
+        <item>тридцать пять</item>
+        <item>тридцать шесть</item>
+        <item>тридцать семь</item>
+        <item>тридцать восемь</item>
+        <item>тридцать девять</item>
+        <item>со́рок</item>
+        <item>со́рок один</item>
+        <item>со́рок два</item>
+        <item>со́рок три</item>
+        <item>со́рок четыре</item>
+        <item>со́рок пять</item>
+        <item>со́рок шесть</item>
+        <item>со́рок семь</item>
+        <item>со́рок восемь</item>
+        <item>со́рок девять</item>
+        <item>пятьдесят</item>
+        <item>пятьдесят один</item>
+        <item>пятьдесят два</item>
+        <item>пятьдесят три</item>
+        <item>пятьдесят четыре</item>
+        <item>пятьдесят пять</item>
+        <item>пятьдесят шесть</item>
+        <item>пятьдесят семь</item>
+        <item>пятьдесят восемь</item>
+        <item>пятьдесят девять</item>
+    </string-array>
+    <string-array name="numbers_feminine">
+        <item>ноль</item>
+        <item>одна</item>
+        <item>две</item>
+        <item>три</item>
+        <item>четыре</item>
+        <item>пять</item>
+        <item>шесть</item>
+        <item>семь</item>
+        <item>восемь</item>
+        <item>девять</item>
+        <item>десять</item>
+        <item>одиннадцать</item>
+        <item>двенадцать</item>
+        <item>тринадцать</item>
+        <item>четырнадцать</item>
+        <item>пятнадцать</item>
+        <item>шестнадцать</item>
+        <item>семнадцать</item>
+        <item>восемнадцать</item>
+        <item>девятнадцать</item>
+        <item>двадцать</item>
+        <item>двадцать одна</item>
+        <item>двадцать две</item>
+        <item>двадцать три</item>
+        <item>двадцать четыре</item>
+        <item>двадцать пять</item>
+        <item>двадцать шесть</item>
+        <item>двадцать семь</item>
+        <item>двадцать восемь</item>
+        <item>двадцать девять</item>
+        <item>тридцать</item>
+        <item>тридцать одна</item>
+        <item>тридцать две</item>
+        <item>тридцать три</item>
+        <item>тридцать четыре</item>
+        <item>тридцать пять</item>
+        <item>тридцать шесть</item>
+        <item>тридцать семь</item>
+        <item>тридцать восемь</item>
+        <item>тридцать девять</item>
+        <item>со́рок</item>
+        <item>со́рок одна</item>
+        <item>со́рок две</item>
+        <item>со́рок три</item>
+        <item>со́рок четыре</item>
+        <item>со́рок пять</item>
+        <item>со́рок шесть</item>
+        <item>со́рок семь</item>
+        <item>со́рок восемь</item>
+        <item>со́рок девять</item>
+        <item>пятьдесят</item>
+        <item>пятьдесят одна</item>
+        <item>пятьдесят две</item>
+        <item>пятьдесят три</item>
+        <item>пятьдесят четыре</item>
+        <item>пятьдесят пять</item>
+        <item>пятьдесят шесть</item>
+        <item>пятьдесят семь</item>
+        <item>пятьдесят восемь</item>
+        <item>пятьдесят девять</item>
+    </string-array>
+    <string name="settings">Настройки</string>
+    <string name="about">О приложении</string>
+    <string name="build">Сборка</string>
+    <string name="license">Лицензия</string>
+    <string name="voice">Голос</string>
+    <string name="speed">Темп</string>
+    <string name="pause">Пауза между предложениями</string>
+    <string name="pause_value">%1$d мс</string>
+    <string name="lexicon">Словарь</string>
+    <string name="lexicon_hint">Одно правило в строке: слово = замена. Плюс перед гласной ставит ударение: замок = з+амок. Строка вида /шаблон/ = замена — регулярное выражение.</string>
+    <string name="tts_sample">Это Hora. Я прочитаю вам книгу.</string>
+    <string name="save">Сохранить</string>
+    <string name="saved">Сохранено</string>
+    <string name="read_aloud">Прочитать с Hora</string>
+    <string name="to_lexicon">В словарь Hora</string>
+    <string name="stop">Стоп</string>
+    <string name="speaking">Читаю</string>
+    <string name="channel">Речь</string>
+    <!-- Number words for reading digits aloud. Scales: none, thousand, million, billion. -->
+    <string-array name="num_units_m">
+        <item>ноль</item>
+        <item>один</item>
+        <item>два</item>
+        <item>три</item>
+        <item>четыре</item>
+        <item>пять</item>
+        <item>шесть</item>
+        <item>семь</item>
+        <item>восемь</item>
+        <item>девять</item>
+    </string-array>
+    <string-array name="num_units_f">
+        <item>ноль</item>
+        <item>одна</item>
+        <item>две</item>
+        <item>три</item>
+        <item>четыре</item>
+        <item>пять</item>
+        <item>шесть</item>
+        <item>семь</item>
+        <item>восемь</item>
+        <item>девять</item>
+    </string-array>
+    <string-array name="num_teens">
+        <item>десять</item>
+        <item>одиннадцать</item>
+        <item>двенадцать</item>
+        <item>тринадцать</item>
+        <item>четырнадцать</item>
+        <item>пятнадцать</item>
+        <item>шестнадцать</item>
+        <item>семнадцать</item>
+        <item>восемнадцать</item>
+        <item>девятнадцать</item>
+    </string-array>
+    <string-array name="num_tens">
+        <item></item>
+        <item></item>
+        <item>двадцать</item>
+        <item>тридцать</item>
+        <item>со́рок</item>
+        <item>пятьдесят</item>
+        <item>шестьдесят</item>
+        <item>семьдесят</item>
+        <item>восемьдесят</item>
+        <item>девяносто</item>
+    </string-array>
+    <string-array name="num_hundreds">
+        <item></item>
+        <item>сто</item>
+        <item>двести</item>
+        <item>триста</item>
+        <item>четыреста</item>
+        <item>пятьсот</item>
+        <item>шестьсот</item>
+        <item>семьсот</item>
+        <item>восемьсот</item>
+        <item>девятьсот</item>
+    </string-array>
+    <!-- Whether "one" is dropped before a scale word (one thousand = thousand). -->
+    <bool name="num_drop_single_one">true</bool>
+    <integer-array name="num_scale_feminine">
+        <item>0</item>
+        <item>1</item>
+        <item>0</item>
+        <item>0</item>
+    </integer-array>
+    <plurals name="num_scale_1">
+        <item quantity="one">тысяча</item>
+        <item quantity="few">тысячи</item>
+        <item quantity="many">тысяч</item>
+        <item quantity="other">тысячи</item>
+    </plurals>
+    <plurals name="num_scale_2">
+        <item quantity="one">миллион</item>
+        <item quantity="few">миллиона</item>
+        <item quantity="many">миллионов</item>
+        <item quantity="other">миллиона</item>
+    </plurals>
+    <plurals name="num_scale_3">
+        <item quantity="one">миллиард</item>
+        <item quantity="few">миллиарда</item>
+        <item quantity="many">миллиардов</item>
+        <item quantity="other">миллиарда</item>
+    </plurals>
+    <!-- Latin letters to the voice alphabet; longer keys win. -->
+    <string-array name="translit">
+        <item>shch=щ</item>
+        <item>sh=ш</item>
+        <item>ch=ч</item>
+        <item>zh=ж</item>
+        <item>kh=х</item>
+        <item>ts=ц</item>
+        <item>ya=я</item>
+        <item>yu=ю</item>
+        <item>yo=ё</item>
+        <item>th=т</item>
+        <item>ph=ф</item>
+        <item>ck=к</item>
+        <item>oo=у</item>
+        <item>ee=и</item>
+        <item>a=а</item>
+        <item>b=б</item>
+        <item>c=к</item>
+        <item>d=д</item>
+        <item>e=е</item>
+        <item>f=ф</item>
+        <item>g=г</item>
+        <item>h=х</item>
+        <item>i=и</item>
+        <item>j=дж</item>
+        <item>k=к</item>
+        <item>l=л</item>
+        <item>m=м</item>
+        <item>n=н</item>
+        <item>o=о</item>
+        <item>p=п</item>
+        <item>q=к</item>
+        <item>r=р</item>
+        <item>s=с</item>
+        <item>t=т</item>
+        <item>u=у</item>
+        <item>v=в</item>
+        <item>w=в</item>
+        <item>x=кс</item>
+        <item>y=и</item>
+        <item>z=з</item>
+    </string-array>
+    <string name="probe">Проба голоса</string>
+    <string name="probe_hint">в «Загрузки»</string>
+    <string name="probe_text">Серое небо висело над городом. Сейчас восемнадцать часов со́рок две минуты.</string>
+    <string name="probe_done">Сохранено: %1$s. %2$.1f с речи за %3$.1f с</string>
+    <string name="probe_failed">Проба не удалась: %1$s</string>
+    <string name="expression">Выразительность</string>
+    <string name="reference">Образец голоса</string>
+    <string name="reference_user">свой, %1$.0f с</string>
+    <string name="lexicon_import">Импорт словаря…</string>
+    <string name="lexicon_clear">Убрать импорт</string>
+    <string name="lexicon_imported">Подключено: %1$s</string>
+    <string name="lexicon_none">Импортированных словарей нет</string>
+    <string name="lexicon_import_done">%1$s: %2$d правил</string>
+    <string name="lexicon_import_failed">Импорт не удался: %1$s</string>
+    <!-- Vowel letters, for placing stress marks by vowel position. -->
+    <string name="stress_vowels">аеёиоуыэюя</string>
+    <!-- Letters that are always stressed; words containing them need no mark. -->
+    <string name="always_stressed">ё</string>
+    <string name="reference_export">Сохранить в «Загрузки»</string>
+    <string name="reference_exported">Образец сохранён: %1$s</string>
+    <string name="dialogue_voice">Голос диалогов</string>
+    <string name="dialogue_same">как у рассказчика</string>
+    <string name="dialogue_switch">Второй голос в диалогах</string>
+    <string name="yo_dictionary">Словарь буквы «ё»</string>
+    <string name="main_voice">Основной голос</string>
+    <string name="main_voice_first">Женский</string>
+    <string name="main_voice_second">Мужской</string>
+    <string name="voices">Голоса</string>
+    <string name="role_narrator">Рассказчик</string>
+    <string name="role_speaker_a">Собеседник 1</string>
+    <string name="role_speaker_b">Собеседник 2</string>
+    <!-- Voice names: singers and storytellers of folklore; the first two female, the rest male. -->
+    <string-array name="voice_names">
+        <item>Гамаюн</item>
+        <item>Сирин</item>
+        <item>Баюн</item>
+        <item>Боян</item>
+        <item>Садко</item>
+    </string-array>
+    <string name="slow_by_pauses">Замедлять паузами, а не растяжкой</string>
+    <string name="journal">Журнал</string>
+    <string name="journal_test">Тест движка</string>
+    <string name="journal_save">В «Загрузки»</string>
+    <string name="journal_clear">Очистить</string>
+    <string name="journal_empty">Журнал пуст</string>
+    <!-- Phonetic spelling: the text is written the way it sounds. -->
+    <string name="respell">Фонетическое письмо</string>
+    <string name="respell_signs">ьъ</string>
+    <string name="respell_hardening">жшц</string>
+    <string name="respell_voiceless_unpaired">хцчщ</string>
+    <string name="respell_hardened_e">ы</string>
+    <string-array name="respell_words">
+        <item>сейчас=сича́с</item>
+        <item>что=што</item>
+        <item>чтобы=штобы</item>
+        <item>ничто=ништо</item>
+        <item>конечно=конешно</item>
+        <item>скучно=скушно</item>
+        <item>нарочно=нарошно</item>
+        <item>яичница=яишница</item>
+        <item>сегодня=сиво́дня</item>
+        <item>сегодняшний=сиво́дняшний</item>
+        <item>его=иво́</item>
+        <item>ничего=ничиво́</item>
+        <item>чего=чиво́</item>
+        <item>кого=каво́</item>
+        <item>того=таво́</item>
+        <item>сего=сиво́</item>
+        <item>всего=фсиво́</item>
+        <item>здравствуй=здрастуй</item>
+        <item>здравствуйте=здрастуйте</item>
+        <item>солнце=сонце</item>
+        <item>сердце=серце</item>
+        <item>лестница=лесница</item>
+        <item>праздник=празник</item>
+        <item>счастье=щастье</item>
+    </string-array>
+    <!-- Words where the spelled ending is also the spoken one. -->
+    <string-array name="respell_keep">
+        <item>много</item>
+        <item>немного</item>
+        <item>строго</item>
+        <item>нестрого</item>
+        <item>дорого</item>
+        <item>недорого</item>
+        <item>убого</item>
+        <item>полого</item>
+        <item>отлого</item>
+        <item>поголовно</item>
+    </string-array>
+    <!-- Regular expressions over one lower-case word, applied in order: pattern=>replacement. -->
+    <string-array name="respell_rules">
+        <item>([оеё]́?)го$=>$1во</item>
+        <item>ться$=>ца</item>
+        <item>тся$=>ца</item>
+        <item>[сз]ч=>щ</item>
+        <item>жч=>щ</item>
+        <item>вств=>ств</item>
+        <item>стн=>сн</item>
+        <item>здн=>зн</item>
+        <item>стл=>сл</item>
+        <item>лнц=>нц</item>
+        <item>рдц=>рц</item>
+        <item>дц=>ц</item>
+        <item>гк=>хк</item>
+        <item>гч=>хч</item>
+        <item>б(?=[кпстфхцчшщ])=>п</item>
+        <item>в(?=[кпстфхцчшщ])=>ф</item>
+        <item>г(?=[пстфцшщ])=>к</item>
+        <item>д(?=[кпстфхчшщ])=>т</item>
+        <item>ж(?=[кпстфхцч])=>ш</item>
+        <item>з(?=[кпстфхцш])=>с</item>
+    </string-array>
+    <!-- Word-final devoicing, decided with the next word in view: voiced=voiceless. -->
+    <string-array name="respell_final">
+        <item>б=п</item>
+        <item>в=ф</item>
+        <item>г=к</item>
+        <item>д=т</item>
+        <item>ж=ш</item>
+        <item>з=с</item>
+    </string-array>
+    <!-- Short words that lean on the next one and take its voicing. -->
+    <string-array name="respell_proclitics">
+        <item>в</item>
+        <item>из</item>
+        <item>без</item>
+        <item>над</item>
+        <item>под</item>
+        <item>об</item>
+        <item>перед</item>
+        <item>через</item>
+    </string-array>
+    <!-- Unstressed vowels: from=to; ^ only after a consonant; &lt; only before the stress. -->
+    <string-array name="respell_reduce">
+        <item>о=а</item>
+        <item>е=и^</item>
+        <item>я=и^&lt;</item>
+    </string-array>
+    <string name="stress_dictionary">Словарь ударений</string>
+    <!-- Normalization: written forms said as words. Ordinal rows: number=stem|endings in the order
+         masculine nominative, genitive, dative, prepositional, feminine nominative, plural genitive,
+         masculine instrumental, feminine oblique, feminine accusative (0-8). -->
+    <string-array name="ordinals">
+        <item>1=перв|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>2=втор|ой|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>3=трет|ий|ьего|ьему|ьем|ья|ьих|ьим|ьей|ью</item>
+        <item>4=четвёрт|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>5=пят|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>6=шест|ой|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>7=седьм|ой|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>8=восьм|ой|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>9=девят|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>10=десят|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>11=одиннадцат|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>12=двенадцат|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>13=тринадцат|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>14=четырнадцат|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>15=пятнадцат|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>16=шестнадцат|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>17=семнадцат|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>18=восемнадцат|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>19=девятнадцат|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>20=двадцат|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>30=тридцат|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>40=сороков|ой|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>50=пятидесят|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>60=шестидесят|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>70=семидесят|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>80=восьмидесят|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>90=девяност|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>100=сот|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>200=двухсот|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>300=трёхсот|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>400=четырёхсот|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>500=пятисот|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>600=шестисот|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>700=семисот|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>800=восьмисот|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>900=девятисот|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>1000=тысячн|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+        <item>2000=двухтысячн|ый|ого|ому|ом|ая|ых|ым|ой|ую</item>
+    </string-array>
+    <!-- A roman numeral right after a name is a regnal number; the name's ending picks the form. -->
+    <string-array name="roman_name_endings">
+        <item>ом=6</item>
+        <item>ем=6</item>
+        <item>ём=6</item>
+        <item>у=2</item>
+        <item>ю=2</item>
+        <item>е=3</item>
+        <item>а=1</item>
+        <item>я=1</item>
+    </string-array>
+    <string-array name="roman_female_endings">
+        <item>ой=7</item>
+        <item>ей=7</item>
+        <item>а=4</item>
+        <item>я=4</item>
+        <item>ы=7</item>
+        <item>и=7</item>
+        <item>е=7</item>
+        <item>у=8</item>
+        <item>ю=8</item>
+    </string-array>
+    <!-- Stems of women's regnal names, to tell them from men's names in the genitive. -->
+    <string-array name="female_name_stems">
+        <item>екатерин</item>
+        <item>елизавет</item>
+        <item>анн</item>
+        <item>мари</item>
+        <item>изабелл</item>
+        <item>виктори</item>
+        <item>маргарит</item>
+        <item>елен</item>
+        <item>софи</item>
+        <item>кристин</item>
+        <item>беатрис</item>
+        <item>жанн</item>
+    </string-array>
+    <string-array name="months_genitive">
+        <item>января</item>
+        <item>февраля</item>
+        <item>марта</item>
+        <item>апреля</item>
+        <item>мая</item>
+        <item>июня</item>
+        <item>июля</item>
+        <item>августа</item>
+        <item>сентября</item>
+        <item>октября</item>
+        <item>ноября</item>
+        <item>декабря</item>
+    </string-array>
+    <!-- Word after a year or a century, with the ordinal form it requires (0-5 as above). -->
+    <string-array name="year_words">
+        <item>год=0</item>
+        <item>года=1</item>
+        <item>году=3</item>
+        <item>годам=2</item>
+        <item>годами=6</item>
+        <item>годах=3</item>
+    </string-array>
+    <string name="year_abbrev">г</string>
+    <!-- How the year abbreviation is said, by the same form numbers. -->
+    <string-array name="year_spoken">
+        <item>год</item>
+        <item>года</item>
+        <item>году</item>
+        <item>году</item>
+        <item>год</item>
+        <item>годов</item>
+    </string-array>
+    <string-array name="century_words">
+        <item>век=0</item>
+        <item>века=1</item>
+        <item>веку=2</item>
+        <item>веке=3</item>
+        <item>веков=1</item>
+        <item>векам=2</item>
+        <item>веках=3</item>
+        <item>веками=6</item>
+    </string-array>
+    <!-- Words after which a roman numeral is an ordinal: chapter, part, volume. -->
+    <string-array name="title_words">
+        <item>глава=4</item>
+        <item>главы=4</item>
+        <item>часть=4</item>
+        <item>книга=4</item>
+        <item>сцена=4</item>
+        <item>песнь=4</item>
+        <item>том=0</item>
+        <item>раздел=0</item>
+        <item>акт=0</item>
+        <item>выпуск=0</item>
+        <item>главу=8</item>
+        <item>главе=7</item>
+        <item>главой=7</item>
+        <item>части=7</item>
+        <item>частью=7</item>
+        <item>книги=7</item>
+        <item>книгу=8</item>
+        <item>книге=7</item>
+        <item>книгой=7</item>
+        <item>тома=1</item>
+        <item>тому=2</item>
+        <item>томе=3</item>
+        <item>томом=6</item>
+        <item>раздела=1</item>
+        <item>разделу=2</item>
+        <item>разделе=3</item>
+        <item>разделом=6</item>
+    </string-array>
+    <!-- Endings written after a number with a hyphen, and the form they ask for. -->
+    <string-array name="ordinal_suffixes">
+        <item>й=0</item>
+        <item>ый=0</item>
+        <item>ой=0</item>
+        <item>ий=0</item>
+        <item>го=1</item>
+        <item>ого=1</item>
+        <item>его=1</item>
+        <item>му=2</item>
+        <item>ому=2</item>
+        <item>ему=2</item>
+        <item>м=3</item>
+        <item>ом=3</item>
+        <item>ем=3</item>
+        <item>я=4</item>
+        <item>ая=4</item>
+        <item>яя=4</item>
+        <item>х=5</item>
+        <item>ых=5</item>
+        <item>их=5</item>
+    </string-array>
+    <string-array name="dative_prepositions">
+        <item>к</item>
+        <item>ко</item>
+        <item>по</item>
+    </string-array>
+    <string-array name="locative_prepositions">
+        <item>в</item>
+        <item>во</item>
+        <item>о</item>
+        <item>об</item>
+        <item>при</item>
+    </string-array>
+    <!-- Longer abbreviations first: they are replaced in this order. -->
+    <string-array name="abbreviations">
+        <item>до н. э.=до нашей эры</item>
+        <item>н. э.=нашей эры</item>
+        <item>т. е.=то есть</item>
+        <item>т. д.=так далее</item>
+        <item>т. п.=тому подобное</item>
+        <item>т. к.=так как</item>
+        <item>т. н.=так называемый</item>
+        <item>и др.=и другие</item>
+        <item>и пр.=и прочее</item>
+        <item>стр.=страница</item>
+        <item>л. н.=лет назад</item>
+        <item>от лат.=от латинского</item>
+        <item>от греч.=от греческого</item>
+        <item>ул.=улица</item>
+        <item>рис.=рисунок</item>
+        <item>гл.=глава</item>
+        <item>тыс.=тысяч</item>
+        <item>млн=миллионов</item>
+        <item>млрд=миллиардов</item>
+        <item>руб.=рублей</item>
+        <item>коп.=копеек</item>
+        <item>США=сэ-шэ-а</item>
+        <item>ЕС=е-эс</item>
+    </string-array>
+    <string-array name="letter_names">
+        <item>а=а</item>
+        <item>б=бэ</item>
+        <item>в=вэ</item>
+        <item>г=гэ</item>
+        <item>д=дэ</item>
+        <item>е=е</item>
+        <item>ё=ё</item>
+        <item>ж=жэ</item>
+        <item>з=зэ</item>
+        <item>и=и</item>
+        <item>й=и краткое</item>
+        <item>к=ка</item>
+        <item>л=эль</item>
+        <item>м=эм</item>
+        <item>н=эн</item>
+        <item>о=о</item>
+        <item>п=пэ</item>
+        <item>р=эр</item>
+        <item>с=эс</item>
+        <item>т=тэ</item>
+        <item>у=у</item>
+        <item>ф=эф</item>
+        <item>х=ха</item>
+        <item>ц=цэ</item>
+        <item>ч=че</item>
+        <item>ш=ша</item>
+        <item>щ=ща</item>
+        <item>ъ=твёрдый знак</item>
+        <item>ы=ы</item>
+        <item>ь=мягкий знак</item>
+        <item>э=э</item>
+        <item>ю=ю</item>
+        <item>я=я</item>
+    </string-array>
+    <string name="word_point">точка</string>
+    <string name="word_slash">слэш</string>
+    <string name="word_at">собака</string>
+    <string name="word_dash">дефис</string>
+    <string name="word_number_sign">номер</string>
+    <string-array name="decimal_denominators">
+        <item>десятая|десятых</item>
+        <item>сотая|сотых</item>
+        <item>тысячная|тысячных</item>
+    </string-array>
+    <plurals name="decimal_whole">
+        <item quantity="one">целая</item>
+        <item quantity="few">целых</item>
+        <item quantity="many">целых</item>
+        <item quantity="other">целых</item>
+    </plurals>
+    <plurals name="percent">
+        <item quantity="one">процент</item>
+        <item quantity="few">процента</item>
+        <item quantity="many">процентов</item>
+        <item quantity="other">процента</item>
+    </plurals>
+    <string name="even_tempo">Ровный темп</string>
+    <!-- Self-test cases for the text rules: written form => words the voice must get. -->
+    <string-array name="selftest">
+        <item>Генрих III вошёл в зал.=&gt;Генрих третий вошёл в зал.</item>
+        <item>Перед глазами Генриха III замелькали рты.=&gt;Перед глазами Генриха третьего замелькали рты.</item>
+        <item>Екатерина II правила долго.=&gt;Екатерина вторая правила долго.</item>
+        <item>В XVIII веке.=&gt;В восемнадцатом веке.</item>
+        <item>Глава XII.=&gt;Глава двенадцатая.</item>
+        <item>Поезд отправится 28 сентября 2026 года в 21:07.=&gt;Поезд отправится двадцать восьмого сентября две тысячи двадцать шестого года в двадцать один ноль семь.</item>
+        <item>В 1812 году Наполеон вошёл в Москву.=&gt;В тысяча восемьсот двенадцатом году Наполеон вошёл в Москву.</item>
+        <item>В 2025-м модель читала хуже.=&gt;В две тысячи двадцать пятом модель читала хуже.</item>
+        <item>Температура 37,4 градуса.=&gt;Температура тридцать семь целых четыре десятых градуса.</item>
+        <item>Скидка 6,5%.=&gt;Скидка шесть целых пять десятых процента.</item>
+        <item>Версия 3.10.2 вышла.=&gt;Версия три точка десять точка два вышла.</item>
+        <item>Встреча 01.10.1789 в Париже.=&gt;Встреча первого октября тысяча семьсот восемьдесят девятого года в Париже.</item>
+        <item>Компания ООО «Вектор», т. е. фирма.=&gt;Компания о-о-о «Вектор», то есть фирма.</item>
+        <item>А. С. Пушкин.=&gt;а эс Пушкин.</item>
+        <item>Ген\u00adри\u00adх III с мягкими переносами.=&gt;Генрих третий с мягкими переносами.</item>
+        <item>король Генрих III, B противоположной двери.=&gt;король Генрих третий, В противоположной двери.</item>
+        <item>кoрoль скaзaл.=&gt;король сказал.</item>
+    </string-array>
+    <string name="text_check">Проверка текста</string>
+    <string name="text_check_hint">Вставь текст из книги</string>
+    <string name="text_check_show">Что услышит голос</string>
+    <string name="text_check_selftest">Самопроверка</string>
+    <string name="text_check_working">Считаю…</string>
+    <string name="text_check_summary">Прошло %1$d из %2$d</string>
+    <!-- Latin letters that look like native ones, for scanned books that mix them. -->
+    <string-array name="latin_lookalikes">
+        <item>A=А</item>
+        <item>B=В</item>
+        <item>C=С</item>
+        <item>E=Е</item>
+        <item>H=Н</item>
+        <item>K=К</item>
+        <item>M=М</item>
+        <item>O=О</item>
+        <item>P=Р</item>
+        <item>T=Т</item>
+        <item>X=Х</item>
+        <item>a=а</item>
+        <item>c=с</item>
+        <item>e=е</item>
+        <item>o=о</item>
+        <item>p=р</item>
+        <item>x=х</item>
+        <item>y=у</item>
+        <item>k=к</item>
+    </string-array>
+    <!-- Words of a single letter: a lone Latin twin of one of these is taken as native. -->
+    <string-array name="one_letter_words">
+        <item>а</item>
+        <item>в</item>
+        <item>и</item>
+        <item>к</item>
+        <item>о</item>
+        <item>с</item>
+        <item>у</item>
+        <item>я</item>
+    </string-array>
+    <!-- Letter folded into its plain twin when matching context rules: from=to. -->
+    <string name="letter_folding">ё=е</string>
+    <string name="workshop">Настройки голоса</string>
+    <string name="home_hint">Нажми, и я скажу, который час.</string>
+    <string name="home_time">Который час</string>
+    <string name="home_weather">Погода</string>
+    <string name="home_next_voice">Другой голос</string>
+    <string name="home_draft_hint">Спроси или напиши, что сказать…</string>
+    <string name="home_speak">Произнести</string>
+    <string name="home_empty">Напиши что-нибудь, и я прочту.</string>
+    <string name="home_greeting">Здравствуй. Теперь говорю я.</string>
+    <string name="home_no_weather">Погоду я пока не знаю. Скоро научусь.</string>
+    <string name="nav_voice">Голос</string>
+    <string name="nav_book">Книга</string>
+    <string name="nav_workshop">Голос</string>
+    <string name="ws_back">Назад</string>
+    <string name="ws_listen">Послушать</string>
+    <string name="ws_listen_text">Венская зима последних лет старого императора начиналась по Рингштрассе: лакированные экипажи на снегу, дамы в шляпах с эгретками и муфтах, лоснящаяся прислуга у дверей дворцов Хенкеля-Доннерсмарка и Вюртемберга. В Бургтеатре давали Грильпарцера, в Хофопере Вагнера. На углу Картнерштрассе и Грабена газетчик выкрикивал лондонский курс серебра, и по нему в городе верней начинали день, чем по утреннему благовесту.</string>
+    <string name="ws_stop">Стоп</string>
+    <string name="ws_done">Готово</string>
+    <string name="ws_timbre">Тембр</string>
+    <string name="ws_pitch">Высота</string>
+    <string name="ws_tempo">Темп</string>
+    <string name="ws_mood">Характер</string>
+    <string name="ws_timbre_value">Тембр · %1$s</string>
+    <string name="ws_pitch_value">Высота · %1$s</string>
+    <string name="ws_tempo_value">Темп · %1$s</string>
+    <string name="ws_mood_value">Характер · %1$s</string>
+    <string name="ws_as_sample">как в образце</string>
+    <string name="ws_semitones">%1$s пт</string>
+    <string name="ws_warmer">теплее</string>
+    <string name="ws_brighter">ярче</string>
+    <string name="ws_deeper">глубже</string>
+    <string name="ws_higher">выше</string>
+    <string name="ws_slow">неспешно</string>
+    <string name="ws_fast">быстро</string>
+    <string name="ws_calm">спокойно</string>
+    <string name="ws_lively">живо</string>
+    <string name="ws_timbre_note">Образец голоса проходит через эквалайзер до того, как его услышит модель. Модель переносит этот тембр на всю речь.</string>
+    <string name="ws_pitch_note">Сдвиг в полутонах. Темп речи не меняется.</string>
+    <string name="ws_tempo_note">Для всех голосов. Замедление паузами и ровный темп — в «Книге».</string>
+    <string name="ws_mood_note">Для всех голосов. Живее — больше интонации, но и больше случайных срывов.</string>
+    <string name="portraits">Портреты</string>
+    <string name="portraits_note">ChatGPT</string>
+    <string name="fonts">Шрифты</string>
+    <string-array name="voice_epithets">
+        <item>рассказчица</item>
+        <item>собеседница</item>
+        <item>собеседник</item>
+        <item>чтец</item>
+        <item>молодой гусляр</item>
+    </string-array>
+    <string-array name="voice_kinds">
+        <item>женский · главный</item>
+        <item>женский</item>
+        <item>мужской · главный</item>
+        <item>мужской · глубокий</item>
+        <item>мужской · молодой</item>
+    </string-array>
+    <string name="tools">Инструменты</string>
+    <string-array name="respell_untouched">
+        <item>теперь</item>
+    </string-array>
+    <string-array name="stress_clitics">
+        <item>нибудь</item>
+        <item>либо</item>
+        <item>таки</item>
+    </string-array>
+    <string name="roles_title">Голоса и роли</string>
+    <string name="ws_troupe">Голоса</string>
+    <string name="roles_more">Настройки чтения</string>
+    <string name="roles_listen">Прочитать пример</string>
+    <string name="roles_listen_hint">Нажми на пример, чтобы услышать</string>
+    <string name="reading">Чтение</string>
+    <string-array name="roles_sample">
+        <item>Дождь шёл третий день.</item>
+        <item>— Пойдём,</item>
+        <item>— сказал он тихо.</item>
+        <item>— Уже поздно.</item>
+        <item>— Нет,</item>
+        <item>— ответила она.</item>
+    </string-array>
+    <string name="roles_sample_speech">Дождь шёл третий день.\n— Пойдём, — сказал он тихо. — Уже поздно.\n— Нет, — ответила она.</string>
+    <string name="look">Вид</string>
+    <string name="look_bordeaux">Бордо</string>
+    <string name="look_contrast">Контраст</string>
+    <string name="lexicon_builtin_title">Встроено</string>
+    <string name="lexicon_builtin">Ударения — 3,8 млн форм слов, буква «ё» — 107 тыс. слов, омографы — 37 тыс. правил по соседним словам, сеть для незнакомых слов и фамилий. Ваши правила и импорт сильнее встроенного.</string>
+    <string name="lexicon_own">Мои правила</string>
+    <string name="lexicon_example">замок = зам+ок</string>
+    <string name="book_channel">Чтение книги</string>
+    <string name="book_opening">Открываю книгу…</string>
+    <string name="book_where">Абзац %1$d из %2$d</string>
+    <string name="book_where_percent">Абзац %1$d из %2$d · %3$d%%</string>
+    <string name="book_prev">Назад на абзац</string>
+    <string name="book_next">Вперёд на абзац</string>
+    <string name="book_play">Читать</string>
+    <string name="book_pause">Пауза</string>
+    <string name="book_none">Книги ещё нет</string>
+    <string name="book_none_hint">Открой файл книги: fb2, fb2.zip, epub, txt, docx, odt, rtf или html. Hora запомнит место и продолжит с него.</string>
+    <string name="book_open">Открыть книгу</string>
+    <string name="book_other">Другая книга</string>
+    <string name="book_unreadable">Этот формат Hora пока не читает: %1$s</string>
+    <string name="book_reader">Читает: %1$s</string>
+    <string name="book_change_reader">Сменить</string>
+    <string name="nav_roles">Роли</string>
+    <string name="voices_section">Голоса</string>
+    <string name="home_make_main">Сделать главным голосом: %1$s</string>
+    <string name="home_troupe_hint">смахни портрет или коснись лица</string>
+    <string name="place_title">Место для погоды</string>
+    <string name="place_hint">Город или посёлок</string>
+    <string name="place_find">Найти</string>
+    <string name="place_searching">Ищу…</string>
+    <string name="place_cancel">Отмена</string>
+    <string name="place_here_short">по телефону</string>
+    <string name="weather_data">Погода</string>
+    <string name="place_question">Для какого места нужна погода?</string>
+    <string name="place_by_phone">Определить по телефону</string>
+    <string name="place_by_name">Найти город по названию</string>
+    <string name="place_later">Не сейчас</string>
+    <string name="herald_service">Hora: уведомления в наушники</string>
+    <string name="herald_title">Уведомления</string>
+    <string name="herald_section">Уведомления</string>
+    <string name="herald_row">Читать в наушники</string>
+    <string name="herald_writes">%1$s пишет: %2$s</string>
+    <string name="herald_in_group">%1$s пишет в «%2$s»: %3$s</string>
+    <string name="herald_other">%1$s. %2$s</string>
+    <string name="widget_no_book">Книга не выбрана</string>
+    <string name="widget_scene_name">Сцена</string>
+    <string name="widget_scene_description">Чтец за работой. Касание — пауза и продолжение</string>
+    <string name="widget_pick_book">Коснись, чтобы выбрать</string>
+    <string name="widget_paused">Пауза</string>
+    <string name="widget_where">%1$d из %2$d</string>
+    <string name="widget_say_no_book">Книга не выбрана. Коснись, чтобы выбрать</string>
+    <string name="widget_say_playing">«%1$s», читает %2$s. Коснись, чтобы поставить на паузу</string>
+    <string name="widget_say_paused">«%1$s», пауза. Коснись, чтобы продолжить</string>
+    <string name="widget_bookmark_name">Закладка</string>
+    <string name="widget_bookmark_description">Книга и чтец одной строкой. Касание — пауза и продолжение</string>
+    <string name="widget_reads">%1$s читает</string>
+    <string name="widget_waits">%1$s ждёт</string>
+    <string name="role_herald">Уведомления</string>
+    <string name="role_talk">Разговор</string>
+    <string name="journal_copy">Копировать</string>
+    <string name="journal_copied">Журнал скопирован</string>
+    <string name="journal_note">События хранятся сутки, подробности — 15 минут. Удержи строку, чтобы скопировать её.</string>
+    <string name="journal_clear_sure">Точно очистить?</string>
+    <string name="journal_all">Всё · %1$d</string>
+    <string name="journal_events">События · %1$d</string>
+    <string name="journal_process">процесс %1$d · после обновления или перезапуска</string>
+    <string name="journal_src_book">Книга</string>
+    <string name="journal_src_herald">Уведомления</string>
+    <string name="journal_src_engine">Движок</string>
+    <string name="journal_src_voice">Голос</string>
+    <string name="journal_src_test">Проверка</string>
+    <string name="journal_src_weather">Погода</string>
+    <string name="journal_src_place">Место</string>
+    <string name="journal_src_check">Текст</string>
+    <string name="herald_lead">Читаю уведомления выбранных приложений — только в наушники. Нет наушников — молчу.</string>
+    <string name="herald_state">Состояние</string>
+    <string name="herald_access_on">Доступ к уведомлениям есть</string>
+    <string name="herald_access_off">Нет доступа к уведомлениям</string>
+    <string name="herald_grant">Дать доступ</string>
+    <string name="herald_restricted">Если переключатель в системе серый: открой сведения о приложении, меню ⋮ и разреши ограниченные настройки.</string>
+    <string name="herald_app_details">Сведения о приложении</string>
+    <string name="herald_access_settings">Настройки доступа</string>
+    <string name="herald_ears_on">Наушники: %1$s</string>
+    <string name="herald_ears_none">Наушников нет — молчу</string>
+    <string name="herald_voice_section">Голос</string>
+    <string name="herald_voice_row">Голос для уведомлений</string>
+    <string name="herald_quiet_section">Тихие часы</string>
+    <string name="herald_quiet_switch">Молчать ночью</string>
+    <string name="herald_quiet_from">С</string>
+    <string name="herald_quiet_to">До</string>
+    <string name="herald_quiet_from_title">Молчать с</string>
+    <string name="herald_quiet_to_title">Молчать до</string>
+    <string name="herald_apps_section">Приложения · выбрано %1$d</string>
+    <string name="herald_apps_search">Найти приложение</string>
+    <string name="herald_apps_loading">Собираю список…</string>
+    <string name="herald_apps_none">Ничего не нашлось</string>
+    <string name="kit_cancel">Отмена</string>
+    <string name="kit_done">Готово</string>
+    <string name="look_lamp">Лампа</string>
+    <string name="look_ink">Чернила</string>
+    <string name="look_sample">Аа</string>
+    <string name="text_check_record">Прочитать в «Загрузки»</string>
+    <string name="text_check_lead">Увидишь, что услышит голос, или получишь запись прочитанного.</string>
+    <string name="recording">Запись</string>
+    <string name="text_check_starting">Готовлю голос…</string>
+    <string name="text_check_progress">Абзац %1$d из %2$d · %3$d %%</string>
+    <string name="text_check_saved">Готово: «%1$s» в «Загрузках», %2$s мин</string>
+    <string name="text_check_not_saved">Прочитано, но не сохранено</string>
+    <string name="text_check_failed">Не получилось: %1$s</string>
+    <string name="breath_vowels">аеёиоуыэюя</string>
+    <string name="breath_joiners">в во на с со к ко по о об обо от до из у за над под при про для без через и а но да или либо что чем как когда где если чтобы хотя пока</string>
+    <string name="chapter_words">Глава|Часть|Книга|Том|Пролог|Эпилог|Предисловие|Послесловие|Вступление|Заключение</string>
+    <string name="book_where_chapter">%1$s · абзац %2$d из %3$d · %4$d %%</string>
+    <string name="chapter_ordinals">ая|ой|ый|ий|ое|ья|ье|ьи</string>
+    <string name="book_from_here">Читать отсюда</string>
+    <string name="book_copy">Копировать</string>
+    <string name="book_select">Выделить</string>
+    <string name="book_select_hint">Задержи палец на слове, потом тяни за края выделения.</string>
+    <string name="book_paragraph">Абзац %1$d</string>
+    <string name="book_chapter_paragraph">%1$s · абзац %2$d</string>
+    <string name="widget_exlibris_name">Экслибрис</string>
+    <string name="widget_exlibris_description">Книжный знак: чтец в медальоне и книга. Касание — пауза и продолжение</string>
+    <string name="widget_exlibris_reads">читает %1$s</string>
+    <string name="widget_exlibris_bookmark">закладка · %1$d</string>
+    <string name="book_select_all">Выбрать всё</string>
+    <string name="book_share">Поделиться</string>
+    <string name="book_more">Ещё</string>
+    <string name="book_what_to_do">Что сделать?</string>
+    <string name="book_contents">Оглавление</string>
+    <string name="book_chapter_read">прочитана</string>
+    <string name="book_contents_meta">%1$s · %2$d %%</string>
+    <plurals name="book_chapters">
+        <item quantity="one">%d глава</item>
+        <item quantity="few">%d главы</item>
+        <item quantity="many">%d глав</item>
+        <item quantity="other">%d главы</item>
+    </plurals>
+    <string name="search_title">Поиск по книге</string>
+    <string name="search_hint">Что искать</string>
+    <string name="search_none">Ничего не нашлось</string>
+    <string name="search_count">%1$s %2$s</string>
+    <string name="search_before_chapters">До первой главы</string>
+    <string name="search_paragraph">абзац %1$d</string>
+    <string name="search_more">и ещё %1$d; уточни слова, чтобы сузить</string>
+    <plurals name="search_places">
+        <item quantity="one">%d место</item>
+        <item quantity="few">%d места</item>
+        <item quantity="many">%d мест</item>
+        <item quantity="other">%d места</item>
+    </plurals>
+    <plurals name="search_in_chapters">
+        <item quantity="one">в %d главе</item>
+        <item quantity="few">в %d главах</item>
+        <item quantity="many">в %d главах</item>
+        <item quantity="other">в %d главах</item>
+    </plurals>
+    <string name="nav_shelf">Полка</string>
+    <string name="shelf_title">Полка</string>
+    <string name="shelf_now">Слушаю сейчас</string>
+    <string name="shelf_on">На полке · %1$d</string>
+    <string name="shelf_add">Добавить книгу</string>
+    <string name="shelf_new">новая</string>
+    <string name="shelf_read">прочитана</string>
+    <string name="shelf_continue">Продолжить</string>
+    <string name="shelf_pause">Пауза</string>
+    <string name="shelf_remove">Убрать с полки</string>
+    <string name="shelf_about">Сведения</string>
+    <string name="shelf_empty">Полка пуста. Добавь книгу — она встанет сюда.</string>
+    <string name="shelf_only_one">Пока здесь только та, что звучит. Другие книги, которые ты откроешь, встанут сюда.</string>
+    <string name="shelf_about_file">Файл: %1$s</string>
+    <string name="shelf_about_author">Автор: %1$s</string>
+    <string name="shelf_about_size">%1$s, %2$s</string>
+    <string name="shelf_about_place">Где: %1$s</string>
+    <string name="shelf_about_reader">Читает %1$s</string>
+    <string name="shelf_about_opened">Открывалась %1$s</string>
+    <plurals name="shelf_paragraphs">
+        <item quantity="one">%d абзац</item>
+        <item quantity="few">%d абзаца</item>
+        <item quantity="many">%d абзацев</item>
+        <item quantity="other">%d абзаца</item>
+    </plurals>
+    <string name="shelf_on_none">На полке</string>
+    <string name="settings_shelf_view">Полка</string>
+    <string name="settings_shelf_covers">Обложки</string>
+    <string name="settings_shelf_list">Список</string>
+    <string name="shelf_recent">Недавние</string>
+    <string name="shelf_by_title">По названию</string>
+    <string name="shelf_read_ones">Прочитанные</string>
+    <string name="shelf_none_read">Пока ни одной прочитанной до конца.</string>
+    <!-- Cardinal numbers in the oblique cases, for counts the following noun or a preposition puts in a case. -->
+    <string-array name="count_units_acc">
+        <item>ноль</item>
+        <item>один|одну</item>
+        <item>два|две</item>
+        <item>три</item>
+        <item>четыре</item>
+        <item>пять</item>
+        <item>шесть</item>
+        <item>семь</item>
+        <item>восемь</item>
+        <item>девять</item>
+    </string-array>
+    <string-array name="count_teens_acc">
+        <item>десять</item>
+        <item>одиннадцать</item>
+        <item>двенадцать</item>
+        <item>тринадцать</item>
+        <item>четырнадцать</item>
+        <item>пятнадцать</item>
+        <item>шестнадцать</item>
+        <item>семнадцать</item>
+        <item>восемнадцать</item>
+        <item>девятнадцать</item>
+    </string-array>
+    <string-array name="count_tens_acc">
+        <item></item>
+        <item></item>
+        <item>двадцать</item>
+        <item>тридцать</item>
+        <item>сорок</item>
+        <item>пятьдесят</item>
+        <item>шестьдесят</item>
+        <item>семьдесят</item>
+        <item>восемьдесят</item>
+        <item>девяносто</item>
+    </string-array>
+    <string-array name="count_hundreds_acc">
+        <item></item>
+        <item>сто</item>
+        <item>двести</item>
+        <item>триста</item>
+        <item>четыреста</item>
+        <item>пятьсот</item>
+        <item>шестьсот</item>
+        <item>семьсот</item>
+        <item>восемьсот</item>
+        <item>девятьсот</item>
+    </string-array>
+    <string-array name="count_units_gen">
+        <item>нуля</item>
+        <item>одного|одной</item>
+        <item>двух</item>
+        <item>трёх</item>
+        <item>четырёх</item>
+        <item>пяти</item>
+        <item>шести</item>
+        <item>семи</item>
+        <item>восьми</item>
+        <item>девяти</item>
+    </string-array>
+    <string-array name="count_teens_gen">
+        <item>десяти</item>
+        <item>одиннадцати</item>
+        <item>двенадцати</item>
+        <item>тринадцати</item>
+        <item>четырнадцати</item>
+        <item>пятнадцати</item>
+        <item>шестнадцати</item>
+        <item>семнадцати</item>
+        <item>восемнадцати</item>
+        <item>девятнадцати</item>
+    </string-array>
+    <string-array name="count_tens_gen">
+        <item></item>
+        <item></item>
+        <item>двадцати</item>
+        <item>тридцати</item>
+        <item>сорока</item>
+        <item>пятидесяти</item>
+        <item>шестидесяти</item>
+        <item>семидесяти</item>
+        <item>восьмидесяти</item>
+        <item>девяноста</item>
+    </string-array>
+    <string-array name="count_hundreds_gen">
+        <item></item>
+        <item>ста</item>
+        <item>двухсот</item>
+        <item>трёхсот</item>
+        <item>четырёхсот</item>
+        <item>пятисот</item>
+        <item>шестисот</item>
+        <item>семисот</item>
+        <item>восьмисот</item>
+        <item>девятисот</item>
+    </string-array>
+    <string-array name="count_units_dat">
+        <item>нулю</item>
+        <item>одному|одной</item>
+        <item>двум</item>
+        <item>трём</item>
+        <item>четырём</item>
+        <item>пяти</item>
+        <item>шести</item>
+        <item>семи</item>
+        <item>восьми</item>
+        <item>девяти</item>
+    </string-array>
+    <string-array name="count_teens_dat">
+        <item>десяти</item>
+        <item>одиннадцати</item>
+        <item>двенадцати</item>
+        <item>тринадцати</item>
+        <item>четырнадцати</item>
+        <item>пятнадцати</item>
+        <item>шестнадцати</item>
+        <item>семнадцати</item>
+        <item>восемнадцати</item>
+        <item>девятнадцати</item>
+    </string-array>
+    <string-array name="count_tens_dat">
+        <item></item>
+        <item></item>
+        <item>двадцати</item>
+        <item>тридцати</item>
+        <item>сорока</item>
+        <item>пятидесяти</item>
+        <item>шестидесяти</item>
+        <item>семидесяти</item>
+        <item>восьмидесяти</item>
+        <item>девяноста</item>
+    </string-array>
+    <string-array name="count_hundreds_dat">
+        <item></item>
+        <item>ста</item>
+        <item>двумстам</item>
+        <item>трёмстам</item>
+        <item>четырёмстам</item>
+        <item>пятистам</item>
+        <item>шестистам</item>
+        <item>семистам</item>
+        <item>восьмистам</item>
+        <item>девятистам</item>
+    </string-array>
+    <string-array name="count_units_ins">
+        <item>нулём</item>
+        <item>одним|одной</item>
+        <item>двумя</item>
+        <item>тремя</item>
+        <item>четырьмя</item>
+        <item>пятью</item>
+        <item>шестью</item>
+        <item>семью</item>
+        <item>восемью</item>
+        <item>девятью</item>
+    </string-array>
+    <string-array name="count_teens_ins">
+        <item>десятью</item>
+        <item>одиннадцатью</item>
+        <item>двенадцатью</item>
+        <item>тринадцатью</item>
+        <item>четырнадцатью</item>
+        <item>пятнадцатью</item>
+        <item>шестнадцатью</item>
+        <item>семнадцатью</item>
+        <item>восемнадцатью</item>
+        <item>девятнадцатью</item>
+    </string-array>
+    <string-array name="count_tens_ins">
+        <item></item>
+        <item></item>
+        <item>двадцатью</item>
+        <item>тридцатью</item>
+        <item>сорока</item>
+        <item>пятьюдесятью</item>
+        <item>шестьюдесятью</item>
+        <item>семьюдесятью</item>
+        <item>восемьюдесятью</item>
+        <item>девяноста</item>
+    </string-array>
+    <string-array name="count_hundreds_ins">
+        <item></item>
+        <item>ста</item>
+        <item>двумястами</item>
+        <item>тремястами</item>
+        <item>четырьмястами</item>
+        <item>пятьюстами</item>
+        <item>шестьюстами</item>
+        <item>семьюстами</item>
+        <item>восемьюстами</item>
+        <item>девятьюстами</item>
+    </string-array>
+    <string-array name="count_units_prep">
+        <item>нуле</item>
+        <item>одном|одной</item>
+        <item>двух</item>
+        <item>трёх</item>
+        <item>четырёх</item>
+        <item>пяти</item>
+        <item>шести</item>
+        <item>семи</item>
+        <item>восьми</item>
+        <item>девяти</item>
+    </string-array>
+    <string-array name="count_teens_prep">
+        <item>десяти</item>
+        <item>одиннадцати</item>
+        <item>двенадцати</item>
+        <item>тринадцати</item>
+        <item>четырнадцати</item>
+        <item>пятнадцати</item>
+        <item>шестнадцати</item>
+        <item>семнадцати</item>
+        <item>восемнадцати</item>
+        <item>девятнадцати</item>
+    </string-array>
+    <string-array name="count_tens_prep">
+        <item></item>
+        <item></item>
+        <item>двадцати</item>
+        <item>тридцати</item>
+        <item>сорока</item>
+        <item>пятидесяти</item>
+        <item>шестидесяти</item>
+        <item>семидесяти</item>
+        <item>восьмидесяти</item>
+        <item>девяноста</item>
+    </string-array>
+    <string-array name="count_hundreds_prep">
+        <item></item>
+        <item>ста</item>
+        <item>двухстах</item>
+        <item>трёхстах</item>
+        <item>четырёхстах</item>
+        <item>пятистах</item>
+        <item>шестистах</item>
+        <item>семистах</item>
+        <item>восьмистах</item>
+        <item>девятистах</item>
+    </string-array>
+    <!-- Scale words: gender, then singular and plural of nominative, accusative, genitive, dative, instrumental, prepositional, paired. -->
+    <string-array name="count_scales">
+        <item>1000=f|тысяча|тысячу|тысячи|тысяч|тысяче|тысячам|тысячей|тысячами|тысяче|тысячах</item>
+        <item>1000000=m|миллион|миллион|миллиона|миллионов|миллиону|миллионам|миллионом|миллионами|миллионе|миллионах</item>
+        <item>1000000000=m|миллиард|миллиард|миллиарда|миллиардов|миллиарду|миллиардам|миллиардом|миллиардами|миллиарде|миллиардах</item>
+    </string-array>
+    <!-- Units written after a number, with the same forms. A dot after the abbreviation is optional. -->
+    <string-array name="count_units">
+        <item>км=m|километр|километр|километра|километров|километру|километрам|километром|километрами|километре|километрах</item>
+        <item>см=m|сантиметр|сантиметр|сантиметра|сантиметров|сантиметру|сантиметрам|сантиметром|сантиметрами|сантиметре|сантиметрах</item>
+        <item>мм=m|миллиметр|миллиметр|миллиметра|миллиметров|миллиметру|миллиметрам|миллиметром|миллиметрами|миллиметре|миллиметрах</item>
+        <item>м=m|метр|метр|метра|метров|метру|метрам|метром|метрами|метре|метрах</item>
+        <item>кг=m|килограмм|килограмм|килограмма|килограммов|килограмму|килограммам|килограммом|килограммами|килограмме|килограммах</item>
+        <item>мг=m|миллиграмм|миллиграмм|миллиграмма|миллиграммов|миллиграмму|миллиграммам|миллиграммом|миллиграммами|миллиграмме|миллиграммах</item>
+        <item>мл=m|миллилитр|миллилитр|миллилитра|миллилитров|миллилитру|миллилитрам|миллилитром|миллилитрами|миллилитре|миллилитрах</item>
+        <item>ч=m|час|час|часа|часов|часу|часам|часом|часами|часе|часах</item>
+        <item>мин=f|минута|минуту|минуты|минут|минуте|минутам|минутой|минутами|минуте|минутах</item>
+        <item>сек=f|секунда|секунду|секунды|секунд|секунде|секундам|секундой|секундами|секунде|секундах</item>
+        <item>сут=f|сутки|сутки|суток|суток|суткам|суткам|сутками|сутками|сутках|сутках</item>
+        <item>нед=f|неделя|неделю|недели|недель|неделе|неделям|неделей|неделями|неделе|неделях</item>
+        <item>руб=m|рубль|рубль|рубля|рублей|рублю|рублям|рублём|рублями|рубле|рублях</item>
+        <item>коп=f|копейка|копейку|копейки|копеек|копейке|копейкам|копейкой|копейками|копейке|копейках</item>
+        <item>долл=m|доллар|доллар|доллара|долларов|доллару|долларам|долларом|долларами|долларе|долларах</item>
+        <item>₽=m|рубль|рубль|рубля|рублей|рублю|рублям|рублём|рублями|рубле|рублях</item>
+        <item>МПа=m|мегапаскаль|мегапаскаль|мегапаскаля|мегапаскалей|мегапаскалю|мегапаскалям|мегапаскалем|мегапаскалями|мегапаскале|мегапаскалях</item>
+        <item>мА=m|миллиампер|миллиампер|миллиампера|миллиампер|миллиамперу|миллиамперам|миллиампером|миллиамперами|миллиампере|миллиамперах</item>
+        <item>МБ=m|мегабайт|мегабайт|мегабайта|мегабайтов|мегабайту|мегабайтам|мегабайтом|мегабайтами|мегабайте|мегабайтах</item>
+        <item>ГБ=m|гигабайт|гигабайт|гигабайта|гигабайтов|гигабайту|гигабайтам|гигабайтом|гигабайтами|гигабайте|гигабайтах</item>
+        <item>кБ=m|килобайт|килобайт|килобайта|килобайтов|килобайту|килобайтам|килобайтом|килобайтами|килобайте|килобайтах</item>
+    </string-array>
+    <!-- Words right before a number that put it in a case; checked when the word after it says nothing. -->
+    <string-array name="count_case_before">
+        <item>gen=от|до|из|у|без|для|около|после|кроме|среди|вокруг|возле|против|вместо|свыше|сверх|более|менее|больше|меньше|помимо|с|со|по поводу|в течение|в размере|в количестве|в возрасте|в пределах|в районе|порядка|потери|последних|первых|середина|середины|середине|середину|начало|начала|начале|конец|конца|конце|рубеж|рубежа|рубеже|половина|половины|половине</item>
+        <item>dat=к|ко|благодаря|согласно|вопреки|навстречу|подобно</item>
+        <item>ins=между|над|перед|в связи с|вместе с|наряду с</item>
+        <item>prep=о|об|обо|при</item>
+    </string-array>
+    <!-- Endings of the word after a number that tell its case (plural forms, unambiguous). -->
+    <string-array name="count_case_endings">
+        <item>ins=ами|ями|ьми|ыми|ими</item>
+        <item>prep=ах|ях</item>
+        <item>dat=ам|ям</item>
+    </string-array>
+    <!-- Words skipped when looking for the word before a number. -->
+    <string-array name="count_skip_before">
+        <item>чем</item>
+        <item>не</item>
+    </string-array>
+    <!-- Endings of a noun after one or two that mark it feminine: одна книга, две книги. -->
+    <string-array name="count_feminine_endings">
+        <item>1=а|я</item>
+        <item>2=ы|и</item>
+    </string-array>
+    <string name="see_abbrev">см.</string>
+    <string name="see_word">смотри</string>
+    <!-- Abbreviations after a roman numeral that make it an ordinal, and the word they stand for:
+         singular abbreviation, plural abbreviation, then singular nominative, genitive, dative, prepositional,
+         instrumental, and the same in the plural. -->
+    <string-array name="ordinal_abbrevs">
+        <item>в|вв|век|века|веку|веке|веком|века|веков|векам|веках|веками</item>
+        <item>кв|кв|квартал|квартала|кварталу|квартале|кварталом|кварталы|кварталов|кварталам|кварталах|кварталами</item>
+    </string-array>
+    <!-- Words before a numeral that leave it in the nominative (or the like-sounding accusative). -->
+    <string-array name="count_nominative_before">
+        <item>за</item>
+        <item>по</item>
+        <item>на</item>
+    </string-array>
+    <string name="word_and">и</string>
+    <!-- The bot: requests as phrase templates. "(a|b)" alternatives, "[x]" optional, "{n}" a number, "{q}" any words.
+         The whole request must fit a template; the first fitting line wins, so narrower lines come first. -->
+    <string-array name="bot_intents">
+        <item>battery=([а] (сколько|какой) [сейчас] [у меня] [осталось] [процентов] (заряда|заряд) [батареи|аккумулятора] [осталось]|[какой] заряд (батареи|аккумулятора)|сколько [осталось] (батареи|аккумулятора)|[скажи|подскажи] сколько [сейчас] [процентов] [заряда] [осталось] (в|у|на) (батарее|батарея|батареи|аккумуляторе|аккумулятора|телефоне|телефона|смартфоне|смартфона) [в телефоне|в смартфоне|у телефона|у смартфона] [осталось])</item>
+        <item>help=(что ты умеешь|что умеешь|что ты можешь|помощь|помоги|справка|какие команды)</item>
+        <item>hello=(привет|здравствуй|здравствуйте|добрый (день|вечер)|доброе утро|доброй ночи)</item>
+        <item>thanks=(спасибо|благодарю|спасибо большое|большое спасибо)</item>
+        <item>time=([а] (который|сколько|какой) [сейчас] (час|времени)|[а] (который|какой) час [сейчас]|[скажи] [сколько] время|сколько [сейчас] на часах|подскажи время|what [is] [the] time [is it] [now]|what time is it [now]|time now)</item>
+        <item>date=([а] (какое|какой) [сегодня] (число|день|день недели)|[какая] [сегодня] дата|[скажи] (дату|число))</item>
+        <item>weather=([а] [какая|как] [сегодня|сейчас|там] погода [сегодня|сейчас|на улице|там|на завтра|завтра]|[а] что [сейчас|там] с погодой|что (на улице|за окном)|[нужен|брать] зонт|[скажи|расскажи] [про] погоду|[а] (холодно|тепло|жарко) [ли] [сейчас] [на улице]|[будет] (дождь|снег) [будет|сегодня|завтра]|какая погода [будет] завтра|(what is|how is) the weather [like] [today|now|outside]|weather (today|now))</item>
+        <item>pause=(стоп|пауза|хватит|стой|остановись|замолчи|помолчи|тише|подожди|погоди|останови [чтение]|поставь на паузу)</item>
+        <item>read=(читай|читать|почитай [мне]|продолжи|продолжай|читай дальше|продолжи (чтение|читать)|дальше читай|читай книгу|включи книгу|начни читать|давай читать|поехали)</item>
+        <item>next_chapter=((следующая|следующую) глав(а|у)|[перейди к|на|открой|читай] (следующей|следующую) глав(е|у)|глава дальше)</item>
+        <item>prev_chapter=((предыдущая|предыдущую|прошлая|прошлую) глав(а|у)|[вернись|перейди] (к|на) (предыдущей|предыдущую|прошлой|прошлую) глав(е|у))</item>
+        <item>chapter=[открой|включи|читай|перейди [к|на]] глав(а|у|е) {n}</item>
+        <item>chapter=[открой|включи|читай|перейди [к|на]] {n} глав(а|у|е)</item>
+        <item>chapter=[с] начала главы {n}</item>
+        <item>next=((дальше|вперед|следующий абзац|пропусти [абзац]|следующий))</item>
+        <item>prev=((назад|повтори|еще раз|предыдущий абзац|вернись [назад]|верни))</item>
+        <item>where=((где (мы|я|остановились)|что (мы читаем|читаем|за книга)|какая (глава|книга)|на какой главе [мы]|сколько [мне] осталось))</item>
+        <item>search=((найди|поищи|ищи|найти|поиск) [в книге] [слово|место [где]] {q})</item>
+        <item>save_talk=(сохрани|запиши|сбереги) [весь|наш|этот] (разговор|беседу|чат|диалог)|сохрани это</item>
+        <item>sleep_cancel=((отмени|убери|выключи|сбрось) (таймер|таймер сна|сон)|не выключайся|читай без таймера)</item>
+        <item>sleep_half=([почитай|читай] [еще] полчаса|[выключись|засыпай|замолчи|таймер сна] [через|на] полчаса)</item>
+        <item>sleep_hour=([почитай|читай] [еще] час|[выключись|засыпай|замолчи|таймер сна] [через|на] час)</item>
+        <item>sleep=(выключись|засыпай|замолчи|усни|выключи книгу|таймер сна|поставь таймер [сна]) [через|на] {n} (минут|минуты|минуту)</item>
+        <item>sleep=[почитай|читай] [еще] {n} (минут|минуты|минуту)</item>
+        <item>faster=([читай|говори] (быстрее|побыстрее|живее|бодрее))</item>
+        <item>slower=([читай|говори] (медленнее|помедленнее|не спеши|не торопись|спокойнее))</item>
+        <item>voice=((пусть|теперь) (читает|почитает|говорит) {q}|(дай|включи|позови) {q}|голос {q}|смени голос на {q})</item>
+        <item>other_voice=((другой|смени|поменяй) голос|смени чтеца|другой чтец)</item>
+    </string-array>
+    <!-- Words dropped at the ends of a request: politeness and a voice called by name. -->
+    <string-array name="bot_fillers">
+        <item>пожалуйста</item>
+        <item>а</item>
+        <item>ну</item>
+        <item>слушай</item>
+        <item>эй</item>
+        <item>так</item>
+    </string-array>
+    <!-- Names a request may open with, as when calling someone: dropped at the start only. -->
+    <string-array name="bot_callnames">
+        <item>hora</item>
+        <item>хора</item>
+        <item>гамаюн</item>
+        <item>сирин</item>
+        <item>баюн</item>
+        <item>боян</item>
+        <item>садко</item>
+    </string-array>
+    <!-- Numbers said in words, by stem; ordinals too ("пятую главу"). -->
+    <string-array name="bot_numbers">
+        <item>1=один|одна|одну|одно|перв</item>
+        <item>2=два|две|втор</item>
+        <item>3=три|трет</item>
+        <item>4=четыре|четверт</item>
+        <item>5=пят</item>
+        <item>6=шест</item>
+        <item>7=сем|седьм</item>
+        <item>8=восем|восьм</item>
+        <item>9=девят</item>
+        <item>10=десят</item>
+        <item>11=одиннадцат</item>
+        <item>12=двенадцат</item>
+        <item>13=тринадцат</item>
+        <item>14=четырнадцат</item>
+        <item>15=пятнадцат</item>
+        <item>16=шестнадцат</item>
+        <item>17=семнадцат</item>
+        <item>18=восемнадцат</item>
+        <item>19=девятнадцат</item>
+        <item>20=двадцат</item>
+        <item>30=тридцат</item>
+        <item>40=сорок</item>
+        <item>50=пятьдесят|пятидесят</item>
+        <item>60=шестьдесят|шестидесят</item>
+        <item>70=семьдесят|семидесят</item>
+        <item>80=восемьдесят|восьмидесят</item>
+        <item>90=девяносто|девяност</item>
+        <item>100=сто|сотн</item>
+    </string-array>
+    <string-array name="bot_say_help">
+        <item>Могу читать книгу: «читай», «стоп», «дальше», «назад», «где мы», «глава пять», «найди сад». Могу почитать тебе перед сном: «почитай ещё двадцать минут». Скажу время, число и погоду. И можно попросить другой голос: «пусть читает Сирин».</item>
+    </string-array>
+    <string-array name="bot_say_hello">
+        <item>Привет. Что почитаем?</item>
+        <item>Здравствуй. Я здесь.</item>
+        <item>Привет. Книга ждёт.</item>
+    </string-array>
+    <string-array name="bot_say_thanks">
+        <item>Пожалуйста.</item>
+        <item>Всегда рада.</item>
+        <item>На здоровье.</item>
+    </string-array>
+    <string-array name="bot_say_read">
+        <item>Читаю «{book}».</item>
+        <item>Продолжаю «{book}».</item>
+    </string-array>
+    <string-array name="bot_say_no_book">
+        <item>Книга ещё не выбрана. Положи её на полку.</item>
+    </string-array>
+    <string-array name="bot_say_pause">
+        <item>Остановилась.</item>
+        <item>Жду.</item>
+        <item>Пауза.</item>
+    </string-array>
+    <string-array name="bot_say_next">
+        <item>Дальше.</item>
+    </string-array>
+    <string-array name="bot_say_prev">
+        <item>Повторяю.</item>
+        <item>Назад на абзац.</item>
+    </string-array>
+    <string-array name="bot_say_where">
+        <item>Читаем «{book}», {where}.</item>
+    </string-array>
+    <string-array name="bot_say_chapter">
+        <item>{chapter}.</item>
+    </string-array>
+    <string-array name="bot_say_no_chapter">
+        <item>В этой книге нет главы {n}. Всего глав: {count}.</item>
+    </string-array>
+    <string-array name="bot_say_no_chapters">
+        <item>В этой книге я не нашла глав.</item>
+    </string-array>
+    <string-array name="bot_say_search">
+        <item>Ищу «{q}».</item>
+    </string-array>
+    <string-array name="bot_say_sleep">
+        <item>Почитаю ещё {minutes} и замолчу.</item>
+        <item>Хорошо, {minutes}, потом тишина.</item>
+    </string-array>
+    <string-array name="bot_say_sleep_cancel">
+        <item>Таймер сна убран. Читаю, пока не скажешь.</item>
+    </string-array>
+    <string-array name="bot_say_faster">
+        <item>Быстрее.</item>
+        <item>Чуть быстрее.</item>
+    </string-array>
+    <string-array name="bot_say_slower">
+        <item>Медленнее.</item>
+        <item>Чуть спокойнее.</item>
+    </string-array>
+    <string-array name="bot_say_speed_edge">
+        <item>Дальше не пойду, это предел.</item>
+    </string-array>
+    <string-array name="bot_say_voice">
+        <item>Теперь читаю я, {voice}.</item>
+    </string-array>
+    <string-array name="bot_say_no_voice">
+        <item>Я не знаю такого голоса. Есть Гамаюн, Сирин, Баюн, Боян и Садко.</item>
+    </string-array>
+    <string-array name="bot_say_unknown">
+        <item>Этого я пока не умею. Спроси «что ты умеешь».</item>
+    </string-array>
+    <plurals name="bot_minutes">
+        <item quantity="one">%d минуту</item>
+        <item quantity="few">%d минуты</item>
+        <item quantity="many">%d минут</item>
+        <item quantity="other">%d минуты</item>
+    </plurals>
+    <string-array name="bot_weekdays">
+        <item>воскресенье</item>
+        <item>понедельник</item>
+        <item>вторник</item>
+        <item>среда</item>
+        <item>четверг</item>
+        <item>пятница</item>
+        <item>суббота</item>
+    </string-array>
+    <string name="bot_date">Сегодня %1$s, %2$s.</string>
+    <string name="bot_question_words">кто что где когда как какой какая какое какие сколько почему зачем чей можно можешь умеешь</string>
+    <!-- The day of the month as said in "today is the third of October". -->
+    <string-array name="bot_days">
+        <item>первое</item>
+        <item>второе</item>
+        <item>третье</item>
+        <item>четвёртое</item>
+        <item>пятое</item>
+        <item>шестое</item>
+        <item>седьмое</item>
+        <item>восьмое</item>
+        <item>девятое</item>
+        <item>десятое</item>
+        <item>одиннадцатое</item>
+        <item>двенадцатое</item>
+        <item>тринадцатое</item>
+        <item>четырнадцатое</item>
+        <item>пятнадцатое</item>
+        <item>шестнадцатое</item>
+        <item>семнадцатое</item>
+        <item>восемнадцатое</item>
+        <item>девятнадцатое</item>
+        <item>двадцатое</item>
+        <item>двадцать первое</item>
+        <item>двадцать второе</item>
+        <item>двадцать третье</item>
+        <item>двадцать четвёртое</item>
+        <item>двадцать пятое</item>
+        <item>двадцать шестое</item>
+        <item>двадцать седьмое</item>
+        <item>двадцать восьмое</item>
+        <item>двадцать девятое</item>
+        <item>тридцатое</item>
+        <item>тридцать первое</item>
+    </string-array>
+    <string name="bot_trace_pause">пауза</string>
+    <string name="bot_trace_search">поиск «%1$s»</string>
+    <string name="bot_trace_sleep">таймер сна %1$d мин</string>
+    <string name="bot_trace_sleep_off">без таймера</string>
+    <string name="bot_trace_speed">темп %1$s</string>
+    <string name="talk_title">Разговор</string>
+    <string name="talk_sub">Спроси, попроси, поболтай</string>
+    <string name="talk_hint">Спроси или напиши, что сказать…</string>
+    <string name="talk_send">Отправить</string>
+    <string name="home_workshop">Настройки голоса</string>
+    <string name="home_workshop_sub">Тембр, высота, темп, характер</string>
+    <string name="home_book_none">Книга не выбрана</string>
+    <string name="home_on_duty">на дежурстве · %1$s</string>
+    <string name="talk_where">Где мы</string>
+    <string name="bot_help_chip">Что ты умеешь</string>
+    <string name="chapter_numbered">глава %1$s</string>
+    <string name="lab_title">Настройки голосов</string>
+    <string name="lab_hint">Вставь сюда текст — он останется, пока не сменишь</string>
+    <string name="lab_listen">Послушать</string>
+    <string name="lab_save">В «Загрузки»</string>
+    <string name="lab_saving">Пишу в «Загрузки»…</string>
+    <string name="lab_clear">Очистить</string>
+    <string name="lab_kept">Текст остаётся здесь, пока его не сменишь.</string>
+    <string name="lab_ratio">Текст остаётся здесь. Последний прогон: голос работал в %1$s раза быстрее речи.</string>
+    <string name="lab_all">Для всех голосов</string>
+    <string name="lab_character">Характер</string>
+    <string name="lab_tempo">Темп</string>
+    <string name="lab_pause">Пауза между предложениями</string>
+    <string name="lab_shorter">короче</string>
+    <string name="lab_longer">длиннее</string>
+    <string name="lab_ms">%1$d мс</string>
+    <string name="lab_engine">Движок · опыт</string>
+    <string name="lab_decoder">Декодер звука</string>
+    <string name="lab_decoder_small">сжатый</string>
+    <string name="lab_decoder_full">полный</string>
+    <string name="lab_decoder_note">Полный декодер — тот же, только без сжатия: около +8 % работы. Меняется со следующей фразы.</string>
+    <string name="lab_warmer">теплее</string>
+    <string name="lab_brighter">ярче</string>
+    <string name="lab_lower">ниже</string>
+    <string name="lab_higher">выше</string>
+    <string name="lab_air">Воздух</string>
+    <string name="lab_none">нет</string>
+    <string name="lab_much">много</string>
+    <string name="lab_sample">Образец голоса</string>
+    <!-- The small model's instruction: the rules every voice keeps, then each voice's own manner. -->
+    <string name="brain_rules">%3$s Ты — %1$s, %2$s в книжном приложении. Говоришь по-русски и обращаешься на «ты». Отвечаешь одним-двумя короткими предложениями, от себя, своими словами, не повторяя ни вопрос, ни свои прежние ответы. Без списков и восклицаний. Только если прямо просят перевести («как по-английски», «переведи»), отвечаешь самим переводом: «По-английски — …»; вопрос на другом языке — не просьба о переводе, на него отвечаешь по-русски по сути. Не называешь дат, чисел, времени, погоды и фактов о мире и не даёшь советов о здоровье: об этом говорит приложение, а не ты. Не обещаешь действий.</string>
+    <string-array name="brain_manner">
+        <item>Ты женщина (она): глаголы о себе в прошедшем времени у тебя кончаются на -ла. Ты спокойная, тёплая и немногословная.</item>
+        <item>Ты женщина (она): глаголы о себе в прошедшем времени у тебя кончаются на -ла. Ты живая, внимательная, с мягкой иронией.</item>
+        <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты неторопливый, ласковый, говоришь убаюкивающе.</item>
+        <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты повидал много, говоришь образно и неспешно.</item>
+        <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты молодой, лёгкий и весёлый.</item>
+    </string-array>
+    <string name="brain_trial_question">Я сегодня устал.</string>
+    <string name="lab_brain">Модель ИИ · проверка</string>
+    <string name="lab_brain_model">Модель</string>
+    <string name="lab_brain_none">не выбрана</string>
+    <string name="lab_brain_copying">копирую… %1$d МБ</string>
+    <string name="lab_brain_try">Проверить: готова ли к работе</string>
+    <string name="lab_brain_waking">Загружаю модель…</string>
+    <string name="lab_brain_result">%1$s\n\nЗагружалась %2$.1f с, ответила за %3$.1f с, %4$.1f токена в секунду.</string>
+    <string name="lab_brain_failed">Не вышло: %1$s</string>
+    <string name="lab_brain_note">Файл модели GGUF из «Загрузок» копируется в Hora. Модель загружается в память при вопросе и выгружается через 5 минут без вопросов.</string>
+    <string name="lab_brain_user">Обращаться ко мне</string>
+    <string name="lab_brain_user_he">как к нему</string>
+    <string name="lab_brain_user_she">как к ней</string>
+    <string name="brain_user_male">Собеседник — мужчина: «ты устал», «ты сделал».</string>
+    <string name="brain_user_female">Собеседник — женщина: «ты устала», «ты сделала».</string>
+    <string name="talk_thinking">…</string>
+    <!-- Words that point at a skill even when no template fits: better the skill than a guess. -->
+    <string-array name="bot_keywords">
+        <item>battery=заряд батаре|заряд аккумулятор|в батаре|у батаре|батарейк|аккумулятор|сколько заряд|заряда|какой заряд|заряда остал|процентов остал|сколько процент|battery</item>
+        <item>weather=погод|дожд|снег|температур|градус|зонт|прогноз</item>
+        <item>time=который час|какой час|сколько времени|на часах|сколько сейчас|какой сейчас час|what time|the time</item>
+        <item>date=какое число|какой день|какое сегодня|дата</item>
+    </string-array>
+    <!-- Questions about the world: answered by the reference, not by the small model. -->
+    <string-array name="bot_fact_starts">
+        <item>а о </item>
+        <item>а об </item>
+        <item>а про </item>
+        <item>расскажи о </item>
+        <item>расскажи об </item>
+        <item>расскажи про </item>
+        <item>что известно о </item>
+        <item>что известно про </item>
+        <item>кто </item>
+        <item>когда </item>
+        <item>где </item>
+        <item>сколько лет</item>
+        <item>откуда </item>
+        <item>что такое </item>
+        <item>в каком году</item>
+        <item>какого года</item>
+        <item>какой год</item>
+        <item>чей </item>
+        <item>чья </item>
+        <item>who is </item>
+        <item>who was </item>
+        <item>what is a </item>
+        <item>what is an </item>
+        <item>when was </item>
+        <item>when did </item>
+        <item>where is </item>
+        <item>how old is </item>
+    </string-array>
+    <string-array name="bot_fact_words">
+        <item>родил</item>
+        <item>основан</item>
+        <item>столиц</item>
+        <item>написал</item>
+        <item>изобрел</item>
+        <item>изобрёл</item>
+        <item>населени</item>
+        <item>умер</item>
+        <item>построен</item>
+    </string-array>
+    <string-array name="bot_say_fact">
+        <item>Это вопрос к справочнику, а до него сейчас не достать. Гадать не стану.</item>
+    </string-array>
+    <!-- A question to the voice itself ("where do you live?") is talk, not a question for the reference. -->
+    <string name="bot_fact_not">ты тебя тебе твой твоя твое твои тобой</string>
+    <!-- Health: never left to the small model's guesses. -->
+    <string-array name="bot_health_words">
+        <item>кров</item>
+        <item>болит</item>
+        <item>боль </item>
+        <item>лекарств</item>
+        <item>таблетк</item>
+        <item>давлени</item>
+        <item>симптом</item>
+        <item>отравл</item>
+        <item>ожог</item>
+        <item>перелом</item>
+        <item>сердц</item>
+        <item>дыхани</item>
+        <item>тошн</item>
+        <item>врач</item>
+        <item>доз</item>
+    </string-array>
+    <string-array name="bot_say_health">
+        <item>О здоровье я гадать не стану: спроси врача. А если плохо прямо сейчас — звони {sos}.</item>
+    </string-array>
+    <!-- Words a question may open with before what it asks: "say", "do you happen to know". -->
+    <string-array name="bot_lead_words">
+        <item>а</item>
+        <item>скажи</item>
+        <item>скажи мне</item>
+        <item>подскажи</item>
+        <item>не знаешь</item>
+        <item>ты не знаешь</item>
+        <item>случайно</item>
+        <item>интересно</item>
+    </string-array>
+    <!-- Emergency number for medical help by the country the phone is in (ISO code); anything not listed: 112. -->
+    <string-array name="emergency_numbers">
+        <item>us=911</item>
+        <item>ca=911</item>
+        <item>mx=911</item>
+        <item>pr=911</item>
+        <item>ph=911</item>
+        <item>ar=107</item>
+        <item>br=192</item>
+        <item>cl=131</item>
+        <item>co=123</item>
+        <item>cn=120</item>
+        <item>hk=999</item>
+        <item>tw=119</item>
+        <item>jp=119</item>
+        <item>kr=119</item>
+        <item>gb=999</item>
+        <item>ie=112</item>
+        <item>au=000</item>
+        <item>nz=111</item>
+        <item>in=112</item>
+        <item>za=10177</item>
+        <item>il=101</item>
+        <item>ae=998</item>
+        <item>sa=997</item>
+        <item>eg=123</item>
+        <item>th=1669</item>
+        <item>vn=115</item>
+        <item>id=119</item>
+        <item>my=999</item>
+        <item>sg=995</item>
+        <item>ru=112</item>
+        <item>by=103</item>
+        <item>ua=103</item>
+        <item>kz=103</item>
+        <item>tr=112</item>
+        <item>ge=112</item>
+        <item>am=103</item>
+        <item>uz=103</item>
+    </string-array>
+    <!-- A question about the voice itself ("who are you", "do you like books") is talk, not a question for the reference. -->
+    <string-array name="bot_self_words">
+        <item>ты</item>
+        <item>тебя</item>
+        <item>тебе</item>
+        <item>тобой</item>
+        <item>твой</item>
+        <item>твоя</item>
+        <item>твоё</item>
+        <item>твои</item>
+        <item>гамаюн</item>
+        <item>сирин</item>
+        <item>баюн</item>
+        <item>боян</item>
+        <item>садко</item>
+    </string-array>
+    <string name="folder_talks">Разговоры</string>
+    <string name="talk_folder_ask">Покажи папку Hora — один раз, и разговоры будут ложиться туда.</string>
+    <string name="talk_saved">Сохранено: «%1$s».</string>
+    <string name="talk_save_failed">Не получилось сохранить: %1$s</string>
+    <string name="talk_share">Поделиться</string>
+    <string name="talk_you">Ты</string>
+    <string name="talk_file_head">Разговор с %1$s\n%2$s\nТема: %3$s</string>
+    <string name="talk_title_fallback">Разговор</string>
+    <string name="brain_title_prompt">Назови эту беседу тремя-пятью словами по-русски, без кавычек и без точки в конце. Только название.</string>
+    <string name="brain_title">Модель ИИ</string>
+    <string name="brain_sleep_now">Выгрузить</string>
+    <string name="brain_try">Проверить</string>
+    <string name="brain_files">Файлы</string>
+    <string name="brain_slot_model">Модель</string>
+    <string name="brain_slot_vision">Для фото</string>
+    <string name="brain_slot_draft">Ускоритель</string>
+    <string name="brain_files_note">Файл можно скачать здесь или выбрать готовый: он копируется в Hora, старый на этом месте удаляется. «Для фото» — дополнение, с которым модель понимает картинки. «Ускоритель» — необязательная маленькая модель: заметно помогает только на длинных ответах.</string>
+    <string name="brain_settings">Настройки</string>
+    <string name="brain_liveliness">Живость</string>
+    <string name="brain_even">ровнее</string>
+    <string name="brain_livelier">живее</string>
+    <string name="brain_length">Длина ответа</string>
+    <string name="brain_tokens">%1$d токенов</string>
+    <string name="brain_memory">Сколько реплик помнит</string>
+    <string name="brain_less">меньше</string>
+    <string name="brain_more">больше</string>
+    <string name="brain_sleep_after">Выгружать через</string>
+    <string name="brain_sooner">раньше</string>
+    <string name="brain_later">позже</string>
+    <string name="brain_minutes">%1$d мин</string>
+    <string name="brain_prompts">Инструкции для модели</string>
+    <string name="brain_rules_title">Общие правила</string>
+    <string name="brain_guards">Без модели</string>
+    <string name="brain_awake">В памяти</string>
+    <string name="brain_asleep">Не загружена</string>
+    <string name="brain_awake_line">Отвечает %1$.1f токена в секунду · выгрузится через %2$d мин без вопросов.</string>
+    <string name="brain_asleep_line">Загрузится при первом вопросе, за несколько секунд.</string>
+    <string name="brain_draft_refused">Ускоритель не подошёл — модель работает без него.</string>
+    <string name="brain_size">В телефоне: %1$.1f ГБ, файлов: %2$d</string>
+    <string name="brain_restore">Вернуть как было</string>
+    <string name="brain_save">Сохранить</string>
+    <string name="brain_remove">Убрать</string>
+    <string name="brain_replace">Заменить</string>
+    <string name="brain_no_vision">Чтобы описывать фото, модели нужно дополнение для картинок, около 1 ГБ. Оно скачивается отдельно.</string>
+    <string name="brain_no_model">Чтобы отвечать на свободные вопросы и описывать фото, нужна модель ИИ Gemma 4, около 4 ГБ. Она скачивается отдельно.</string>
+    <string name="talk_image_default">Что на этой картинке?</string>
+    <string name="talk_attach">Картинка</string>
+    <string name="talk_attach_remove">Убрать картинку</string>
+    <string-array name="brain_guard_titles">
+        <item>Команды</item>
+        <item>Время, дата, погода</item>
+        <item>Вопросы о мире</item>
+        <item>Здоровье</item>
+    </string-array>
+    <string-array name="brain_guard_notes">
+        <item>Читай, стоп, глава, таймер сна, темп, голос, сохранить — строгие шаблоны.</item>
+        <item>Отвечают часы и прогноз, а не модель.</item>
+        <item>Кто, когда, где, сколько лет — Википедия; модель не гадает, а пересказывает статью.</item>
+        <item>Модель не советует; звучит номер скорой для страны, где телефон.</item>
+    </string-array>
+    <string name="brain_role_model">отвечает своими словами</string>
+    <string name="brain_role_vision">понимает фото</string>
+    <string name="brain_role_draft">необязательно · ускоряет длинные ответы</string>
+    <string name="brain_name_unknown">имя файла не сохранилось</string>
+    <plurals name="brain_bits">
+        <item quantity="one">%d бит</item>
+        <item quantity="few">%d бита</item>
+        <item quantity="many">%d бит</item>
+        <item quantity="other">%d бита</item>
+    </plurals>
+    <string name="intro_open">Что умеет Hora</string>
+    <string name="intro_lead">Я — %1$s, голосовой помощник. Читаю вслух уведомления и книги.</string>
+    <string name="intro_speech">Я — %1$s, голосовой помощник. Первое, что я умею, — читать уведомления в наушники: дай доступ и выбери приложения. Ещё я читаю вслух книги, любым из пяти голосов. Ниже — разговор и настройки голоса.</string>
+    <string name="intro_troupe">Коснись лица, чтобы сделать голос главным</string>
+    <string name="intro_herald">Уведомления вслух</string>
+    <string name="intro_herald_on">Читаю в наушники</string>
+    <string name="intro_herald_off">Нужен доступ к уведомлениям</string>
+    <string name="intro_book">Книги вслух</string>
+    <string name="intro_book_none">Положи книгу на полку</string>
+    <string name="intro_talk_sub">Время, погода, книга — простыми словами</string>
+    <string name="intro_start">Начать</string>
+    <string-array name="voice_talk_open">
+        <item>Я здесь. Время, погода, книга — выбери внизу или напиши.</item>
+        <item>Спрашивай: который час, какая погода, где мы в книге.</item>
+        <item>Не спеши. Внизу время, погода и книга, а можно и написать.</item>
+        <item>Садись, потолкуем. Время, погода, книга — всё внизу, остальное пиши словами.</item>
+        <item>Привет! Жми внизу или пиши, что нужно.</item>
+    </string-array>
+    <string-array name="voice_step_forward">
+        <item>Гамаюн. Теперь читаю я, спокойно и ровно.</item>
+        <item>Сирин. Теперь читаю я, и поживее.</item>
+        <item>Баюн. Теперь читаю я, неторопливо, вполголоса.</item>
+        <item>Боян. Теперь книги читаю я, с расстановкой.</item>
+        <item>Садко. Теперь читаю я, полегче и повеселее.</item>
+    </string-array>
+    <string name="lang_title">Языки</string>
+    <string name="lang_lead">Те же голоса читают на других языках. Каждый язык скачивается отдельно.</string>
+    <string name="lang_russian">Русский</string>
+    <string name="lang_builtin">Встроен</string>
+    <string name="lang_english">Английский</string>
+    <string name="lang_absent">Не установлен</string>
+    <string name="lang_get_wifi">Скачать по Wi-Fi · около 100 МБ</string>
+    <string name="lang_get_now">Скачать сейчас, по любой сети</string>
+    <string name="lang_from_file">Установить из файла</string>
+    <string name="lang_asking">Узнаю, где взять…</string>
+    <string name="lang_starting">Скачивание начинается…</string>
+    <string name="lang_downloading">Скачивается · %1$d %%</string>
+    <string name="lang_waiting_wifi">Ждёт Wi-Fi</string>
+    <string name="lang_waiting_net">Ждёт связи</string>
+    <string name="lang_installing">Устанавливается…</string>
+    <string name="lang_installed">Установлен · %1$d МБ</string>
+    <string name="lang_not_yet">Пока только хранится: чтение по-английски появится в следующих сборках.</string>
+    <string name="lang_remove">Удалить</string>
+    <string name="lang_cancel">Отменить</string>
+    <string name="lang_failed">Не удалось скачать</string>
+    <string name="lang_no_list">Не нашлось, откуда скачать</string>
+    <string name="lang_bad_file">Этот файл — не английский язык для Hora</string>
+    <string name="lang_download_title">Hora · английский язык</string>
+    <string name="brain_no_model_hint">Отвечать своими словами я смогу с моделью ИИ Gemma 4 — она скачивается отдельно.</string>
+    <string name="brain_need_model">Чтобы отвечать своими словами и описывать фото, нужна модель ИИ Gemma 4. Она скачивается отдельно и работает прямо в телефоне, без интернета.</string>
+    <string name="brain_need_vision">Чтобы описывать фото, модели нужно дополнение для картинок. Оно скачивается отдельно.</string>
+    <string name="brain_get_model">Скачать по Wi-Fi · около 4 ГБ</string>
+    <string name="brain_get_vision">Скачать по Wi-Fi · около 1 ГБ</string>
+    <string name="brain_get_short">Скачать</string>
+    <string name="brain_get_working">Подожди немного…</string>
+    <string name="brain_prep_title">Готовлю модель ИИ</string>
+    <string name="brain_prep_ask">Это займёт какое-то время. Пожалуйста, не закрывай Hora, пока всё не будет готово.</string>
+    <string name="brain_prep_progress">Скачано %1$.1f из %2$.1f ГБ · %3$d %%</string>
+    <string name="brain_prep_checking">Проверяю файлы…</string>
+    <string name="brain_prep_waking">Всё на месте. Спрашиваю модель, готова ли она к работе…</string>
+    <string-array name="brain_ready_question">
+        <item>Ты готова к работе?</item>
+        <item>Ты готова к работе?</item>
+        <item>Ты готов к работе?</item>
+        <item>Ты готов к работе?</item>
+        <item>Ты готов к работе?</item>
+    </string-array>
+    <string name="brain_look_rules">Сейчас тебе показали картинку, и для ответа о ней правила выше меняются. Говори о том, что на ней видно сейчас, в настоящем времени, начиная со слов «На фото» или «На картинке», а не о себе. Назови главное и обстановку; если на картинке есть крупные надписи, прочитай их как есть. Если узнаёшь место или вещь точно, назови; если нет, не гадай. Два-три предложения.</string>
+    <string name="brain_wiki_rules">Сейчас тебя спросили о мире, и правила выше меняются: ниже текст статьи «%1$s» из Википедии. Ответь на вопрос только по этому тексту, одним-тремя предложениями, своими словами и по-русски. Даты, числа и имена бери только из текста. Если ответа в тексте нет, так и скажи: «В статье об этом не сказано».</string>
+    <string name="wiki_looking">Смотрю в Википедии…</string>
+    <string name="wiki_nothing">В Википедии об этом не нашлось.</string>
+    <string name="wiki_offline">Чтобы заглянуть в Википедию, нужен интернет, а его сейчас нет.</string>
+    <string name="wiki_source">Википедия · %1$s</string>
+    <string-array name="bot_wiki_drop">
+        <item>найти</item>
+        <item>поиск</item>
+        <item>расскажи</item>
+        <item>известно</item>
+        <item>найди</item>
+        <item>поищи</item>
+        <item>ищи</item>
+        <item>что-нибудь</item>
+        <item>что-то</item>
+        <item>информацию</item>
+        <item>в</item>
+        <item>интернете</item>
+        <item>википедии</item>
+        <item>википедия</item>
+        <item>а</item>
+        <item>скажи</item>
+        <item>скажи мне</item>
+        <item>подскажи</item>
+        <item>расскажи</item>
+        <item>расскажи про</item>
+        <item>расскажи о</item>
+        <item>не знаешь</item>
+        <item>ты не знаешь</item>
+        <item>случайно</item>
+        <item>интересно</item>
+        <item>кто</item>
+        <item>кто такой</item>
+        <item>кто такая</item>
+        <item>кто такие</item>
+        <item>что</item>
+        <item>что такое</item>
+        <item>это</item>
+        <item>когда</item>
+        <item>где</item>
+        <item>откуда</item>
+        <item>сколько</item>
+        <item>лет</item>
+        <item>в каком</item>
+        <item>каком</item>
+        <item>году</item>
+        <item>какого</item>
+        <item>года</item>
+        <item>какой</item>
+        <item>год</item>
+        <item>чей</item>
+        <item>чья</item>
+        <item>чьё</item>
+        <item>был</item>
+        <item>была</item>
+        <item>было</item>
+        <item>были</item>
+        <item>ли</item>
+        <item>же</item>
+        <item>находится</item>
+        <item>родился</item>
+        <item>родилась</item>
+        <item>родилось</item>
+        <item>родились</item>
+        <item>умер</item>
+        <item>умерла</item>
+        <item>основан</item>
+        <item>основана</item>
+        <item>основано</item>
+        <item>построен</item>
+        <item>построена</item>
+        <item>написал</item>
+        <item>написала</item>
+        <item>изобрёл</item>
+        <item>изобрел</item>
+        <item>изобрела</item>
+        <item>живёт</item>
+        <item>живет</item>
+        <item>жил</item>
+        <item>жила</item>
+        <item>такой</item>
+        <item>такая</item>
+        <item>такое</item>
+        <item>такие</item>
+        <item>мне</item>
+        <item>про</item>
+        <item>о</item>
+        <item>об</item>
+        <item>who</item>
+        <item>is</item>
+        <item>was</item>
+        <item>what</item>
+        <item>when</item>
+        <item>where</item>
+        <item>did</item>
+        <item>does</item>
+        <item>the</item>
+        <item>a</item>
+        <item>an</item>
+        <item>how</item>
+        <item>old</item>
+        <item>born</item>
+        <item>died</item>
+        <item>founded</item>
+        <item>tell</item>
+        <item>me</item>
+        <item>about</item>
+        <item>mister</item>
+        <item>mr</item>
+        <item>mrs</item>
+        <item>ms</item>
+    </string-array>
+    <string name="brain_draft_toggle">Ускоритель</string>
+    <string name="brain_draft_toggle_sub">Помогает на длинных ответах; модель перезапустится при следующем вопросе.</string>
+    <string name="brain_draft_about">Маленькая модель, которая угадывает слова наперёд. На коротких ответах Hora разницы почти нет; на длинных бывает быстрее. Подходит только к модели по умолчанию. Около 100 МБ.</string>
+    <string name="brain_get_draft">Скачать · около 100 МБ</string>
+    <string name="brain_pick_file">Выбрать файл</string>
+    <string name="brain_custom_model">Сейчас стоит другая модель. «Для фото» и «Ускоритель» сделаны под Gemma 4 и с ней могут не заработать.</string>
+    <string name="brain_custom_no_photo">Эта модель не понимает фото: дополнение «Для фото» подходит только к модели по умолчанию, Gemma 4.</string>
+    <string name="brain_restore_default">Вернуть модель по умолчанию</string>
+    <string name="brain_part_unfit">не подходит к этой модели</string>
+    <string-array name="bot_say_hello_v1">
+        <item>Здравствуй. Я здесь.</item>
+        <item>Привет. Тихо у нас, можно читать.</item>
+    </string-array>
+    <string-array name="bot_say_hello_v2">
+        <item>Привет-привет. Что сегодня?</item>
+        <item>О, это ты. Рада. Что читаем?</item>
+    </string-array>
+    <string-array name="bot_say_hello_v3">
+        <item>Здравствуй, здравствуй. Не спеши, я тут.</item>
+        <item>Привет. Устраивайся поудобнее.</item>
+    </string-array>
+    <string-array name="bot_say_hello_v4">
+        <item>Здрав будь. Что почитаем?</item>
+        <item>Привет. Садись, начнём.</item>
+    </string-array>
+    <string-array name="bot_say_hello_v5">
+        <item>Привет! Что делаем?</item>
+        <item>Хей, привет! Почитаем?</item>
+    </string-array>
+    <string-array name="bot_say_thanks_v1">
+        <item>Пожалуйста.</item>
+        <item>Не за что.</item>
+    </string-array>
+    <string-array name="bot_say_thanks_v2">
+        <item>Всегда рада.</item>
+        <item>Обращайся, мне не трудно.</item>
+    </string-array>
+    <string-array name="bot_say_thanks_v3">
+        <item>На здоровье.</item>
+        <item>Не за что, не за что.</item>
+    </string-array>
+    <string-array name="bot_say_thanks_v4">
+        <item>Сочтёмся.</item>
+        <item>Было бы за что.</item>
+    </string-array>
+    <string-array name="bot_say_thanks_v5">
+        <item>Да не за что!</item>
+        <item>Обращайся!</item>
+    </string-array>
+    <string-array name="bot_say_pause_v1">
+        <item>Пауза.</item>
+        <item>Жду.</item>
+    </string-array>
+    <string-array name="bot_say_pause_v2">
+        <item>Остановилась. Скажи, когда дальше.</item>
+        <item>Замолчала.</item>
+    </string-array>
+    <string-array name="bot_say_pause_v3">
+        <item>Тихо-тихо. Подожду.</item>
+        <item>Остановился.</item>
+    </string-array>
+    <string-array name="bot_say_pause_v4">
+        <item>Придержу коней.</item>
+        <item>Стою, жду.</item>
+    </string-array>
+    <string-array name="bot_say_pause_v5">
+        <item>Стоп!</item>
+        <item>Жду.</item>
+    </string-array>
+    <string-array name="bot_say_read_v1">
+        <item>Продолжаю «{book}».</item>
+        <item>Читаю «{book}».</item>
+    </string-array>
+    <string-array name="bot_say_read_v2">
+        <item>Возвращаемся в «{book}».</item>
+        <item>Дальше «{book}», слушай.</item>
+    </string-array>
+    <string-array name="bot_say_read_v3">
+        <item>Читаю «{book}», не торопясь.</item>
+        <item>Продолжаю «{book}». Устраивайся.</item>
+    </string-array>
+    <string-array name="bot_say_read_v4">
+        <item>Сказ продолжается: «{book}».</item>
+        <item>Дальше «{book}».</item>
+    </string-array>
+    <string-array name="bot_say_read_v5">
+        <item>Погнали: «{book}»!</item>
+        <item>Включаю «{book}».</item>
+    </string-array>
+    <string-array name="bot_say_unknown_v1">
+        <item>Этого я не умею. Спроси «что ты умеешь».</item>
+    </string-array>
+    <string-array name="bot_say_unknown_v2">
+        <item>Не поняла. Спроси «что ты умеешь» — расскажу.</item>
+    </string-array>
+    <string-array name="bot_say_unknown_v3">
+        <item>Не понял я. Спроси «что ты умеешь».</item>
+    </string-array>
+    <string-array name="bot_say_unknown_v4">
+        <item>Не уразумел. Спроси «что ты умеешь».</item>
+    </string-array>
+    <string-array name="bot_say_unknown_v5">
+        <item>Хм, не понял. Спроси «что ты умеешь»!</item>
+    </string-array>
+    <string-array name="bot_search_world">
+        <item>что-нибудь о</item>
+        <item>что-нибудь об</item>
+        <item>что-нибудь про</item>
+        <item>что-то о</item>
+        <item>что-то про</item>
+        <item>информацию о</item>
+        <item>информацию про</item>
+        <item>про</item>
+        <item>о</item>
+        <item>об</item>
+        <item>в интернете</item>
+        <item>в википедии</item>
+    </string-array>
+    <string name="talk_line_title">Реплика</string>
+    <string name="talk_copy">Копировать</string>
+    <string name="talk_copied">Скопировано</string>
+    <string name="shelve_label">На полку Hora</string>
+    <string name="shelve_failed">Не удалось взять «%1$s» на полку.</string>
+    <string-array name="bot_say_battery">
+        <item>Заряд {pct} %.</item>
+        <item>Осталось {pct} % заряда.</item>
+    </string-array>
+    <string-array name="bot_say_battery_charging">
+        <item>Заряд {pct} %, заряжается.</item>
+    </string-array>
+    <string name="battery_low">Заряд %1$d процентов. Пора на зарядку.</string>
+    <string name="battery_very_low">Заряд всего %1$d процентов. Телефон скоро выключится.</string>
+    <string name="battery_switch">Предупреждать о заряде</string>
+    <string name="battery_switch_sub">В наушники, при 15 и при 5 процентах.</string>
+    <string name="folder_books">Книги</string>
+    <string name="folder_temp">Временные</string>
+    <string name="shelf_temporary">временная</string>
+    <string name="shelf_keep">Оставить на полке</string>
+    <string name="shelf_folder_hint">Покажи Hora её папку — книги будут лежать на виду и переживут переустановку.</string>
+    <string name="folder_root" translatable="false">Hora</string>
+    <string name="transfer_title">Перенос с другого телефона</string>
+    <string name="transfer_lead">Настройки голосов, бота, модели и вида, места чтения во всех книгах и словарь ударений — всё это лежит в одном файле в папке Hora. Книги и модели — рядом, в своих папках.</string>
+    <string name="transfer_none">Файла с настройками не нашлось. Его можно выбрать в «Настройках», раздел «Перенос».</string>
+    <string name="transfer_unreadable">Этот файл — не настройки Hora, или он повреждён.</string>
+    <string name="transfer_found">Нашла настройки, сохранённые %1$s: %2$s. Восстановить их здесь? То, что уже настроено на этом телефоне, заменится.</string>
+    <string name="transfer_restore">Восстановить</string>
+    <string name="transfer_folder_first">Показать папку Hora и восстановить</string>
+    <string name="transfer_later">Не сейчас</string>
+    <string name="transfer_working">Восстанавливаю…</string>
+    <string name="transfer_done">Готово. Hora перезапустится.</string>
+    <string name="transfer_failed">Не получилось восстановить. Подробности — в журнале.</string>
+    <string name="transfer_section">Перенос</string>
+    <string name="transfer_row">Настройки в папке Hora</string>
+    <string name="transfer_no_folder">нужна папка</string>
+    <string name="transfer_not_yet">ещё не сохранены</string>
+    <string name="transfer_about">Hora сама сохраняет настройки, места чтения и свои голоса в файл %1$s в своей папке, через минуту после любого изменения. Чтобы перенести Hora, скопируй папку Hora целиком на новый телефон или перешли этот файл — Hora его узнает.</string>
+    <string name="transfer_save_now">Сохранить сейчас</string>
+    <string name="transfer_from_file">Восстановить из файла…</string>
+    <string name="intro_folder">Папка Hora</string>
+    <string name="intro_folder_sub">Книги, настройки и голоса будут лежать на виду</string>
+    <plurals name="transfer_books">
+        <item quantity="one">%d книга</item>
+        <item quantity="few">%d книги</item>
+        <item quantity="many">%d книг</item>
+        <item quantity="other">%d книги</item>
+    </plurals>
+    <string name="check_lead">Настройки на месте. Некоторые разрешения и большие файлы не переносятся — их этот телефон даёт сам. Осталось:</string>
+    <string name="check_herald">Уведомления вслух</string>
+    <string name="check_herald_sub">Дай этому телефону доступ к уведомлениям</string>
+    <string name="check_engine">Голос для других приложений</string>
+    <string name="check_engine_sub">Выбери Hora в настройках синтеза речи</string>
+    <string name="check_model_sub">Скачай модель или возьми из Hora/Модели</string>
+    <string name="check_english_sub">Скачай английский язык заново</string>
+    <string name="check_later">Позже</string>
+    <string name="check_all_done">Всё на месте.</string>
+    <string name="share_label">Слушать</string>
+    <string name="export_title">Аудиокниги</string>
+    <string name="export_make">Сделать аудиокнигу</string>
+    <string name="export_lead">Hora озвучит книгу целиком и сложит главы файлами 1.m4a, 2.m4a… в папку книги. Это долго, поэтому Hora работает только пока телефон на зарядке — лучше поставить его на ночь. Сняли с зарядки — пауза без потерь, продолжит с того же места.</string>
+    <string name="export_about">«%1$s»: %2$s, читает %3$s. Звука выйдет примерно %4$s, работы — около %5$s на зарядке.</string>
+    <string name="export_start">Поставить в очередь</string>
+    <string name="export_where">Куда</string>
+    <string name="export_other_folder">Выбрать другую папку</string>
+    <string name="export_no_folder">Сначала покажи Hora её папку</string>
+    <string name="export_queue">Очередь</string>
+    <string name="export_queue_empty">Пусто</string>
+    <string name="export_waiting_turn">ждёт очереди</string>
+    <string name="export_waiting_charger">ждёт зарядки</string>
+    <string name="export_working">глава %1$d из %2$d</string>
+    <string name="export_working_pct">глава %1$d из %2$d · %3$d&#160;%%</string>
+    <string name="export_yielding">уступает книге</string>
+    <string name="export_waiting_phone">на зарядке, ждёт телефона</string>
+    <string name="export_failed">не вышло</string>
+    <string name="export_failed_about">Три раза подряд не вышло. Место в книге сохранено, причина — в журнале.</string>
+    <string name="export_retry">Попробовать снова</string>
+    <string name="export_synthetic_note">Голос в этих записях синтезирован программой Hora, это не запись живого человека.</string>
+    <string name="export_cancel">Убрать из очереди</string>
+    <string name="export_channel">Аудиокниги</string>
+    <string name="export_done_title">«%1$s» готова</string>
+    <string name="export_chapters_file">главы.txt</string>
+    <string name="folder_audiobooks">Аудиокниги</string>
+    <plurals name="export_done_text">
+        <item quantity="one">%d глава, можно слушать</item>
+        <item quantity="few">%d главы, можно слушать</item>
+        <item quantity="many">%d глав, можно слушать</item>
+        <item quantity="other">%d главы, можно слушать</item>
+    </plurals>
+    <plurals name="export_minutes">
+        <item quantity="one">%d минута</item>
+        <item quantity="few">%d минуты</item>
+        <item quantity="many">%d минут</item>
+        <item quantity="other">%d минуты</item>
+    </plurals>
+    <plurals name="export_hours">
+        <item quantity="one">%d час</item>
+        <item quantity="few">%d часа</item>
+        <item quantity="many">%d часов</item>
+        <item quantity="other">%d часа</item>
+    </plurals>
+    <string name="first_lead">Голос для книг, уведомлений и разговора. Всё живёт на телефоне.</string>
+    <string name="first_step_of">%1$d из %2$d</string>
+    <string name="first_skip">Пропустить</string>
+    <string name="first_open_settings">Открыть настройки</string>
+    <string name="first_notify_title">Уведомления от Hora</string>
+    <string name="first_notify_text">Чтобы останавливать чтение одним касанием и знать, когда готова аудиокнига.</string>
+    <string name="first_notify_action">Разрешить</string>
+    <string name="first_herald_title">Уведомления вслух</string>
+    <string name="first_herald_text">Сирин будет читать сообщения в наушники. Для этого нужен доступ к уведомлениям — он даётся в настройках телефона.</string>
+    <string name="first_folder_title">Папка Hora</string>
+    <string name="first_folder_text">Книги, аудиокниги и всё для переезда на другой телефон живут в одной папке. Покажи её Hora — выбор откроется на нужном месте.</string>
+    <string name="first_folder_action">Показать папку</string>
+    <string name="first_weather_title">Погода</string>
+    <string name="first_weather_text">Чтобы говорить о погоде, нужен город. Найди его по названию — без доступа к местоположению.</string>
+    <string name="first_weather_action">Найти город</string>
+    <string name="first_engine_title">Голос телефона</string>
+    <string name="first_engine_text">Hora может читать и за другие приложения: читалки, навигаторы, переводчики. Для этого выбери её в настройках речи телефона.</string>
+    <string name="first_model_title">Модель ИИ</string>
+    <string name="first_model_text">Чтобы в разговоре отвечали своими словами и понимали фото, нужна модель ИИ, около 3 ГБ. Лучше скачивать по Wi-Fi.</string>
+    <string name="first_model_action">Открыть</string>
+    <string name="tile_hush">Hora: тихо</string>
+    <string name="tile_hush_speaking">говорит · коснись, чтобы замолчала</string>
+    <string name="tile_hush_silent">молчит</string>
+</resources>

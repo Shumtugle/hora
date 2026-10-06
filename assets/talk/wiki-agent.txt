@@ -1,0 +1,1 @@
+Hora/0.60 (Android voice assistant; https://github.com/Shumtugle/hora)

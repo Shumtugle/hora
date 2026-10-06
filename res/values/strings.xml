@@ -1,0 +1,1146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hora</string>
+    <string name="ask">What time is it?</string>
+    <string name="preparing">Preparing the voice…</string>
+    <string name="ready">Tap to ask</string>
+    <string name="failed">The voice failed to load</string>
+    <string name="time_phrase">It is %1$s %2$s.</string>
+    <string name="minutes_zero">sharp</string>
+    <plurals name="hours">
+        <item quantity="one">%s hour</item>
+        <item quantity="other">%s hours</item>
+    </plurals>
+    <plurals name="minutes">
+        <item quantity="one">%s minute</item>
+        <item quantity="other">%s minutes</item>
+    </plurals>
+    <string-array name="numbers_masculine">
+        <item>zero</item>
+        <item>one</item>
+        <item>two</item>
+        <item>three</item>
+        <item>four</item>
+        <item>five</item>
+        <item>six</item>
+        <item>seven</item>
+        <item>eight</item>
+        <item>nine</item>
+        <item>ten</item>
+        <item>eleven</item>
+        <item>twelve</item>
+        <item>thirteen</item>
+        <item>fourteen</item>
+        <item>fifteen</item>
+        <item>sixteen</item>
+        <item>seventeen</item>
+        <item>eighteen</item>
+        <item>nineteen</item>
+        <item>twenty</item>
+        <item>twenty-one</item>
+        <item>twenty-two</item>
+        <item>twenty-three</item>
+        <item>twenty-four</item>
+        <item>twenty-five</item>
+        <item>twenty-six</item>
+        <item>twenty-seven</item>
+        <item>twenty-eight</item>
+        <item>twenty-nine</item>
+        <item>thirty</item>
+        <item>thirty-one</item>
+        <item>thirty-two</item>
+        <item>thirty-three</item>
+        <item>thirty-four</item>
+        <item>thirty-five</item>
+        <item>thirty-six</item>
+        <item>thirty-seven</item>
+        <item>thirty-eight</item>
+        <item>thirty-nine</item>
+        <item>forty</item>
+        <item>forty-one</item>
+        <item>forty-two</item>
+        <item>forty-three</item>
+        <item>forty-four</item>
+        <item>forty-five</item>
+        <item>forty-six</item>
+        <item>forty-seven</item>
+        <item>forty-eight</item>
+        <item>forty-nine</item>
+        <item>fifty</item>
+        <item>fifty-one</item>
+        <item>fifty-two</item>
+        <item>fifty-three</item>
+        <item>fifty-four</item>
+        <item>fifty-five</item>
+        <item>fifty-six</item>
+        <item>fifty-seven</item>
+        <item>fifty-eight</item>
+        <item>fifty-nine</item>
+    </string-array>
+    <string-array name="numbers_feminine">
+        <item>zero</item>
+        <item>one</item>
+        <item>two</item>
+        <item>three</item>
+        <item>four</item>
+        <item>five</item>
+        <item>six</item>
+        <item>seven</item>
+        <item>eight</item>
+        <item>nine</item>
+        <item>ten</item>
+        <item>eleven</item>
+        <item>twelve</item>
+        <item>thirteen</item>
+        <item>fourteen</item>
+        <item>fifteen</item>
+        <item>sixteen</item>
+        <item>seventeen</item>
+        <item>eighteen</item>
+        <item>nineteen</item>
+        <item>twenty</item>
+        <item>twenty-one</item>
+        <item>twenty-two</item>
+        <item>twenty-three</item>
+        <item>twenty-four</item>
+        <item>twenty-five</item>
+        <item>twenty-six</item>
+        <item>twenty-seven</item>
+        <item>twenty-eight</item>
+        <item>twenty-nine</item>
+        <item>thirty</item>
+        <item>thirty-one</item>
+        <item>thirty-two</item>
+        <item>thirty-three</item>
+        <item>thirty-four</item>
+        <item>thirty-five</item>
+        <item>thirty-six</item>
+        <item>thirty-seven</item>
+        <item>thirty-eight</item>
+        <item>thirty-nine</item>
+        <item>forty</item>
+        <item>forty-one</item>
+        <item>forty-two</item>
+        <item>forty-three</item>
+        <item>forty-four</item>
+        <item>forty-five</item>
+        <item>forty-six</item>
+        <item>forty-seven</item>
+        <item>forty-eight</item>
+        <item>forty-nine</item>
+        <item>fifty</item>
+        <item>fifty-one</item>
+        <item>fifty-two</item>
+        <item>fifty-three</item>
+        <item>fifty-four</item>
+        <item>fifty-five</item>
+        <item>fifty-six</item>
+        <item>fifty-seven</item>
+        <item>fifty-eight</item>
+        <item>fifty-nine</item>
+    </string-array>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+    <string name="build">Build</string>
+    <string name="license">License</string>
+    <string name="license_name">GNU GPL v3</string>
+    <string name="voice">Voice</string>
+    <string name="speed">Tempo</string>
+    <string name="pause">Pause between sentences</string>
+    <string name="speed_value">%1$.2f×</string>
+    <string name="pause_value">%1$d ms</string>
+    <string name="lexicon">Dictionary</string>
+    <string name="lexicon_hint">One rule per line: word = replacement. A plus before a vowel marks stress. A line of the form /pattern/ = replacement is a regular expression.</string>
+    <string name="tts_sample">This is Hora. I will read you a book.</string>
+    <string name="save">Save</string>
+    <string name="saved">Saved</string>
+    <string name="read_aloud">Read with Hora</string>
+    <string name="to_lexicon">Hora dictionary</string>
+    <string name="stop">Stop</string>
+    <string name="speaking">Speaking</string>
+    <string name="channel">Speech</string>
+    <!-- Number words for reading digits aloud. Scales: none, thousand, million, billion. -->
+    <string-array name="num_units_m">
+        <item>zero</item>
+        <item>one</item>
+        <item>two</item>
+        <item>three</item>
+        <item>four</item>
+        <item>five</item>
+        <item>six</item>
+        <item>seven</item>
+        <item>eight</item>
+        <item>nine</item>
+    </string-array>
+    <string-array name="num_units_f">
+        <item>zero</item>
+        <item>one</item>
+        <item>two</item>
+        <item>three</item>
+        <item>four</item>
+        <item>five</item>
+        <item>six</item>
+        <item>seven</item>
+        <item>eight</item>
+        <item>nine</item>
+    </string-array>
+    <string-array name="num_teens">
+        <item>ten</item>
+        <item>eleven</item>
+        <item>twelve</item>
+        <item>thirteen</item>
+        <item>fourteen</item>
+        <item>fifteen</item>
+        <item>sixteen</item>
+        <item>seventeen</item>
+        <item>eighteen</item>
+        <item>nineteen</item>
+    </string-array>
+    <string-array name="num_tens">
+        <item></item>
+        <item></item>
+        <item>twenty</item>
+        <item>thirty</item>
+        <item>forty</item>
+        <item>fifty</item>
+        <item>sixty</item>
+        <item>seventy</item>
+        <item>eighty</item>
+        <item>ninety</item>
+    </string-array>
+    <string-array name="num_hundreds">
+        <item></item>
+        <item>one hundred</item>
+        <item>two hundred</item>
+        <item>three hundred</item>
+        <item>four hundred</item>
+        <item>five hundred</item>
+        <item>six hundred</item>
+        <item>seven hundred</item>
+        <item>eight hundred</item>
+        <item>nine hundred</item>
+    </string-array>
+    <!-- Whether "one" is dropped before a scale word (one thousand = thousand). -->
+    <bool name="num_drop_single_one">false</bool>
+    <integer-array name="num_scale_feminine">
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+    </integer-array>
+    <plurals name="num_scale_1">
+        <item quantity="one">thousand</item>
+        <item quantity="other">thousand</item>
+    </plurals>
+    <plurals name="num_scale_2">
+        <item quantity="one">million</item>
+        <item quantity="other">million</item>
+    </plurals>
+    <plurals name="num_scale_3">
+        <item quantity="one">billion</item>
+        <item quantity="other">billion</item>
+    </plurals>
+    <string-array name="translit"/>
+    <string name="probe">Voice test</string>
+    <string name="probe_hint">to Downloads</string>
+    <string name="probe_text">The grey sky hung over the city.</string>
+    <string name="probe_done">Saved: %1$s. %2$.1f s of speech in %3$.1f s</string>
+    <string name="probe_failed">Test failed: %1$s</string>
+    <string name="expression">Expressiveness</string>
+    <string name="reference">Voice sample</string>
+    <string name="reference_user">own, %1$.0f s</string>
+    <string name="lexicon_import">Import dictionary…</string>
+    <string name="lexicon_clear">Remove imported</string>
+    <string name="lexicon_imported">Loaded: %1$s</string>
+    <string name="lexicon_none">No imported dictionaries</string>
+    <string name="lexicon_import_done">%1$s: %2$d rules</string>
+    <string name="lexicon_import_failed">Import failed: %1$s</string>
+    <string name="stress_vowels">aeiouy</string>
+    <string name="always_stressed"></string>
+    <string name="reference_export">Save to Downloads</string>
+    <string name="reference_exported">Sample saved: %1$s</string>
+    <string name="dialogue_voice">Dialogue voice</string>
+    <string name="dialogue_same">same as narrator</string>
+    <string name="dialogue_switch">Second voice for dialogue</string>
+    <string name="yo_dictionary">Letter restoration dictionary</string>
+    <string name="yo_dictionary_license">MIT</string>
+    <string name="main_voice">Main voice</string>
+    <string name="main_voice_first">Female</string>
+    <string name="main_voice_second">Male</string>
+    <string name="voices">Voices</string>
+    <string name="role_narrator">Narrator</string>
+    <string name="role_speaker_a">Speaker 1</string>
+    <string name="role_speaker_b">Speaker 2</string>
+    <string-array name="voice_names">
+        <item>Hora</item>
+        <item>Sirin</item>
+        <item>Bayun</item>
+        <item>Boyan</item>
+        <item>Sadko</item>
+    </string-array>
+    <string name="slow_by_pauses">Slow down with pauses, not stretching</string>
+    <string name="journal">Journal</string>
+    <string name="journal_test">Test the engine</string>
+    <string name="journal_save">To Downloads</string>
+    <string name="journal_clear">Clear</string>
+    <string name="journal_empty">The journal is empty</string>
+    <string name="respell">Phonetic spelling</string>
+    <string name="respell_signs"></string>
+    <string name="respell_hardening"></string>
+    <string name="respell_voiceless_unpaired"></string>
+    <string name="respell_hardened_e"></string>
+    <string-array name="respell_words"/>
+    <string-array name="respell_keep"/>
+    <string-array name="respell_rules"/>
+    <string-array name="respell_reduce"/>
+    <string-array name="respell_final"/>
+    <string-array name="respell_proclitics"/>
+    <string name="stress_dictionary">Stress dictionary</string>
+    <string name="voices_license">OpenRAIL, CC0</string>
+    <string name="stress_dictionary_license">MIT, CC BY-SA 4.0, Apache 2.0</string>
+    <string-array name="ordinals"/>
+    <string-array name="months_genitive"/>
+    <string-array name="roman_name_endings"/>
+    <string-array name="roman_female_endings"/>
+    <string-array name="female_name_stems"/>
+    <string-array name="year_words"/>
+    <string name="year_abbrev"></string>
+    <string-array name="year_spoken"/>
+    <string-array name="century_words"/>
+    <string-array name="title_words"/>
+    <string-array name="ordinal_suffixes"/>
+    <string-array name="dative_prepositions"/>
+    <string-array name="locative_prepositions"/>
+    <string-array name="abbreviations"/>
+    <string-array name="letter_names"/>
+    <string name="word_point">dot</string>
+    <string name="word_slash">slash</string>
+    <string name="word_at">at</string>
+    <string name="word_dash">dash</string>
+    <string name="word_number_sign">number</string>
+    <string-array name="decimal_denominators"/>
+    <plurals name="decimal_whole">
+        <item quantity="one">point</item>
+        <item quantity="other">point</item>
+    </plurals>
+    <plurals name="percent">
+        <item quantity="one">percent</item>
+        <item quantity="other">percent</item>
+    </plurals>
+    <string name="even_tempo">Even tempo</string>
+    <string-array name="selftest"/>
+    <string name="text_check">Text check</string>
+    <string name="text_check_hint">Paste text from a book</string>
+    <string name="text_check_show">What the voice gets</string>
+    <string name="text_check_selftest">Self-test</string>
+    <string name="text_check_working">Working…</string>
+    <string name="text_check_summary">Passed %1$d of %2$d</string>
+    <string-array name="latin_lookalikes"/>
+    <string-array name="one_letter_words"/>
+    <string name="letter_folding"></string>
+    <string name="workshop">Voice settings</string>
+    <string name="home_hint">Tap and I will tell you the time.</string>
+    <string name="home_time">What time</string>
+    <string name="home_weather">Weather</string>
+    <string name="home_next_voice">Another voice</string>
+    <string name="home_draft_hint">Say something…</string>
+    <string name="home_speak">Speak</string>
+    <string name="home_empty">Type something and I will read it.</string>
+    <string name="home_greeting">Hello. Now I am speaking.</string>
+    <string name="home_no_weather">I do not know the weather yet.</string>
+    <string name="nav_voice">Voice</string>
+    <string name="nav_book">Book</string>
+    <string name="nav_workshop">Voice</string>
+    <string name="ws_back">Back</string>
+    <string name="ws_listen">Listen</string>
+    <string name="ws_listen_text">Hello. This is how I sound now.</string>
+    <string name="ws_stop">Stop</string>
+    <string name="ws_done">Done</string>
+    <string name="ws_timbre">Timbre</string>
+    <string name="ws_pitch">Pitch</string>
+    <string name="ws_tempo">Tempo</string>
+    <string name="ws_mood">Character</string>
+    <string name="ws_timbre_value">Timbre · %1$s</string>
+    <string name="ws_pitch_value">Pitch · %1$s</string>
+    <string name="ws_tempo_value">Tempo · %1$s</string>
+    <string name="ws_mood_value">Character · %1$s</string>
+    <string name="ws_as_sample">as sampled</string>
+    <string name="ws_semitones">%1$s st</string>
+    <string name="ws_warmer">warmer</string>
+    <string name="ws_brighter">brighter</string>
+    <string name="ws_deeper">deeper</string>
+    <string name="ws_higher">higher</string>
+    <string name="ws_slow">unhurried</string>
+    <string name="ws_fast">fast</string>
+    <string name="ws_calm">calm</string>
+    <string name="ws_lively">lively</string>
+    <string name="ws_timbre_note">The sample passes through an equalizer before the model hears it. The model carries that timbre over to all speech.</string>
+    <string name="ws_pitch_note">Shift in semitones. Speech tempo stays the same.</string>
+    <string name="ws_tempo_note">For all voices. Slowing with pauses and even tempo are under Book.</string>
+    <string name="ws_mood_note">For all voices. Livelier means more intonation, and more stray slips.</string>
+    <string name="portraits">Portraits</string>
+    <string name="portraits_note">ChatGPT</string>
+    <string name="fonts">Fonts</string>
+    <string-array name="voice_epithets">
+        <item>storyteller</item>
+        <item>companion</item>
+        <item>companion</item>
+        <item>reader</item>
+        <item>young minstrel</item>
+    </string-array>
+    <string-array name="voice_kinds">
+        <item>female · main</item>
+        <item>female</item>
+        <item>male · main</item>
+        <item>male · deep</item>
+        <item>male · young</item>
+    </string-array>
+    <string name="fonts_license">Cormorant, Manrope · OFL 1.1</string>
+    <string name="tools">Tools</string>
+    <string-array name="respell_untouched"/>
+    <string-array name="stress_clitics"/>
+    <string name="roles_title">Voices and roles</string>
+    <string name="ws_troupe">Voices</string>
+    <string name="roles_more">Reading settings</string>
+    <string name="roles_listen">Read the example</string>
+    <string name="roles_listen_hint">Tap the example to hear it</string>
+    <string name="reading">Reading</string>
+    <string-array name="roles_sample">
+        <item>It had been raining for three days.</item>
+        <item>— Let\'s go,</item>
+        <item>— he said quietly.</item>
+        <item>— It\'s late.</item>
+        <item>— No,</item>
+        <item>— she answered.</item>
+    </string-array>
+    <string name="roles_sample_speech">It had been raining for three days.\n— Let\'s go, — he said quietly. — It\'s late.\n— No, — she answered.</string>
+    <integer-array name="roles_sample_readers">
+        <item>0</item>
+        <item>1</item>
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>0</item>
+    </integer-array>
+    <string name="look">Look</string>
+    <string name="look_bordeaux">Bordeaux</string>
+    <string name="look_contrast">Contrast</string>
+    <string name="lexicon_builtin_title">Built in</string>
+    <string name="lexicon_builtin">Stress: 3.8 million word forms; the letter yo: 107 thousand words; homographs: 37 thousand context rules; a network for unknown words and names. Your rules and imports override what is built in.</string>
+    <string name="lexicon_own">My rules</string>
+    <string name="lexicon_example">zamok = zam+ok</string>
+    <string name="book_channel">Reading a book</string>
+    <string name="book_opening">Opening the book…</string>
+    <string name="book_where">Paragraph %1$d of %2$d</string>
+    <string name="book_where_percent">Paragraph %1$d of %2$d · %3$d%%</string>
+    <string name="book_prev">Back one paragraph</string>
+    <string name="book_next">Forward one paragraph</string>
+    <string name="book_play">Read</string>
+    <string name="book_pause">Pause</string>
+    <string name="book_none">No book yet</string>
+    <string name="book_none_hint">Open a book file: fb2, fb2.zip, epub, txt, docx, odt, rtf or html. Hora keeps the place and goes on from it.</string>
+    <string name="book_open">Open a book</string>
+    <string name="book_other">Another book</string>
+    <string name="book_unreadable">Hora cannot read this format yet: %1$s</string>
+    <string name="book_reader">Reading: %1$s</string>
+    <string name="book_change_reader">Change</string>
+    <string name="nav_roles">Roles</string>
+    <string name="voices_section">Voices</string>
+    <string name="home_make_main">Make %1$s the main voice</string>
+    <string name="home_troupe_hint">swipe the portrait or touch a face</string>
+    <string name="place_title">Place for the weather</string>
+    <string name="place_hint">A town or a village</string>
+    <string name="place_find">Find</string>
+    <string name="place_searching">Looking…</string>
+    <string name="place_cancel">Cancel</string>
+    <string name="place_here_short">from the phone</string>
+    <string name="weather_data">Weather</string>
+    <string name="weather_license">Open-Meteo · CC BY 4.0</string>
+    <string name="place_question">Which place is the weather for?</string>
+    <string name="place_by_phone">Find out from the phone</string>
+    <string name="place_by_name">Find a town by name</string>
+    <string name="place_later">Not now</string>
+    <string name="herald_service">Hora: notifications into headphones</string>
+    <string name="herald_title">Notifications</string>
+    <string name="herald_section">Notifications</string>
+    <string name="herald_row">Read into headphones</string>
+    <string name="herald_writes">%1$s writes: %2$s</string>
+    <string name="herald_in_group">%1$s writes in %2$s: %3$s</string>
+    <string name="herald_other">%1$s. %2$s</string>
+    <string name="widget_no_book">No book chosen</string>
+    <string name="widget_scene_name">Scene</string>
+    <string name="widget_scene_description">The reader at work. A tap pauses and resumes the book</string>
+    <string name="widget_pick_book">Tap to choose one</string>
+    <string name="widget_paused">Paused</string>
+    <string name="widget_where">%1$d of %2$d</string>
+    <string name="widget_say_no_book">No book chosen. Tap to choose one</string>
+    <string name="widget_say_playing">%1$s, read by %2$s. Tap to pause</string>
+    <string name="widget_say_paused">%1$s, paused. Tap to resume</string>
+    <string name="widget_bookmark_name">Bookmark</string>
+    <string name="widget_bookmark_description">The book and its reader in one line. A tap pauses and resumes</string>
+    <string name="widget_reads">%1$s reading</string>
+    <string name="widget_waits">%1$s waiting</string>
+    <string name="role_herald">Notifications</string>
+    <string name="role_talk">Talk</string>
+    <string name="journal_copy">Copy</string>
+    <string name="journal_copied">Journal copied</string>
+    <string name="journal_note">Events are kept for a day, details for 15 minutes. Hold a line to copy it.</string>
+    <string name="journal_clear_sure">Clear for good?</string>
+    <string name="journal_all">All · %1$d</string>
+    <string name="journal_events">Events · %1$d</string>
+    <string name="journal_process">process %1$d · after an update or a restart</string>
+    <string name="journal_src_book">Book</string>
+    <string name="journal_src_herald">Notifications</string>
+    <string name="journal_src_engine">Engine</string>
+    <string name="journal_src_voice">Voice</string>
+    <string name="journal_src_test">Test</string>
+    <string name="journal_src_weather">Weather</string>
+    <string name="journal_src_place">Place</string>
+    <string name="journal_src_check">Text</string>
+    <string name="herald_lead">I read notifications of the chosen apps into headphones only. No headphones, no reading.</string>
+    <string name="herald_state">State</string>
+    <string name="herald_access_on">Notification access is on</string>
+    <string name="herald_access_off">No notification access</string>
+    <string name="herald_grant">Grant access</string>
+    <string name="herald_restricted">If the system switch is grey: open app info, the ⋮ menu, and allow restricted settings.</string>
+    <string name="herald_app_details">App info</string>
+    <string name="herald_access_settings">Access settings</string>
+    <string name="herald_ears_on">Headphones: %1$s</string>
+    <string name="herald_ears_none">No headphones: I stay silent</string>
+    <string name="herald_voice_section">Voice</string>
+    <string name="herald_voice_row">Notifications voice</string>
+    <string name="herald_quiet_section">Quiet hours</string>
+    <string name="herald_quiet_switch">Stay silent at night</string>
+    <string name="herald_quiet_from">From</string>
+    <string name="herald_quiet_to">Until</string>
+    <string name="herald_quiet_from_title">Silent from</string>
+    <string name="herald_quiet_to_title">Silent until</string>
+    <string name="herald_apps_section">Apps · %1$d chosen</string>
+    <string name="herald_apps_search">Find an app</string>
+    <string name="herald_apps_loading">Gathering the list…</string>
+    <string name="herald_apps_none">Nothing found</string>
+    <string name="kit_cancel">Cancel</string>
+    <string name="kit_done">Done</string>
+    <string name="look_lamp">Lamp</string>
+    <string name="look_ink">Ink</string>
+    <string name="look_sample">Aa</string>
+    <string name="text_check_record">Read aloud into Downloads</string>
+    <string name="text_check_lead">See what the voice will hear, or get a recording of it.</string>
+    <string name="recording">Recording</string>
+    <string name="text_check_starting">Getting the voice ready…</string>
+    <string name="text_check_progress">Paragraph %1$d of %2$d · %3$d %%</string>
+    <string name="text_check_saved">Done: “%1$s” in Downloads, %2$s min</string>
+    <string name="text_check_not_saved">Read, but not saved</string>
+    <string name="text_check_failed">Failed: %1$s</string>
+    <string name="breath_vowels">aeiouy</string>
+    <string name="breath_joiners">in on at to of for from with by about into over under and but or nor that than as when where if while though</string>
+    <string name="chapter_words">Chapter|Part|Book|Volume|Prologue|Epilogue|Preface|Foreword|Afterword|Introduction|Conclusion</string>
+    <string name="book_where_chapter">%1$s · paragraph %2$d of %3$d · %4$d %%</string>
+    <string name="chapter_ordinals">one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|teen|ty|first|second|third|th</string>
+    <string name="book_from_here">Read from here</string>
+    <string name="book_copy">Copy</string>
+    <string name="book_select">Select</string>
+    <string name="book_select_hint">Hold a finger on a word, then pull the edges of the selection.</string>
+    <string name="book_paragraph">Paragraph %1$d</string>
+    <string name="book_chapter_paragraph">%1$s · paragraph %2$d</string>
+    <string name="widget_exlibris_name">Ex libris</string>
+    <string name="widget_exlibris_description">A book plate: the reader in a medallion and the book. A tap pauses and resumes</string>
+    <string name="widget_exlibris_reads">read by %1$s</string>
+    <string name="widget_exlibris_bookmark">bookmark · %1$d</string>
+    <string name="book_select_all">Select all</string>
+    <string name="book_share">Share</string>
+    <string name="book_more">More</string>
+    <string name="book_what_to_do">What to do?</string>
+    <string name="book_contents">Contents</string>
+    <string name="book_chapter_read">read</string>
+    <string name="book_contents_meta">%1$s · %2$d %%</string>
+    <plurals name="book_chapters">
+        <item quantity="one">%d chapter</item>
+        <item quantity="other">%d chapters</item>
+    </plurals>
+    <string name="search_title">Search the book</string>
+    <string name="search_hint">What to look for</string>
+    <string name="search_none">Nothing found</string>
+    <string name="search_count">%1$s %2$s</string>
+    <string name="search_before_chapters">Before the first chapter</string>
+    <string name="search_paragraph">paragraph %1$d</string>
+    <string name="search_more">and %1$d more; a longer search narrows them</string>
+    <plurals name="search_places">
+        <item quantity="one">%d place</item>
+        <item quantity="other">%d places</item>
+    </plurals>
+    <plurals name="search_in_chapters">
+        <item quantity="one">in %d chapter</item>
+        <item quantity="other">in %d chapters</item>
+    </plurals>
+    <string name="nav_shelf">Shelf</string>
+    <string name="shelf_title">Shelf</string>
+    <string name="shelf_now">Listening now</string>
+    <string name="shelf_on">On the shelf · %1$d</string>
+    <string name="shelf_add">Add a book</string>
+    <string name="shelf_new">new</string>
+    <string name="shelf_read">read</string>
+    <string name="shelf_continue">Continue</string>
+    <string name="shelf_pause">Pause</string>
+    <string name="shelf_remove">Take off the shelf</string>
+    <string name="shelf_about">About</string>
+    <string name="shelf_empty">The shelf is empty. Add a book, and it stands here.</string>
+    <string name="shelf_only_one">Only the book you are hearing so far. Others you open will stand here.</string>
+    <string name="shelf_about_file">File: %1$s</string>
+    <string name="shelf_about_author">Author: %1$s</string>
+    <string name="shelf_about_size">%1$s, %2$s</string>
+    <string name="shelf_about_place">Where: %1$s</string>
+    <string name="shelf_about_reader">Read by %1$s</string>
+    <string name="shelf_about_opened">Last opened %1$s</string>
+    <plurals name="shelf_paragraphs">
+        <item quantity="one">%d paragraph</item>
+        <item quantity="other">%d paragraphs</item>
+    </plurals>
+    <string name="shelf_on_none">On the shelf</string>
+    <string name="settings_shelf_view">Shelf</string>
+    <string name="settings_shelf_covers">Covers</string>
+    <string name="settings_shelf_list">List</string>
+    <string name="shelf_recent">Recent</string>
+    <string name="shelf_by_title">By title</string>
+    <string name="shelf_read_ones">Read</string>
+    <string name="shelf_none_read">No book read through yet.</string>
+    <!-- Read in full before a word ("see"); empty where the language has no such abbreviation. -->
+    <string name="see_abbrev"></string>
+    <string name="see_word"></string>
+    <string name="word_and">and</string>
+    <string-array name="bot_intents"/>
+    <string-array name="bot_fillers"/>
+    <string-array name="bot_callnames"/>
+    <string-array name="bot_numbers"/>
+    <string-array name="bot_say_help"/>
+    <string-array name="bot_say_hello"/>
+    <string-array name="bot_say_thanks"/>
+    <string-array name="bot_say_read"/>
+    <string-array name="bot_say_no_book"/>
+    <string-array name="bot_say_pause"/>
+    <string-array name="bot_say_next"/>
+    <string-array name="bot_say_prev"/>
+    <string-array name="bot_say_where"/>
+    <string-array name="bot_say_chapter"/>
+    <string-array name="bot_say_no_chapter"/>
+    <string-array name="bot_say_no_chapters"/>
+    <string-array name="bot_say_search"/>
+    <string-array name="bot_say_sleep"/>
+    <string-array name="bot_say_sleep_cancel"/>
+    <string-array name="bot_say_faster"/>
+    <string-array name="bot_say_slower"/>
+    <string-array name="bot_say_speed_edge"/>
+    <string-array name="bot_say_voice"/>
+    <string-array name="bot_say_no_voice"/>
+    <string-array name="bot_say_unknown"/>
+    <plurals name="bot_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <string-array name="bot_weekdays"/>
+    <string name="bot_date">Today is %1$s, %2$s.</string>
+    <string name="bot_question_words">who what where when how which why</string>
+    <string-array name="bot_days"/>
+    <string name="bot_trace_pause">paused</string>
+    <string name="bot_trace_search">search “%1$s”</string>
+    <string name="bot_trace_sleep">sleep timer %1$d min</string>
+    <string name="bot_trace_sleep_off">no timer</string>
+    <string name="bot_trace_speed">tempo %1$s</string>
+    <string name="talk_title">Talk</string>
+    <string name="talk_sub">Ask, request, chat</string>
+    <string name="talk_hint">Ask, or write what to say…</string>
+    <string name="talk_send">Send</string>
+    <string name="home_workshop">Voice settings</string>
+    <string name="home_workshop_sub">Timbre, pitch, tempo, character</string>
+    <string name="home_book_none">No book chosen</string>
+    <string name="home_on_duty">on duty · %1$s</string>
+    <string name="talk_where">Where are we</string>
+    <string name="bot_help_chip">What can you do</string>
+    <string name="chapter_numbered">chapter %1$s</string>
+    <string name="lab_title">Voice settings</string>
+    <string name="lab_hint">Paste text here — it stays until you change it</string>
+    <string name="lab_listen">Listen</string>
+    <string name="lab_save">To Downloads</string>
+    <string name="lab_saving">Writing to Downloads…</string>
+    <string name="lab_clear">Clear</string>
+    <string name="lab_kept">The text stays here until you change it.</string>
+    <string name="lab_ratio">The text stays here. Last run: the voice worked %1$s times faster than speech.</string>
+    <string name="lab_all">For all voices</string>
+    <string name="lab_character">Character</string>
+    <string name="lab_tempo">Tempo</string>
+    <string name="lab_pause">Pause between sentences</string>
+    <string name="lab_shorter">shorter</string>
+    <string name="lab_longer">longer</string>
+    <string name="lab_ms">%1$d ms</string>
+    <string name="lab_engine">Engine · trial</string>
+    <string name="lab_decoder">Sound decoder</string>
+    <string name="lab_decoder_small">compressed</string>
+    <string name="lab_decoder_full">full</string>
+    <string name="lab_decoder_note">The full decoder is the same one without compression: about 8% more work. Takes effect from the next phrase.</string>
+    <string name="lab_warmer">warmer</string>
+    <string name="lab_brighter">brighter</string>
+    <string name="lab_lower">lower</string>
+    <string name="lab_higher">higher</string>
+    <string name="lab_air">Air</string>
+    <string name="lab_none">none</string>
+    <string name="lab_much">much</string>
+    <string name="lab_sample">Voice sample</string>
+    <string name="brain_rules">%3$s You are %1$s, %2$s in a book app. You speak to the user informally. You answer in one or two short sentences, without lists or exclamations. You do not invent facts: if you do not know, you say so. You do not promise actions: the app handles the book, timers and weather, not you. Only when plainly asked to translate (“how do you say”, “translate”) you answer with the translation itself; a question in another language is not a request to translate.</string>
+    <string-array name="brain_manner">
+        <item>You are calm, warm and brief.</item>
+        <item>You are lively, attentive, gently ironic.</item>
+        <item>You are unhurried and soothing.</item>
+        <item>You have seen much; you speak in images, slowly.</item>
+        <item>You are young, light and cheerful.</item>
+    </string-array>
+    <string name="brain_trial_question">I am tired today.</string>
+    <string name="lab_brain">AI model · test</string>
+    <string name="lab_brain_model">Model</string>
+    <string name="lab_brain_none">not chosen</string>
+    <string name="lab_brain_copying">copying… %1$d MB</string>
+    <string name="lab_brain_try">Try: is it ready to work</string>
+    <string name="lab_brain_waking">Loading the model…</string>
+    <string name="lab_brain_result">%1$s\n\nLoaded in %2$.1f s, answered in %3$.1f s, %4$.1f tokens per second.</string>
+    <string name="lab_brain_failed">Did not work: %1$s</string>
+    <string name="lab_brain_note">A GGUF model file from Downloads is copied into Hora. The model loads into memory on a question and unloads after 5 minutes without questions.</string>
+    <string name="lab_brain_user">Address me</string>
+    <string name="lab_brain_user_he">as him</string>
+    <string name="lab_brain_user_she">as her</string>
+    <string name="brain_user_male">The user is a man.</string>
+    <string name="brain_user_female">The user is a woman.</string>
+    <string name="talk_thinking">…</string>
+    <string-array name="bot_keywords"/>
+    <string-array name="bot_fact_starts"/>
+    <string-array name="bot_fact_words"/>
+    <string-array name="bot_say_fact"/>
+    <string name="bot_fact_not">you your yours</string>
+    <string-array name="bot_health_words"/>
+    <string-array name="bot_say_health"/>
+    <string-array name="bot_lead_words"/>
+    <string-array name="emergency_numbers">
+        <item>us=911</item>
+        <item>ca=911</item>
+        <item>mx=911</item>
+        <item>pr=911</item>
+        <item>ph=911</item>
+        <item>ar=107</item>
+        <item>br=192</item>
+        <item>cl=131</item>
+        <item>co=123</item>
+        <item>cn=120</item>
+        <item>hk=999</item>
+        <item>tw=119</item>
+        <item>jp=119</item>
+        <item>kr=119</item>
+        <item>gb=999</item>
+        <item>ie=112</item>
+        <item>au=000</item>
+        <item>nz=111</item>
+        <item>in=112</item>
+        <item>za=10177</item>
+        <item>il=101</item>
+        <item>ae=998</item>
+        <item>sa=997</item>
+        <item>eg=123</item>
+        <item>th=1669</item>
+        <item>vn=115</item>
+        <item>id=119</item>
+        <item>my=999</item>
+        <item>sg=995</item>
+        <item>ru=112</item>
+        <item>by=103</item>
+        <item>ua=103</item>
+        <item>kz=103</item>
+        <item>tr=112</item>
+        <item>ge=112</item>
+        <item>am=103</item>
+        <item>uz=103</item>
+    </string-array>
+    <string-array name="bot_self_words"/>
+    <string name="folder_talks">Talks</string>
+    <string name="talk_folder_ask">Show me the Hora folder — once, and talks will go there.</string>
+    <string name="talk_saved">Saved: “%1$s”.</string>
+    <string name="talk_save_failed">Could not save: %1$s</string>
+    <string name="talk_share">Share</string>
+    <string name="talk_you">You</string>
+    <string name="talk_file_head">Talk with %1$s\n%2$s\nTopic: %3$s</string>
+    <string name="talk_title_fallback">Talk</string>
+    <string name="brain_title_prompt">Name this conversation in three to five words, no quotes, no final period. Only the title.</string>
+    <string name="brain_title">AI model</string>
+    <string name="brain_sleep_now">Unload</string>
+    <string name="brain_try">Try</string>
+    <string name="brain_files">Files</string>
+    <string name="brain_slot_model">Model</string>
+    <string name="brain_slot_vision">For photos</string>
+    <string name="brain_slot_draft">Accelerator</string>
+    <string name="brain_files_note">Download a file here or pick one you have: it is copied into Hora, and the old one in that place is removed. “For photos” is an add-on that lets the model understand pictures. The accelerator is an optional small model that mainly helps long answers.</string>
+    <string name="brain_settings">Settings</string>
+    <string name="brain_liveliness">Liveliness</string>
+    <string name="brain_even">steadier</string>
+    <string name="brain_livelier">livelier</string>
+    <string name="brain_length">Reply length</string>
+    <string name="brain_tokens">%1$d tokens</string>
+    <string name="brain_memory">Lines it remembers</string>
+    <string name="brain_less">fewer</string>
+    <string name="brain_more">more</string>
+    <string name="brain_sleep_after">Unload after</string>
+    <string name="brain_sooner">sooner</string>
+    <string name="brain_later">later</string>
+    <string name="brain_minutes">%1$d min</string>
+    <string name="brain_prompts">Instructions for the model</string>
+    <string name="brain_rules_title">Shared rules</string>
+    <string name="brain_guards">Without the model</string>
+    <string name="brain_awake">In memory</string>
+    <string name="brain_asleep">Not loaded</string>
+    <string name="brain_awake_line">Answers at %1$.1f tokens per second · unloads after %2$d minutes without questions.</string>
+    <string name="brain_asleep_line">Loads on the first question, in a few seconds.</string>
+    <string name="brain_draft_refused">The accelerator did not fit; the model runs without it.</string>
+    <string name="brain_size">On the phone: %1$.1f GB, files: %2$d</string>
+    <string name="brain_restore">Restore</string>
+    <string name="brain_save">Save</string>
+    <string name="brain_remove">Remove</string>
+    <string name="brain_replace">Replace</string>
+    <string name="brain_no_vision">To describe photos, the model needs an add-on for pictures, about 1 GB. It is downloaded separately.</string>
+    <string name="brain_no_model">To answer free questions and describe photos, the Gemma 4 AI model is needed, about 4 GB. It is downloaded separately.</string>
+    <string name="talk_image_default">What is in this picture?</string>
+    <string name="talk_attach">Picture</string>
+    <string name="talk_attach_remove">Remove picture</string>
+    <string-array name="brain_guard_titles">
+        <item>Commands</item>
+        <item>Time, date, weather</item>
+        <item>Questions about the world</item>
+        <item>Health</item>
+    </string-array>
+    <string-array name="brain_guard_notes">
+        <item>Read, stop, chapter, sleep timer, tempo, voice, save — strict templates.</item>
+        <item>The clock and the forecast answer, not the model.</item>
+        <item>Who, when, where, how old — the reference; the model does not guess.</item>
+        <item>The model gives no advice; the emergency number for the country is said.</item>
+    </string-array>
+    <string name="brain_role_model">answers in its own words</string>
+    <string name="brain_role_vision">understands photos</string>
+    <string name="brain_role_draft">optional · speeds up long answers</string>
+    <string name="brain_name_unknown">file name not kept</string>
+    <plurals name="brain_bits">
+        <item quantity="one">%d bit</item>
+        <item quantity="other">%d bits</item>
+    </plurals>
+    <string name="intro_open">What Hora can do</string>
+    <string name="intro_lead">I\'m %1$s, a voice assistant. I read your notifications and books aloud.</string>
+    <string name="intro_speech">I\'m %1$s, a voice assistant. First of all, I read your notifications into your headphones: give me access and choose the apps. I also read books aloud, in any of five voices. Below are the talk and the voice settings.</string>
+    <string name="intro_troupe">Touch a face to make that voice the main one</string>
+    <string name="intro_herald">Notifications aloud</string>
+    <string name="intro_herald_on">Reading into headphones</string>
+    <string name="intro_herald_off">Needs access to notifications</string>
+    <string name="intro_book">Books aloud</string>
+    <string name="intro_book_none">Put a book on the shelf</string>
+    <string name="intro_talk_sub">Time, weather, the book, in plain words</string>
+    <string name="intro_start">Start</string>
+    <string-array name="voice_talk_open">
+        <item>I am here. Time, weather, the book: pick below or write.</item>
+        <item>Ask away: the time, the weather, where we are in the book.</item>
+        <item>No hurry. Time, weather and the book are below, or just write.</item>
+        <item>Sit down, let us talk. Time, weather, the book are below; the rest, in words.</item>
+        <item>Hi! Tap below or write what you need.</item>
+    </string-array>
+    <string-array name="voice_step_forward">
+        <item>Hora. I read now, calm and even.</item>
+        <item>Sirin. I read now, and livelier.</item>
+        <item>Bayun. I read now, slowly, softly.</item>
+        <item>Boyan. I read the books now, unhurried.</item>
+        <item>Sadko. I read now, lighter and brighter.</item>
+    </string-array>
+    <string name="lang_title">Languages</string>
+    <string name="lang_lead">The same voices read in other languages. Each language is downloaded separately.</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_builtin">Built in</string>
+    <string name="lang_english">English</string>
+    <string name="lang_absent">Not installed</string>
+    <string name="lang_get_wifi">Download over Wi-Fi · about 100 MB</string>
+    <string name="lang_get_now">Download now, over any network</string>
+    <string name="lang_from_file">Install from a file</string>
+    <string name="lang_asking">Finding where to get it…</string>
+    <string name="lang_starting">Download starting…</string>
+    <string name="lang_downloading">Downloading · %1$d %%</string>
+    <string name="lang_waiting_wifi">Waiting for Wi-Fi</string>
+    <string name="lang_waiting_net">Waiting for a connection</string>
+    <string name="lang_installing">Installing…</string>
+    <string name="lang_installed">Installed · %1$d MB</string>
+    <string name="lang_not_yet">Stored for now: reading in English comes in later builds.</string>
+    <string name="lang_remove">Remove</string>
+    <string name="lang_cancel">Cancel</string>
+    <string name="lang_failed">Download failed</string>
+    <string name="lang_no_list">Could not find where to download it</string>
+    <string name="lang_bad_file">This file is not the English language for Hora</string>
+    <string name="lang_download_title">Hora · English language</string>
+    <string name="brain_no_model_hint">I can answer in my own words with the Gemma 4 AI model; it is downloaded separately.</string>
+    <string name="brain_need_model">To answer in its own words and describe photos, the app needs the Gemma 4 AI model. It is downloaded separately and runs on the phone itself, offline.</string>
+    <string name="brain_need_vision">To describe photos, the model needs an add-on for pictures. It is downloaded separately.</string>
+    <string name="brain_get_model">Download over Wi-Fi · about 4 GB</string>
+    <string name="brain_get_vision">Download over Wi-Fi · about 1 GB</string>
+    <string name="brain_get_short">Download</string>
+    <string name="brain_get_working">One moment…</string>
+    <string name="brain_prep_title">Preparing the AI model</string>
+    <string name="brain_prep_ask">This takes a while. Please keep Hora open until everything is ready.</string>
+    <string name="brain_prep_progress">%1$.1f of %2$.1f GB · %3$d %%</string>
+    <string name="brain_prep_checking">Checking the files…</string>
+    <string name="brain_prep_waking">Everything is in place. Asking the model whether it is ready…</string>
+    <string-array name="brain_ready_question">
+        <item>Are you ready to work?</item>
+        <item>Are you ready to work?</item>
+        <item>Are you ready to work?</item>
+        <item>Are you ready to work?</item>
+        <item>Are you ready to work?</item>
+    </string-array>
+    <string name="brain_look_rules">You have just been shown a picture, and for the answer about it the rules above change. Talk about what is visible in it now, in the present tense, starting with “In the photo” or “In the picture”, not about yourself. Name the main thing and the setting; if the picture has large lettering, read it as it is. Name a place or thing only if you recognise it for sure; otherwise do not guess. Two or three sentences.</string>
+    <string name="brain_wiki_rules">You have been asked about the world, and the rules above change: below is the text of the encyclopedia article “%1$s”. Answer the question from this text only, in one to three sentences, in your own words. Take dates, numbers and names from the text only. If the text has no answer, say so: “The article does not say.”</string>
+    <string name="wiki_looking">Looking it up in the encyclopedia…</string>
+    <string name="wiki_nothing">The encyclopedia has nothing on this.</string>
+    <string name="wiki_offline">The encyclopedia needs the internet, and there is none now.</string>
+    <string name="wiki_source">Wikipedia · %1$s</string>
+    <string-array name="bot_wiki_drop">
+        <item>find</item>
+        <item>search</item>
+        <item>look</item>
+        <item>up</item>
+        <item>something</item>
+        <item>anything</item>
+        <item>internet</item>
+        <item>wikipedia</item>
+        <item>on</item>
+        <item>in</item>
+        <item>who</item>
+        <item>is</item>
+        <item>was</item>
+        <item>what</item>
+        <item>when</item>
+        <item>where</item>
+        <item>did</item>
+        <item>does</item>
+        <item>the</item>
+        <item>a</item>
+        <item>an</item>
+        <item>how</item>
+        <item>old</item>
+        <item>born</item>
+        <item>died</item>
+        <item>founded</item>
+        <item>tell</item>
+        <item>me</item>
+        <item>do</item>
+        <item>you</item>
+        <item>know</item>
+        <item>please</item>
+        <item>about</item>
+        <item>mister</item>
+        <item>mr</item>
+        <item>mrs</item>
+        <item>ms</item>
+    </string-array>
+    <string name="brain_draft_toggle">Accelerator</string>
+    <string name="brain_draft_toggle_sub">Helps long answers; the model restarts on the next question.</string>
+    <string name="brain_draft_about">A small model that guesses words ahead. For Hora’s short answers it makes little difference; long ones can come faster. It fits the default model only. About 100 MB.</string>
+    <string name="brain_get_draft">Download · about 100 MB</string>
+    <string name="brain_pick_file">Pick a file</string>
+    <string name="brain_custom_model">Another model is in place. “For photos” and the accelerator are made for Gemma 4 and may not work with it.</string>
+    <string name="brain_custom_no_photo">This model does not understand photos: the “For photos” add-on fits the default model, Gemma 4, only.</string>
+    <string name="brain_restore_default">Bring back the default model</string>
+    <string name="brain_part_unfit">does not fit this model</string>
+    <string-array name="bot_say_hello_v1">
+        <item>Hello. I am here.</item>
+    </string-array>
+    <string-array name="bot_say_hello_v2">
+        <item>Hi there. What today?</item>
+    </string-array>
+    <string-array name="bot_say_hello_v3">
+        <item>Hello, hello. No hurry, I am here.</item>
+    </string-array>
+    <string-array name="bot_say_hello_v4">
+        <item>Greetings. What shall we read?</item>
+    </string-array>
+    <string-array name="bot_say_hello_v5">
+        <item>Hi! What are we doing?</item>
+    </string-array>
+    <string-array name="bot_say_thanks_v1">
+        <item>You are welcome.</item>
+    </string-array>
+    <string-array name="bot_say_thanks_v2">
+        <item>Any time.</item>
+    </string-array>
+    <string-array name="bot_say_thanks_v3">
+        <item>You are most welcome.</item>
+    </string-array>
+    <string-array name="bot_say_thanks_v4">
+        <item>Think nothing of it.</item>
+    </string-array>
+    <string-array name="bot_say_thanks_v5">
+        <item>No problem!</item>
+    </string-array>
+    <string-array name="bot_say_pause_v1">
+        <item>Paused.</item>
+    </string-array>
+    <string-array name="bot_say_pause_v2">
+        <item>Stopped. Say when to go on.</item>
+    </string-array>
+    <string-array name="bot_say_pause_v3">
+        <item>Quiet now. I will wait.</item>
+    </string-array>
+    <string-array name="bot_say_pause_v4">
+        <item>Holding the horses.</item>
+    </string-array>
+    <string-array name="bot_say_pause_v5">
+        <item>Stop!</item>
+    </string-array>
+    <string-array name="bot_say_read_v1">
+        <item>Going on with “{book}”.</item>
+    </string-array>
+    <string-array name="bot_say_read_v2">
+        <item>Back to “{book}”.</item>
+    </string-array>
+    <string-array name="bot_say_read_v3">
+        <item>Reading “{book}”, slowly.</item>
+    </string-array>
+    <string-array name="bot_say_read_v4">
+        <item>The tale goes on: “{book}”.</item>
+    </string-array>
+    <string-array name="bot_say_read_v5">
+        <item>Here we go: “{book}”!</item>
+    </string-array>
+    <string-array name="bot_say_unknown_v1">
+        <item>I cannot do that yet. Ask “what can you do”.</item>
+    </string-array>
+    <string-array name="bot_say_unknown_v2">
+        <item>Did not get that. Ask “what can you do”.</item>
+    </string-array>
+    <string-array name="bot_say_unknown_v3">
+        <item>I did not understand. Ask “what can you do”.</item>
+    </string-array>
+    <string-array name="bot_say_unknown_v4">
+        <item>I did not grasp that. Ask “what can you do”.</item>
+    </string-array>
+    <string-array name="bot_say_unknown_v5">
+        <item>Hm, missed that. Ask “what can you do”!</item>
+    </string-array>
+    <string-array name="bot_search_world">
+        <item>something about</item>
+        <item>anything about</item>
+        <item>about</item>
+        <item>on the internet</item>
+        <item>in wikipedia</item>
+    </string-array>
+    <string name="talk_line_title">Line</string>
+    <string name="talk_copy">Copy</string>
+    <string name="talk_copied">Copied</string>
+    <string name="shelve_label">To the Hora shelf</string>
+    <string name="shelve_failed">Could not put “%1$s” on the shelf.</string>
+    <string-array name="bot_say_battery">
+        <item>Battery at {pct} percent.</item>
+    </string-array>
+    <string-array name="bot_say_battery_charging">
+        <item>Battery at {pct} percent, charging.</item>
+    </string-array>
+    <string name="battery_low">Battery at %1$d percent. Time to charge.</string>
+    <string name="battery_very_low">Battery at only %1$d percent. The phone will switch off soon.</string>
+    <string name="battery_switch">Warn about the battery</string>
+    <string name="battery_switch_sub">Into the headphones, at 15 and at 5 percent.</string>
+    <string name="folder_books">Books</string>
+    <string name="folder_temp">Temporary</string>
+    <string name="shelf_temporary">temporary</string>
+    <string name="shelf_keep">Keep on the shelf</string>
+    <string name="shelf_folder_hint">Show Hora its folder, and the books will be in plain sight and survive a reinstall.</string>
+    <string name="folder_root" translatable="false">Hora</string>
+    <string name="transfer_title">Moving from another phone</string>
+    <string name="transfer_lead">Settings of the voices, the bot, the model and the look, the place in every book and the stress dictionary all live in one file in the Hora folder. Books and models sit beside it in their own folders.</string>
+    <string name="transfer_none">No settings file was found. One can be picked in Settings, under Moving.</string>
+    <string name="transfer_unreadable">This file is not Hora settings, or it is damaged.</string>
+    <string name="transfer_found">Found settings saved %1$s: %2$s. Bring them back here? What is set on this phone will be replaced.</string>
+    <string name="transfer_restore">Bring back</string>
+    <string name="transfer_folder_first">Show the Hora folder and bring back</string>
+    <string name="transfer_later">Not now</string>
+    <string name="transfer_working">Bringing back…</string>
+    <string name="transfer_done">Done. Hora will restart.</string>
+    <string name="transfer_failed">Could not bring it back. Details are in the journal.</string>
+    <string name="transfer_section">Moving</string>
+    <string name="transfer_row">Settings in the Hora folder</string>
+    <string name="transfer_no_folder">needs the folder</string>
+    <string name="transfer_not_yet">not saved yet</string>
+    <string name="transfer_about">Hora saves its settings, reading places and your voices into %1$s in its folder, a minute after any change. To move Hora, copy the whole Hora folder to the new phone or send this file — Hora will recognise it.</string>
+    <string name="transfer_save_now">Save now</string>
+    <string name="transfer_from_file">Bring back from a file…</string>
+    <string name="intro_folder">Hora folder</string>
+    <string name="intro_folder_sub">Books, settings and voices in plain sight</string>
+    <plurals name="transfer_books">
+        <item quantity="one">%d book</item>
+        <item quantity="other">%d books</item>
+    </plurals>
+    <string name="check_lead">The settings are in place. Some rights and large files do not travel — this phone gives them itself. Still to do:</string>
+    <string name="check_herald">Notifications aloud</string>
+    <string name="check_herald_sub">Give this phone access to notifications</string>
+    <string name="check_engine">Voice for other apps</string>
+    <string name="check_engine_sub">Pick Hora in the speech settings</string>
+    <string name="check_model_sub">Download the model or take it from Hora/Models</string>
+    <string name="check_english_sub">Download English again</string>
+    <string name="check_later">Later</string>
+    <string name="check_all_done">Everything is in place.</string>
+    <string name="share_label">Listen</string>
+    <string name="export_title">Audiobooks</string>
+    <string name="export_make">Make an audiobook</string>
+    <string name="export_lead">Hora reads the whole book aloud and lays the chapters out as 1.m4a, 2.m4a… in the book\'s folder. It takes long, so Hora works only while the phone charges — best overnight. Off the charger it pauses without loss and goes on from the same place.</string>
+    <string name="export_about">“%1$s”: %2$s, read by %3$s. About %4$s of sound, around %5$s of work on the charger.</string>
+    <string name="export_start">Add to the queue</string>
+    <string name="export_where">Where</string>
+    <string name="export_other_folder">Pick another folder</string>
+    <string name="export_no_folder">Show Hora its folder first</string>
+    <string name="export_queue">Queue</string>
+    <string name="export_queue_empty">Empty</string>
+    <string name="export_waiting_turn">waits its turn</string>
+    <string name="export_waiting_charger">waits for the charger</string>
+    <string name="export_working">chapter %1$d of %2$d</string>
+    <string name="export_working_pct">chapter %1$d of %2$d · %3$d&#160;%%</string>
+    <string name="export_yielding">waits for the book playing</string>
+    <string name="export_waiting_phone">charging, waiting for the phone</string>
+    <string name="export_failed">didn\'t work</string>
+    <string name="export_failed_about">It didn\'t work three times in a row. The place in the book is kept; the reason is in the journal.</string>
+    <string name="export_retry">Try again</string>
+    <string name="export_synthetic_note">The voice in these recordings was synthesized by Hora; it is not a recording of a person.</string>
+    <string name="export_cancel">Take out of the queue</string>
+    <string name="export_channel">Audiobooks</string>
+    <string name="export_done_title">“%1$s” is ready</string>
+    <string name="export_chapters_file">chapters.txt</string>
+    <string name="folder_audiobooks">Audiobooks</string>
+    <plurals name="export_done_text">
+        <item quantity="one">%d chapter, ready to listen</item>
+        <item quantity="other">%d chapters, ready to listen</item>
+    </plurals>
+    <plurals name="export_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <plurals name="export_hours">
+        <item quantity="one">%d hour</item>
+        <item quantity="other">%d hours</item>
+    </plurals>
+    <string name="first_lead">A voice for books, notifications and talk. Everything lives on the phone.</string>
+    <string name="first_step_of">%1$d of %2$d</string>
+    <string name="first_skip">Skip</string>
+    <string name="first_open_settings">Open settings</string>
+    <string name="first_notify_title">Notifications from Hora</string>
+    <string name="first_notify_text">To stop reading with one touch and to know when an audiobook is ready.</string>
+    <string name="first_notify_action">Allow</string>
+    <string name="first_herald_title">Notifications aloud</string>
+    <string name="first_herald_text">Sirin will read messages into your headphones. This needs access to notifications, given in the phone\'s settings.</string>
+    <string name="first_folder_title">Hora folder</string>
+    <string name="first_folder_text">Books, audiobooks and everything for moving to another phone live in one folder. Show it to Hora; the picker opens in the right place.</string>
+    <string name="first_folder_action">Show the folder</string>
+    <string name="first_weather_title">Weather</string>
+    <string name="first_weather_text">To talk about the weather, Hora needs a town. Find it by name, without access to your location.</string>
+    <string name="first_weather_action">Find a town</string>
+    <string name="first_engine_title">The phone\'s voice</string>
+    <string name="first_engine_text">Hora can also read for other apps: readers, navigation, translators. Choose it in the phone\'s speech settings.</string>
+    <string name="first_model_title">AI model</string>
+    <string name="first_model_text">For answers in the voices\' own words and for understanding photos, an AI model is needed, about 3 GB. Better over Wi-Fi.</string>
+    <string name="first_model_action">Open</string>
+    <string name="tile_hush">Hora: quiet</string>
+    <string name="tile_hush_speaking">speaking · touch to silence</string>
+    <string name="tile_hush_silent">silent</string>
+</resources>

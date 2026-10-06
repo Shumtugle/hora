@@ -1,0 +1,1 @@
+https://api.open-meteo.com/v1/forecast?latitude=%lat&longitude=%lon&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code,is_day&wind_speed_unit=ms&hourly=weather_code&forecast_hours=12&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&forecast_days=2&timezone=auto

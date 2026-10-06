@@ -1,0 +1,5 @@
+Voice samples 4 and 5
+
+Short excerpts from the single-speaker Russian speech datasets "Denis 1.0" (sample 4) and
+"Dmitri 1.0" (sample 5) published on Mozilla Data Collective, dedicated to the public domain
+under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/).

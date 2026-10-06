@@ -1,0 +1,9 @@
+out/
+assets/voice/
+lib/
+*.keystore
+*.jks
+
+# Built locally; large inputs are fetched by scripts, not kept here.
+assets/lexicons/stress-big.tsv
+*.stamp

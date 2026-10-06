@@ -1,0 +1,18 @@
+Voice model
+
+The speech model is the Russian model Shtorm_PocketTTS_RU v1 by ArtShtorm,
+licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/),
+https://huggingface.co/ArtShtorm/Shtorm_PocketTTS_RU
+
+It is built on Pocket TTS by Kyutai Labs, licensed CC BY 4.0.
+Pocket TTS was created by Manu Orsini, Simon Rouard, Gabriel De Marmiesse,
+Vaclav Volhejn, Neil Zeghidour and Alexandre Defossez.
+https://github.com/kyutai-labs/pocket-tts
+
+Changes: the model was exported to ONNX and partly quantized to 8-bit integers
+for on-device use; the input and output types of two of its graphs were widened
+from 16-bit to 32-bit floats. The weights were not retrained.
+
+Voice cloning is used only with samples the user has the right to use.
+The model must not be used to impersonate people, to mislead, or for any
+harmful or unlawful purpose.
