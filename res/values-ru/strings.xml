@@ -384,6 +384,7 @@
     <!-- Regular expressions over one lower-case word, applied in order: pattern=>replacement. -->
     <string-array name="respell_rules">
         <item>([оеё]́?)го$=>$1во</item>
+        <item>^помо(́?)щн=>помо$1шн</item>
         <item>ться$=>ца</item>
         <item>тся$=>ца</item>
         <item>[сз]ч=>щ</item>
