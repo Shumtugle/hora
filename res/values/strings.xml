@@ -1088,6 +1088,7 @@
     <string name="check_english_sub">Download English again</string>
     <string name="check_later">Later</string>
     <string name="check_all_done">Everything is in place.</string>
+    <string name="share_photo_label">Ask about the photo</string>
     <string name="share_label">Listen</string>
     <string name="export_title">Audiobooks</string>
     <string name="export_make">Make an audiobook</string>

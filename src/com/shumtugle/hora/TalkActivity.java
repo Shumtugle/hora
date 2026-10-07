@@ -3,6 +3,7 @@ package com.shumtugle.hora;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -80,6 +81,7 @@ public final class TalkActivity extends Activity {
         // The same voice as on the main screen: the one chosen there answers here.
         voice = Prefs.role(this, Cast.TALK);
         setContentView(build());
+        takeShared(getIntent());
         if (talk.isEmpty()) {
             // The voice opens with what it can do here, in its own words.
             add(new Line(false, Cast.say(this, R.array.voice_talk_open, voice), ""));
@@ -191,11 +193,18 @@ public final class TalkActivity extends Activity {
         line.setBackground(Ui.round(Palette.SURFACE, 28, this));
 
         ImageView clip = Ui.iconButton(this, R.drawable.ic_attach, Palette.SURFACE, 40, getString(R.string.talk_attach));
+        // A touch opens the phone's own photo picker; a long touch, the files.
         clip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
-                        .setType("image/*"), PICK_IMAGE);
+                pickPhoto();
+            }
+        });
+        clip.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                pickFile();
+                return true;
             }
         });
         line.setPadding(dp(6), dp(6), dp(6), dp(6));
@@ -211,6 +220,23 @@ public final class TalkActivity extends Activity {
         draft.setPadding(0, 0, dp(8), 0);
         draft.setSingleLine(true);
         draft.setImeOptions(EditorInfo.IME_ACTION_SEND);
+        if (Build.VERSION.SDK_INT >= 31) {
+            // A picture pasted into the field is attached, as if picked.
+            draft.setOnReceiveContentListener(new String[] {"image/*"}, new android.view.OnReceiveContentListener() {
+                @Override
+                public android.view.ContentInfo onReceiveContent(View view, android.view.ContentInfo payload) {
+                    android.content.ClipData clip = payload.getClip();
+                    for (int i = 0; i < clip.getItemCount(); i++) {
+                        android.net.Uri uri = clip.getItemAt(i).getUri();
+                        if (uri != null) {
+                            attachImage(uri);
+                            return null;
+                        }
+                    }
+                    return payload;
+                }
+            });
+        }
         draft.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int action, KeyEvent e) {
@@ -528,29 +554,46 @@ public final class TalkActivity extends Activity {
 
     private boolean saveWanted;
 
+    /** The phone's photo picker: recent shots and albums, no folders and no permission. */
+    private void pickPhoto() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            try {
+                startActivityForResult(new Intent(android.provider.MediaStore.ACTION_PICK_IMAGES), PICK_IMAGE);
+                return;
+            } catch (android.content.ActivityNotFoundException e) {
+                Diag.log(this, "talk: no photo picker, files instead");
+            }
+        }
+        pickFile();
+    }
+
+    private void pickFile() {
+        startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("image/*"), PICK_IMAGE);
+    }
+
+    /** A picture handed over by another app through sharing. */
+    static final String EXTRA_PHOTO = "photo";
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        takeShared(intent);
+    }
+
+    private void takeShared(Intent intent) {
+        android.net.Uri uri = intent == null ? null : (android.net.Uri) intent.getParcelableExtra(EXTRA_PHOTO);
+        if (uri != null) {
+            intent.removeExtra(EXTRA_PHOTO);
+            attachImage(uri);
+        }
+    }
+
     @Override
     protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
         if (request == PICK_IMAGE && result == RESULT_OK && data != null && data.getData() != null) {
-            final android.net.Uri uri = data.getData();
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    final byte[] jpeg = shrink(uri);
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (jpeg == null) {
-                                return;
-                            }
-                            pending = jpeg;
-                            attachedThumb.setImageBitmap(android.graphics.BitmapFactory.decodeByteArray(jpeg, 0,
-                                    jpeg.length));
-                            attached.setVisibility(View.VISIBLE);
-                        }
-                    });
-                }
-            }, "talk-image").start();
+            attachImage(data.getData());
             return;
         }
         if (request == HoraFolder.PICK) {
@@ -560,6 +603,29 @@ public final class TalkActivity extends Activity {
                 saveTalk();
             }
         }
+    }
+
+    /** Shrinks a picture off the main thread and shows it above the field, waiting for a question. */
+    private void attachImage(final android.net.Uri uri) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final byte[] jpeg = shrink(uri);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (jpeg == null) {
+                            Diag.log(TalkActivity.this, "talk: picture unreadable");
+                            return;
+                        }
+                        pending = jpeg;
+                        attachedThumb.setImageBitmap(android.graphics.BitmapFactory.decodeByteArray(jpeg, 0,
+                                jpeg.length));
+                        attached.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+        }, "talk-image").start();
     }
 
     /**

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.shumtugle.hora"
-    android:versionCode="164"
-    android:versionName="0.68.3">
+    android:versionCode="165"
+    android:versionName="0.68.4">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -139,6 +139,17 @@
                 <data android:mimeType="application/vnd.oasis.opendocument.text"/>
                 <data android:mimeType="application/rtf"/>
                 <data android:mimeType="text/rtf"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".AskPhotoActivity" android:exported="true"
+            android:label="@string/share_photo_label"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:excludeFromRecents="true"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="image/*"/>
             </intent-filter>
         </activity>
         <activity android:name=".ReadActivity" android:exported="true"
