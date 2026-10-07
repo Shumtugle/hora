@@ -284,7 +284,9 @@ final class Voice {
                 Diag.log(context, "voice: " + (verdict > 0 ? "overlong" : "short") + " chunk, "
                         + (kept == 0 ? "redrawn clean" : "still off, trimmed") + ": " + text);
                 if (kept > 0) {
-                    best = trimTo(best, expectedSamples(letters, voice) * TRIM_MARGIN);
+                    best = trimTo(best, letters < JUDGED_LETTERS
+                            ? shortLimit(letters) * MODEL_RATE / SHORT_LOOP
+                            : expectedSamples(letters, voice) * TRIM_MARGIN);
                 }
             }
             float before = rateOf(voice);
@@ -351,6 +353,10 @@ final class Voice {
     // chunks; a chunk is suspicious when its length strays far from that pace.
     private static final float START_RATE = 12f;
     private static final float TOO_LONG = 1.7f;
+    /** Below this many letters a chunk is judged by plain length, not by the voice's rate. */
+    private static final int JUDGED_LETTERS = 8;
+    /** How many single readings of a short chunk fit under its limit. */
+    private static final float SHORT_LOOP = 2f;
     private static final float TOO_SHORT = 0.45f;
     private static final float TRIM_MARGIN = 1.25f;
     private static final float SLACK_S = 0.6f;
@@ -387,16 +393,31 @@ final class Voice {
         return sorted[n / 2];
     }
 
+    /**
+     * The longest a short chunk may last, silence at its ends included: twice
+     * the longest single reading measured across all voices (0.3 s plus 0.07 s
+     * a letter, with some room).
+     */
+    private static float shortLimit(int letters) {
+        return SHORT_LOOP * (0.3f + 0.07f * letters);
+    }
+
     private int expectedSamples(int letters, int voice) {
         return Math.round(letters / rateOf(voice) * MODEL_RATE);
     }
 
     /** 0 when the length is plausible, &gt;0 when too long, &lt;0 when too short. */
     private float judge(float[] audio, int letters, int voice) {
-        if (letters < 8) {
-            return 0;
-        }
         float seconds = audio.length / (float) MODEL_RATE;
+        if (letters < JUDGED_LETTERS) {
+            // A word or two: the rate is no guide here, but a short word said over
+            // and over runs far past the length any single reading of it takes.
+            if (letters == 0) {
+                return 0;
+            }
+            float limit = shortLimit(letters);
+            return seconds > limit ? seconds / limit * SHORT_LOOP : 0;
+        }
         float expected = letters / rateOf(voice);
         if (seconds > expected * TOO_LONG + SLACK_S) {
             return seconds / expected;
