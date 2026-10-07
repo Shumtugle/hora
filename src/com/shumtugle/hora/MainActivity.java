@@ -365,14 +365,15 @@ public final class MainActivity extends Activity {
         }
     }
 
+    /**
+     * The melody under the naming sheet: a small MIDI score played by the
+     * phone's own synthesizer, round and round for as long as the sheet is open.
+     */
     private void playTune() {
         stopTune();
         try {
-            android.content.res.AssetFileDescriptor fd = getAssets().openFd("sounds/naming.ogg");
-            tune = new android.media.MediaPlayer();
-            tune.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
-            fd.close();
-            tune.prepare();
+            tune = player("sounds/naming.mid");
+            tune.setLooping(true);
             tune.start();
         } catch (java.io.IOException | RuntimeException e) {
             // Without the melody the sheet still asks; it is only quieter.
@@ -381,14 +382,55 @@ public final class MainActivity extends Activity {
         }
     }
 
+    private android.media.MediaPlayer player(String asset) throws java.io.IOException {
+        android.content.res.AssetFileDescriptor fd = getAssets().openFd(asset);
+        android.media.MediaPlayer p = new android.media.MediaPlayer();
+        p.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
+        fd.close();
+        p.prepare();
+        return p;
+    }
+
+    /** The melody does not stop dead: it fades out over a second and a half. */
     private void stopTune() {
-        if (tune != null) {
-            try {
-                tune.release();
-            } catch (RuntimeException ignored) {
-                // Already gone.
+        final android.media.MediaPlayer a = tune;
+        tune = null;
+        if (a == null) {
+            return;
+        }
+        final long started = android.os.SystemClock.uptimeMillis();
+        final android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
+        h.post(new Runnable() {
+            @Override
+            public void run() {
+                float left = 1f - (android.os.SystemClock.uptimeMillis() - started) / 1500f;
+                if (left > 0f) {
+                    volume(a, left);
+                    h.postDelayed(this, 50);
+                } else {
+                    release(a);
+                }
             }
-            tune = null;
+        });
+    }
+
+    private static void volume(android.media.MediaPlayer p, float v) {
+        try {
+            if (p != null) {
+                p.setVolume(v * v, v * v);
+            }
+        } catch (RuntimeException ignored) {
+            // Already gone.
+        }
+    }
+
+    private static void release(android.media.MediaPlayer p) {
+        try {
+            if (p != null) {
+                p.release();
+            }
+        } catch (RuntimeException ignored) {
+            // Already gone.
         }
     }
 
