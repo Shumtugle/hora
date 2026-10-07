@@ -30,8 +30,11 @@ public final class MainActivity extends Activity {
     private int built;
     private static final String NOTIFY_PERMISSION = "android.permission.POST_NOTIFICATIONS";
     private static final String STATE_SPOKEN = "spoken";
-    /** The phrase on screen as it is to be spoken; a tap on the text says it again. */
+    private static final String STATE_CARD = "card";
+    /** The last answer on screen as it is to be spoken; a tap on it says it again. */
     private String shown;
+    /** The line on screen is the voice's card: a tap makes the voice speak about itself, never word for word. */
+    private boolean card = true;
 
     private int voice;
     private final ImageView[] dots = new ImageView[Cast.COUNT];
@@ -53,8 +56,12 @@ public final class MainActivity extends Activity {
         super.onCreate(state);
         built = Ui.prepare(this);
         setContentView(build());
-        spoken.setText(state != null && state.getCharSequence(STATE_SPOKEN) != null
-                ? state.getCharSequence(STATE_SPOKEN) : getString(R.string.home_hint));
+        if (state != null && state.getCharSequence(STATE_SPOKEN) != null) {
+            spoken.setText(state.getCharSequence(STATE_SPOKEN));
+            card = state.getBoolean(STATE_CARD, true);
+        } else {
+            showCard(Prefs.role(this, Cast.TALK));
+        }
         if (state == null && !Prefs.introSeen(this)) {
             // The first start opens on its scene and questions, then the title page; the voice screen waits under them.
             startActivity(new Intent(this, FirstRunActivity.class));
@@ -87,6 +94,9 @@ public final class MainActivity extends Activity {
         RestoreActivity.checkIfPending(this);
         // The workshop, or the title page, may have changed the voice.
         showVoice(Prefs.role(this, Cast.TALK));
+        if (card) {
+            showCard(voice);
+        }
         if (Prefs.introSeen(this)) {
             askNotify();
         }
@@ -105,11 +115,13 @@ public final class MainActivity extends Activity {
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         out.putCharSequence(STATE_SPOKEN, spoken.getText());
+        out.putBoolean(STATE_CARD, card);
     }
 
     private void say(String phrase) {
         spoken.setText(Ui.plain(phrase));
         shown = phrase;
+        card = false;
         VoiceService.speak(this, phrase, voice);
     }
 
@@ -282,8 +294,26 @@ public final class MainActivity extends Activity {
         Prefs.troupeHintUsed(this);
         showVoice(v);
         Widgets.refresh(this);
-        // Changing the voice is quiet: the greeting is shown, and a tap on it speaks it.
+        // Changing the voice is quiet: its card is shown, and a tap on it makes the voice speak.
+        TapTalk.reset();
+        showCard(v);
+    }
+
+    private void showCard(int v) {
+        card = true;
         spoken.setText(Ui.plain(Cast.say(this, R.array.voice_step_forward, v)));
+    }
+
+    /** A tap on the line: the card makes the voice speak about itself; an answer is said again. */
+    private void tapLine() {
+        if (card || shown == null) {
+            TapTalk.Reply r = TapTalk.next(this, voice);
+            if (r != null) {
+                VoiceService.speak(this, r.text, voice, r.flat ? TapTalk.FLAT_PACE : 1f);
+            }
+        } else {
+            VoiceService.speak(this, shown, voice);
+        }
     }
 
     private void showVoice(int v) {
@@ -435,7 +465,7 @@ public final class MainActivity extends Activity {
         spoken.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, TalkActivity.class));
+                tapLine();
             }
         });
         spoken.setGravity(Gravity.CENTER);

@@ -57,10 +57,15 @@ public final class VoiceService extends Service {
 
     /** Speaks with a given voice (1..COUNT); 0 leaves it to the narrator role. */
     static void speak(Context c, String text, int voice) {
+        speak(c, text, voice, 1f);
+    }
+
+    /** The same, with the voice's own pace scaled for this phrase only. */
+    static void speak(Context c, String text, int voice, float pace) {
         Intent i = new Intent(c, VoiceService.class)
                 .setAction(ACTION_SPEAK)
                 .putExtra(EXTRA_TEXT, text)
-                .putExtra(EXTRA_SPEED, Prefs.speed(c))
+                .putExtra(EXTRA_SPEED, Math.max(Prefs.SPEED_MIN, Prefs.speed(c) * pace))
                 .putExtra(EXTRA_PAUSE, Prefs.pauseMs(c))
                 .putExtra(EXTRA_VOICE, voice);
         c.startForegroundService(i);

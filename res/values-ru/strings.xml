@@ -765,7 +765,6 @@
     <!-- Letter folded into its plain twin when matching context rules: from=to. -->
     <string name="letter_folding">ё=е</string>
     <string name="workshop">Настройки голоса</string>
-    <string name="home_hint">Нажми, и я скажу, который час.</string>
     <string name="home_time">Который час</string>
     <string name="home_weather">Погода</string>
     <string name="home_next_voice">Другой голос</string>
@@ -808,11 +807,18 @@
     <string name="portraits_note">ChatGPT</string>
     <string name="fonts">Шрифты</string>
     <string-array name="voice_epithets">
-        <item>рассказчица</item>
-        <item>собеседница</item>
-        <item>собеседник</item>
+        <item>вещая</item>
+        <item>звонкая</item>
+        <item>сказочник</item>
         <item>чтец</item>
-        <item>молодой гусляр</item>
+        <item>гусляр</item>
+    </string-array>
+    <string-array name="voice_titles">
+        <item>помощница</item>
+        <item>собеседница</item>
+        <item>сказочник</item>
+        <item>чтец</item>
+        <item>гусляр</item>
     </string-array>
     <string-array name="voice_kinds">
         <item>женский · главный</item>
@@ -1850,11 +1856,11 @@
         <item>Привет! Жми внизу или пиши, что нужно.</item>
     </string-array>
     <string-array name="voice_step_forward">
-        <item>Гамаюн. Теперь читаю я, спокойно и ровно.</item>
-        <item>Сирин. Теперь читаю я, и поживее.</item>
-        <item>Баюн. Теперь читаю я, неторопливо, вполголоса.</item>
-        <item>Боян. Теперь книги читаю я, с расстановкой.</item>
-        <item>Садко. Теперь читаю я, полегче и повеселее.</item>
+        <item>Гамаюн. Теперь отвечаю я. Спрашивай.</item>
+        <item>Сирин. Теперь с тобой говорю я.</item>
+        <item>Баюн. Я рядом. Спрашивай, не торопись.</item>
+        <item>Боян. Теперь отвечаю я, коротко и по делу.</item>
+        <item>Садко. Теперь со мной. Что нового?</item>
     </string-array>
     <string name="lang_title">Языки</string>
     <string name="lang_lead">Те же голоса читают на других языках. Каждый язык скачивается отдельно.</string>

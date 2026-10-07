@@ -339,7 +339,6 @@
     <string-array name="one_letter_words"/>
     <string name="letter_folding"></string>
     <string name="workshop">Voice settings</string>
-    <string name="home_hint">Tap and I will tell you the time.</string>
     <string name="home_time">What time</string>
     <string name="home_weather">Weather</string>
     <string name="home_next_voice">Another voice</string>
@@ -382,11 +381,18 @@
     <string name="portraits_note">ChatGPT</string>
     <string name="fonts">Fonts</string>
     <string-array name="voice_epithets">
+        <item>seer</item>
+        <item>clear-voiced</item>
         <item>storyteller</item>
-        <item>companion</item>
-        <item>companion</item>
         <item>reader</item>
-        <item>young minstrel</item>
+        <item>minstrel</item>
+    </string-array>
+    <string-array name="voice_titles">
+        <item>assistant</item>
+        <item>companion</item>
+        <item>storyteller</item>
+        <item>reader</item>
+        <item>minstrel</item>
     </string-array>
     <string-array name="voice_kinds">
         <item>female · main</item>
@@ -844,11 +850,11 @@
         <item>Hi! Tap below or write what you need.</item>
     </string-array>
     <string-array name="voice_step_forward">
-        <item>Hora. I read now, calm and even.</item>
-        <item>Sirin. I read now, and livelier.</item>
-        <item>Bayun. I read now, slowly, softly.</item>
-        <item>Boyan. I read the books now, unhurried.</item>
-        <item>Sadko. I read now, lighter and brighter.</item>
+        <item>Hora. I\'m answering now. Ask away.</item>
+        <item>Sirin. I\'m the one talking to you now.</item>
+        <item>Bayun. I\'m here. Ask, take your time.</item>
+        <item>Boyan. I\'m answering now, short and to the point.</item>
+        <item>Sadko. You\'re with me now. What\'s new?</item>
     </string-array>
     <string name="lang_title">Languages</string>
     <string name="lang_lead">The same voices read in other languages. Each language is downloaded separately.</string>

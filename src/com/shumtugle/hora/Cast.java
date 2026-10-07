@@ -47,6 +47,11 @@ final class Cast {
         return item(c, R.array.voice_epithets, voice);
     }
 
+    /** What a voice is, as a noun: the word that follows its name when it introduces itself. */
+    static String title(Context c, int voice) {
+        return say(c, R.array.voice_titles, voice);
+    }
+
     /** What kind of voice it is: female or male, main or not. */
     static String kind(Context c, int voice) {
         return item(c, R.array.voice_kinds, voice);
