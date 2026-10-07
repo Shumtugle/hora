@@ -106,7 +106,6 @@ public final class MainActivity extends Activity {
 
     @Override
     protected void onPause() {
-        stopTune();
         breathGlow.cancel();
         breathRing.cancel();
         super.onPause();
@@ -300,18 +299,17 @@ public final class MainActivity extends Activity {
         showCard(v);
         if (Cast.renamable(v) && !Prefs.nameAsked(this, v)) {
             Prefs.setNameAsked(this, v);
-            askName(v, true);
+            askName(v);
         }
     }
 
-    private android.media.MediaPlayer tune;
 
     /**
      * A sheet with one field for the voice's name. The field is empty with the
      * given name greyed in it: a single letter replaces it, and a field left
-     * alone keeps it. The first time a melody plays under it instead of words.
+     * alone keeps it.
      */
-    private void askName(final int v, boolean withTune) {
+    private void askName(final int v) {
         final android.widget.EditText field = new android.widget.EditText(this);
         Ui.field(field);
         field.setHint(Cast.givenName(this, v));
@@ -349,89 +347,11 @@ public final class MainActivity extends Activity {
                 return true;
             }
         });
-        d.setOnDismissListener(new android.content.DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(android.content.DialogInterface di) {
-                stopTune();
-            }
-        });
         if (d.getWindow() != null) {
             d.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
         field.requestFocus();
         d.show();
-        if (withTune) {
-            playTune();
-        }
-    }
-
-    /**
-     * The melody under the naming sheet: a small MIDI score played by the
-     * phone's own synthesizer, round and round for as long as the sheet is open.
-     */
-    private void playTune() {
-        stopTune();
-        try {
-            tune = player("sounds/naming.mid");
-            tune.setLooping(true);
-            tune.start();
-        } catch (java.io.IOException | RuntimeException e) {
-            // Without the melody the sheet still asks; it is only quieter.
-            Diag.log(this, "name: no melody");
-            stopTune();
-        }
-    }
-
-    private android.media.MediaPlayer player(String asset) throws java.io.IOException {
-        android.content.res.AssetFileDescriptor fd = getAssets().openFd(asset);
-        android.media.MediaPlayer p = new android.media.MediaPlayer();
-        p.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
-        fd.close();
-        p.prepare();
-        return p;
-    }
-
-    /** The melody does not stop dead: it fades out over a second and a half. */
-    private void stopTune() {
-        final android.media.MediaPlayer a = tune;
-        tune = null;
-        if (a == null) {
-            return;
-        }
-        final long started = android.os.SystemClock.uptimeMillis();
-        final android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
-        h.post(new Runnable() {
-            @Override
-            public void run() {
-                float left = 1f - (android.os.SystemClock.uptimeMillis() - started) / 1500f;
-                if (left > 0f) {
-                    volume(a, left);
-                    h.postDelayed(this, 50);
-                } else {
-                    release(a);
-                }
-            }
-        });
-    }
-
-    private static void volume(android.media.MediaPlayer p, float v) {
-        try {
-            if (p != null) {
-                p.setVolume(v * v, v * v);
-            }
-        } catch (RuntimeException ignored) {
-            // Already gone.
-        }
-    }
-
-    private static void release(android.media.MediaPlayer p) {
-        try {
-            if (p != null) {
-                p.release();
-            }
-        } catch (RuntimeException ignored) {
-            // Already gone.
-        }
     }
 
     private void showCard(int v) {
@@ -559,7 +479,7 @@ public final class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                 if (Cast.renamable(voice)) {
-                    askName(voice, false);
+                    askName(voice);
                 }
             }
         });
