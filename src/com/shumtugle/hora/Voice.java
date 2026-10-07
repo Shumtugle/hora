@@ -543,13 +543,7 @@ final class Voice {
             int narratorOverride) {
         List<float[]> pieces = new ArrayList<float[]>();
         int total = 0;
-        List<Part> all = parts(spoken, locale);
-        if (quick && !all.isEmpty() && all.get(0).text.length() > START_CHUNK) {
-            Part first = all.remove(0);
-            int cut = lastBreak(first.text, START_CHUNK);
-            all.add(0, new Part(first.text.substring(cut).trim(), first.role));
-            all.add(0, new Part(first.text.substring(0, cut).trim(), first.role));
-        }
+        List<Part> all = quick ? quickParts(spoken, locale) : parts(spoken, locale);
         for (Part part : all) {
             if (part.text.isEmpty()) {
                 continue;
@@ -581,6 +575,21 @@ final class Voice {
         out.play();
         write(out, samples, cancel);
         out.stop();
+    }
+
+    /**
+     * The pieces of a text, the first one cut at its first natural pause when
+     * long, so a listener waiting in silence hears the voice after a short phrase.
+     */
+    static List<Part> quickParts(String spoken, Locale locale) {
+        List<Part> all = new ArrayList<Part>(parts(spoken, locale));
+        if (!all.isEmpty() && all.get(0).text.length() > START_CHUNK) {
+            Part first = all.remove(0);
+            int cut = lastBreak(first.text, START_CHUNK);
+            all.add(0, new Part(first.text.substring(cut).trim(), first.role));
+            all.add(0, new Part(first.text.substring(0, cut).trim(), first.role));
+        }
+        return all;
     }
 
     /**

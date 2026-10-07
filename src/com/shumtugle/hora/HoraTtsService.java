@@ -6,6 +6,11 @@ import android.speech.tts.SynthesisRequest;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeechService;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -27,6 +32,8 @@ public final class HoraTtsService extends TextToSpeechService {
     static final String NUMBERED = "ru-ru-x-hora-";
 
     private final AtomicInteger generation = new AtomicInteger();
+    /** One piece at a time is made ahead; the voice is never asked for two at once. */
+    private final ExecutorService maker = Executors.newSingleThreadExecutor();
 
     @Override
     public java.util.List<android.speech.tts.Voice> onGetVoices() {
@@ -76,6 +83,12 @@ public final class HoraTtsService extends TextToSpeechService {
     @Override
     protected int onLoadLanguage(String lang, String country, String variant) {
         return onIsLanguageAvailable(lang, country, variant);
+    }
+
+    @Override
+    public void onDestroy() {
+        maker.shutdownNow();
+        super.onDestroy();
     }
 
     @Override
@@ -151,27 +164,61 @@ public final class HoraTtsService extends TextToSpeechService {
                 request.getSpeechRate() / 100f * Prefs.speedShared(this)));
         int pauseMs = Prefs.pauseMsShared(this);
         int produced = 0;
-        boolean first = true;
-        for (Voice.Part part : Voice.parts(text, SpeechLanguage.locale())) {
+        // The platform lets the engine run only a little ahead of the speaker, so a piece
+        // made after the last one is handed over leaves a gap as long as its own synthesis.
+        // The next piece is made while the current one is handed over; the first is short.
+        java.util.List<Voice.Part> parts = new java.util.ArrayList<Voice.Part>();
+        for (Voice.Part p : Voice.quickParts(text, SpeechLanguage.locale())) {
+            if (!p.text.isEmpty()) {
+                parts.add(p);
+            }
+        }
+        long started = android.os.SystemClock.elapsedRealtime();
+        Future<float[]> next = parts.isEmpty() ? null : ahead(voice, parts.get(0), speed, narrator);
+        for (int i = 0; i < parts.size(); i++) {
+            float[] samples;
+            try {
+                samples = next.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            } catch (ExecutionException e) {
+                Diag.log(this, "engine: synthesis failed", e.getCause());
+                callback.error();
+                return;
+            }
+            if (i == 0) {
+                Diag.log(this, "engine: first sound after " + (android.os.SystemClock.elapsedRealtime() - started) + " ms");
+            }
             if (gen != generation.get()) {
                 return;
             }
-            if (!first && pauseMs > 0) {
+            next = i + 1 < parts.size() ? ahead(voice, parts.get(i + 1), speed, narrator) : null;
+            if (i > 0 && pauseMs > 0) {
                 send(callback, new byte[rate * pauseMs / 1000 * 2]);
-            }
-            first = false;
-            float[] samples = voice.synthesizeRole(part.text, speed, part.role, narrator);
-            if (gen != generation.get()) {
-                return;
             }
             produced += samples.length;
             if (!send(callback, toPcm16(samples))) {
                 Diag.log(this, "engine: output closed early");
+                if (next != null) {
+                    next.cancel(false);
+                }
                 return;
             }
         }
         callback.done();
-        Diag.log(this, "engine: done, " + produced / (float) rate + " s of speech");
+        Diag.log(this, "engine: done, " + produced / (float) rate + " s of speech in "
+                + (android.os.SystemClock.elapsedRealtime() - started) + " ms");
+    }
+
+    /** Makes one piece on the side thread, so the next is ready while this one is heard. */
+    private Future<float[]> ahead(final Voice voice, final Voice.Part part, final float speed, final int narrator) {
+        return maker.submit(new Callable<float[]>() {
+            @Override
+            public float[] call() {
+                return voice.synthesizeRole(part.text, speed, part.role, narrator);
+            }
+        });
     }
 
     /** Voice number from a numbered voice name, or 0. */
