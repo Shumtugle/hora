@@ -16,17 +16,17 @@ import java.util.Random;
  * What a voice says when its line on the main screen is touched. The line on
  * screen is its card, not a subtitle: the voice speaks about it in its own
  * words, put together from four cells (greeting, name, who it is, invitation),
- * and never repeats a cell's last pick. Touches in a row cool it down: the
- * fourth drops the greeting, the fifth is the name and one word, and from the
- * sixth on it is the same flat line every time. A pause ends the game.
+ * and never repeats a cell's last pick. The words are plain: a joke that comes
+ * back is no longer a joke. Touches in a row cool it down: the fourth drops
+ * the greeting, and from the fifth on it is the same flat line every time.
+ * A pause ends the game.
  */
 final class TapTalk {
     private static final String ASSET = "talk/tap.txt";
     /** Touches further apart than this start the game over. */
     private static final long GAME_GAP_MS = 25000;
     private static final int DROP_GREETING = 4;
-    private static final int SHORT = 5;
-    private static final int FLAT = 6;
+    private static final int FLAT = 5;
     /** The flat line is spoken a little slower than the voice's own pace. */
     static final float FLAT_PACE = 0.9f;
 
@@ -62,21 +62,16 @@ final class TapTalk {
         count++;
         String lang = SpeechLanguage.CODE;
         if (count >= FLAT) {
-            String flat = pick(c, lang, "bond", voice);
+            String flat = pick(c, lang, "flat", voice);
             return flat == null ? null : new Reply(flat, true);
         }
         StringBuilder out = new StringBuilder();
-        if (count >= SHORT) {
-            append(out, pick(c, lang, "name", voice));
-            append(out, pick(c, lang, "short", voice));
-        } else {
-            if (count < DROP_GREETING) {
-                append(out, pick(c, lang, "greet", voice));
-            }
-            append(out, pick(c, lang, "name", voice));
-            append(out, pick(c, lang, "self", voice));
-            append(out, pick(c, lang, "invite", voice));
+        if (count < DROP_GREETING) {
+            append(out, pick(c, lang, "greet", voice));
         }
+        append(out, pick(c, lang, "name", voice));
+        append(out, pick(c, lang, "self", voice));
+        append(out, pick(c, lang, "invite", voice));
         return out.length() == 0 ? null : new Reply(out.toString(), false);
     }
 
