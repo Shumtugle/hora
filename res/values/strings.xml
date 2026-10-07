@@ -527,6 +527,18 @@
     <string name="herald_apps_none">Nothing found</string>
     <string name="name_ask">Name this character</string>
     <string name="name_edit">Change the name</string>
+    <string name="bed">Background under the book</string>
+    <string name="bed_volume">Background volume</string>
+    <string name="bed_volume_value">%1$d%%</string>
+    <string-array name="bed_kinds">
+        <item>Silence</item>
+        <item>Brown noise</item>
+        <item>Pink noise</item>
+        <item>White noise</item>
+        <item>Rain</item>
+        <item>Surf</item>
+        <item>Quiet music</item>
+    </string-array>
     <string name="kit_cancel">Cancel</string>
     <string name="kit_done">Done</string>
     <string name="look_lamp">Lamp</string>

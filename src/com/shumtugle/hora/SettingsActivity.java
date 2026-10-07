@@ -123,6 +123,8 @@ public final class SettingsActivity extends Activity {
         list.addView(rule());
         pauseSlider();
         list.addView(rule());
+        bedRows();
+        list.addView(rule());
         android.widget.Switch respell = new android.widget.Switch(this);
         respell.setText(R.string.respell);
         respell.setTextColor(Palette.INK);
@@ -242,6 +244,53 @@ public final class SettingsActivity extends Activity {
         scroll.setBackgroundColor(Palette.BG);
         scroll.addView(list);
         setContentView(scroll);
+    }
+
+    /** The background under the book: what it is, and how loud, always below the voice. */
+    private void bedRows() {
+        final String[] kinds = getResources().getStringArray(R.array.bed_kinds);
+        final LinearLayout which = row(getString(R.string.bed), kinds[Prefs.bed(this)]);
+        which.setClickable(true);
+        which.setBackground(Ui.pressable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)));
+        which.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinearLayout choices = new LinearLayout(SettingsActivity.this);
+                choices.setOrientation(LinearLayout.VERTICAL);
+                final android.app.Dialog[] d = new android.app.Dialog[1];
+                for (int k = 0; k < kinds.length; k++) {
+                    final int kind = k;
+                    LinearLayout r = row(kinds[k], k == Prefs.bed(SettingsActivity.this) ? "\u2713" : "");
+                    r.setClickable(true);
+                    r.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Prefs.setBed(SettingsActivity.this, kind);
+                            ((TextView) which.getChildAt(1)).setText(kinds[kind]);
+                            Bed.refresh(SettingsActivity.this);
+                            d[0].dismiss();
+                        }
+                    });
+                    choices.addView(r);
+                }
+                d[0] = Kit.sheet(SettingsActivity.this, getString(R.string.bed), choices, null, null);
+                d[0].show();
+            }
+        });
+        list.addView(which);
+        int cur = Prefs.bedVolume(this);
+        final TextView value = text(getString(R.string.bed_volume_value, cur), 17, 0.6f);
+        final SeekBar bar = slider(100, cur);
+        bar.setOnSeekBarChangeListener(new Listener() {
+            @Override
+            public void onProgressChanged(SeekBar s, int p, boolean user) {
+                value.setText(getString(R.string.bed_volume_value, p));
+                if (user) {
+                    Prefs.setBedVolume(SettingsActivity.this, p);
+                }
+            }
+        });
+        list.addView(labelled(getString(R.string.bed_volume), value, bar));
     }
 
     private void pauseSlider() {

@@ -947,6 +947,18 @@
     <string name="herald_apps_search">Найти приложение</string>
     <string name="herald_apps_loading">Собираю список…</string>
     <string name="herald_apps_none">Ничего не нашлось</string>
+    <string name="bed">Фон под книгу</string>
+    <string name="bed_volume">Громкость фона</string>
+    <string name="bed_volume_value">%1$d %%</string>
+    <string-array name="bed_kinds">
+        <item>Тишина</item>
+        <item>Бурый шум</item>
+        <item>Розовый шум</item>
+        <item>Белый шум</item>
+        <item>Дождь</item>
+        <item>Прибой</item>
+        <item>Тихая музыка</item>
+    </string-array>
     <string name="kit_cancel">Отмена</string>
     <string name="name_ask">Назови имя для этого персонажа</string>
     <string name="name_edit">Сменить имя</string>

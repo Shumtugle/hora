@@ -106,6 +106,29 @@ final class Prefs {
     private static final String EVEN_TEMPO = "even_tempo";
     private static final String ROLE_PREFIX = "role_";
     private static final String NAME_PREFIX = "voice_name_";
+    private static final String BED = "bed";
+    private static final String BED_VOLUME = "bed_volume";
+
+    /** The background under a book read aloud; off unless chosen. */
+    @SuppressWarnings("deprecation")
+    static int bed(Context c) {
+        int v = c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getInt(BED, Bed.OFF);
+        return v >= 0 && v < Bed.KINDS ? v : Bed.OFF;
+    }
+
+    static void setBed(Context c, int kind) {
+        sp(c).edit().putInt(BED, kind).apply();
+    }
+
+    /** 0..100; low by default, the background stays under the voice. */
+    @SuppressWarnings("deprecation")
+    static int bedVolume(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getInt(BED_VOLUME, 35);
+    }
+
+    static void setBedVolume(Context c, int v) {
+        sp(c).edit().putInt(BED_VOLUME, Math.max(0, Math.min(100, v))).apply();
+    }
     private static final String NAME_ASKED_PREFIX = "voice_name_asked_";
     /** Longest name a person may give a voice. */
     static final int NAME_MAX = 20;

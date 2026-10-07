@@ -229,6 +229,7 @@ public final class BookPlayer extends Service {
 
     @Override
     public void onDestroy() {
+        Bed.stop();
         if (live == this) {
             live = null;
         }
@@ -344,6 +345,7 @@ public final class BookPlayer extends Service {
             playing = true;
             lock.notifyAll();
         }
+        Bed.start(this);
         publish();
     }
 
@@ -356,6 +358,7 @@ public final class BookPlayer extends Service {
             playing = false;
             lock.notifyAll();
         }
+        Bed.stop();
         Awake.let(this);
         if (focus != null) {
             audio.abandonAudioFocusRequest(focus);
