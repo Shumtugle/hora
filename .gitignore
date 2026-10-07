@@ -7,3 +7,6 @@ lib/
 # Built locally; large inputs are fetched by scripts, not kept here.
 assets/lexicons/stress-big.tsv
 *.stamp
+
+# A melody whose source is not yet written down; kept with the private inputs until it is.
+assets/sounds/

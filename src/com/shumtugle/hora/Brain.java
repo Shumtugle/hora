@@ -605,7 +605,7 @@ final class Brain {
         String address = r.getString(Prefs.userFemale(c) ? R.string.brain_user_female : R.string.brain_user_male);
         String rules = rules(c);
         try {
-            return String.format(rules, Cast.name(c, voice), Cast.title(c, voice), manner(c, voice) + " " + address);
+            return String.format(rules, Cast.spokenName(c, voice), Cast.title(c, voice), manner(c, voice) + " " + address);
         } catch (java.util.IllegalFormatException e) {
             // Rules written by hand without the blanks: the manner goes in front.
             return manner(c, voice) + " " + address + " " + rules;

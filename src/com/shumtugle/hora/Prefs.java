@@ -105,6 +105,33 @@ final class Prefs {
     private static final String RESPELL = "respell";
     private static final String EVEN_TEMPO = "even_tempo";
     private static final String ROLE_PREFIX = "role_";
+    private static final String NAME_PREFIX = "voice_name_";
+    private static final String NAME_ASKED_PREFIX = "voice_name_asked_";
+    /** Longest name a person may give a voice. */
+    static final int NAME_MAX = 20;
+
+    /** The name the person gave a voice, or "" when it keeps its own. */
+    @SuppressWarnings("deprecation")
+    static String voiceName(Context c, int voice) {
+        String s = c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getString(NAME_PREFIX + voice, "");
+        return s == null ? "" : s.trim();
+    }
+
+    static void setVoiceName(Context c, int voice, String name) {
+        String s = name == null ? "" : name.trim();
+        if (s.length() > NAME_MAX) {
+            s = s.substring(0, NAME_MAX).trim();
+        }
+        sp(c).edit().putString(NAME_PREFIX + voice, s).apply();
+    }
+
+    static boolean nameAsked(Context c, int voice) {
+        return sp(c).getBoolean(NAME_ASKED_PREFIX + voice, false);
+    }
+
+    static void setNameAsked(Context c, int voice) {
+        sp(c).edit().putBoolean(NAME_ASKED_PREFIX + voice, true).apply();
+    }
     /** Book, dialogue A (male), dialogue B (female), notifications, talk: all to the main voice. */
     private static final int[] ROLE_DEFAULT = {1, 5, 2, 1, 1};
 

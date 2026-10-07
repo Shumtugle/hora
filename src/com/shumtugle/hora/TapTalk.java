@@ -102,7 +102,7 @@ final class TapTalk {
             i = (i + 1 + random.nextInt(own.size() - 1)) % own.size();
         }
         lastPick.put(key, i);
-        return own.get(i);
+        return own.get(i).replace("{name}", Cast.spokenName(c, voice));
     }
 
     private static Map<String, List<String>> load(Context c) {

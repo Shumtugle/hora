@@ -29,8 +29,34 @@ final class Cast {
     }
 
     static String name(Context c, int voice) {
+        String own = Prefs.voiceName(c, voice);
+        if (!own.isEmpty()) {
+            return own;
+        }
         String[] names = c.getResources().getStringArray(R.array.voice_names);
         return voice >= 1 && voice <= names.length ? names[voice - 1] : String.valueOf(voice);
+    }
+
+    /** The name as the voice says it: the person's own name for it, or the one in the speech language. */
+    static String spokenName(Context c, int voice) {
+        String own = Prefs.voiceName(c, voice);
+        if (!own.isEmpty()) {
+            return own;
+        }
+        return say(c, R.array.voice_names, voice);
+    }
+
+    /** The name a voice came with, before anyone renamed it. */
+    static String givenName(Context c, int voice) {
+        String[] names = c.getResources().getStringArray(R.array.voice_names);
+        return voice >= 1 && voice <= names.length ? names[voice - 1] : String.valueOf(voice);
+    }
+
+    /** The one voice that came with a plain label for a name; the person may give it another. */
+    static final int RENAMABLE = 3;
+
+    static boolean renamable(int voice) {
+        return voice == RENAMABLE;
     }
 
     /**

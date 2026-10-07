@@ -106,6 +106,7 @@ public final class MainActivity extends Activity {
 
     @Override
     protected void onPause() {
+        stopTune();
         breathGlow.cancel();
         breathRing.cancel();
         super.onPause();
@@ -297,11 +298,103 @@ public final class MainActivity extends Activity {
         // Changing the voice is quiet: its card is shown, and a tap on it makes the voice speak.
         TapTalk.reset();
         showCard(v);
+        if (Cast.renamable(v) && !Prefs.nameAsked(this, v)) {
+            Prefs.setNameAsked(this, v);
+            askName(v, true);
+        }
+    }
+
+    private android.media.MediaPlayer tune;
+
+    /**
+     * A sheet with one field for the voice's name. The field is empty with the
+     * given name greyed in it: a single letter replaces it, and a field left
+     * alone keeps it. The first time a melody plays under it instead of words.
+     */
+    private void askName(final int v, boolean withTune) {
+        final android.widget.EditText field = new android.widget.EditText(this);
+        Ui.field(field);
+        field.setHint(Cast.givenName(this, v));
+        String own = Prefs.voiceName(this, v);
+        field.setText(own);
+        field.setSelection(own.length());
+        field.setTextSize(26);
+        field.setTypeface(Palette.display(this));
+        field.setGravity(Gravity.CENTER);
+        field.setSingleLine(true);
+        field.setFilters(new android.text.InputFilter[] {new android.text.InputFilter.LengthFilter(Prefs.NAME_MAX)});
+        field.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_DONE);
+        LinearLayout box = Ui.column(this);
+        box.addView(Kit.lead(this, getString(R.string.name_ask)));
+        LinearLayout.LayoutParams fp = Ui.lp(Ui.MATCH, Ui.WRAP);
+        fp.topMargin = dp(16);
+        box.addView(field, fp);
+        final Runnable save = new Runnable() {
+            @Override
+            public void run() {
+                Prefs.setVoiceName(MainActivity.this, v, field.getText().toString());
+                showVoice(voice);
+                if (card) {
+                    showCard(voice);
+                }
+                Widgets.refresh(MainActivity.this);
+            }
+        };
+        final android.app.Dialog d = Kit.sheet(this, null, box, getString(R.string.kit_done), save);
+        field.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView t, int action, android.view.KeyEvent e) {
+                d.dismiss();
+                save.run();
+                return true;
+            }
+        });
+        d.setOnDismissListener(new android.content.DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(android.content.DialogInterface di) {
+                stopTune();
+            }
+        });
+        if (d.getWindow() != null) {
+            d.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        }
+        field.requestFocus();
+        d.show();
+        if (withTune) {
+            playTune();
+        }
+    }
+
+    private void playTune() {
+        stopTune();
+        try {
+            android.content.res.AssetFileDescriptor fd = getAssets().openFd("sounds/naming.ogg");
+            tune = new android.media.MediaPlayer();
+            tune.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
+            fd.close();
+            tune.prepare();
+            tune.start();
+        } catch (java.io.IOException | RuntimeException e) {
+            // Without the melody the sheet still asks; it is only quieter.
+            Diag.log(this, "name: no melody");
+            stopTune();
+        }
+    }
+
+    private void stopTune() {
+        if (tune != null) {
+            try {
+                tune.release();
+            } catch (RuntimeException ignored) {
+                // Already gone.
+            }
+            tune = null;
+        }
     }
 
     private void showCard(int v) {
         card = true;
-        spoken.setText(Ui.plain(Cast.say(this, R.array.voice_step_forward, v)));
+        spoken.setText(Ui.plain(String.format(Cast.say(this, R.array.voice_step_forward, v), Cast.spokenName(this, v))));
     }
 
     /** A tap on the line: the card makes the voice speak about itself; an answer is said again. */
@@ -321,6 +414,11 @@ public final class MainActivity extends Activity {
         Ui.setFace(photo, v);
         photo.setContentDescription(Cast.name(this, v));
         name.setText(Cast.name(this, v));
+        // A small pen beside the one name a person may change.
+        name.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, Cast.renamable(v) ? R.drawable.ic_edit : 0, 0);
+        name.setCompoundDrawablePadding(dp(6));
+        name.setClickable(Cast.renamable(v));
+        name.setContentDescription(Cast.renamable(v) ? getString(R.string.name_edit) + ": " + Cast.name(this, v) : null);
         epithet.setText(Cast.epithet(this, v));
         glow.setBackground(Ui.oval(Palette.voice(v, 0x29), 0, 0, this));
         ring.setBackground(Ui.oval(Color.TRANSPARENT, Palette.voice(v), 2, this));
@@ -415,6 +513,14 @@ public final class MainActivity extends Activity {
         breathRing = Ui.breathe(ring, 0.94f, 1.04f, 0.55f, 1f);
 
         name = Ui.title(this, "", 30);
+        name.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (Cast.renamable(voice)) {
+                    askName(voice, false);
+                }
+            }
+        });
         LinearLayout.LayoutParams np = Ui.lp(Ui.WRAP, Ui.WRAP);
         np.topMargin = dp(14);
         stage.addView(name, np);
