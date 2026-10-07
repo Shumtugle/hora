@@ -662,7 +662,8 @@ public final class BrainActivity extends Activity {
         draftLine.setVisibility(accel ? View.VISIBLE : View.GONE);
         prompts.removeAllViews();
         prompts.addView(promptRow(getString(R.string.brain_rules_title), Brain.rules(this), 0));
-        for (int v = 1; v <= Cast.COUNT; v++) {
+        for (int place = 0; place < Cast.COUNT; place++) {
+            int v = Cast.at(place);
             prompts.addView(line());
             prompts.addView(promptRow(Cast.name(this, v), Brain.manner(this, v), v));
         }

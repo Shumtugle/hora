@@ -100,6 +100,7 @@ public final class TalkActivity extends Activity {
             return;
         }
         showVoice(Prefs.role(this, Cast.TALK));
+        collectShot();
     }
 
     private int dp(float v) {
@@ -209,6 +210,14 @@ public final class TalkActivity extends Activity {
         });
         line.setPadding(dp(6), dp(6), dp(6), dp(6));
         line.addView(clip, Ui.lp(dp(40), dp(40)));
+        ImageView shoot = Ui.iconButton(this, R.drawable.ic_camera, Palette.SURFACE, 40, getString(R.string.talk_camera));
+        shoot.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                takePhoto();
+            }
+        });
+        line.addView(shoot, Ui.lp(dp(40), dp(40)));
         draft = new EditText(this);
         Ui.field(draft);
         draft.setHint(R.string.talk_hint);
@@ -554,6 +563,44 @@ public final class TalkActivity extends Activity {
 
     private boolean saveWanted;
 
+    private static final int TAKE_PHOTO = 82;
+    private static final String SHOT_WAITING = "talk_shot_waiting";
+
+    /**
+     * The phone's camera, writing into the app's own slot in the cache, so the
+     * picture never reaches the gallery. No camera permission is declared: a
+     * declared but refused one would forbid calling the camera at all.
+     */
+    private void takePhoto() {
+        PhotoSlot.sweep(this);
+        Intent shot = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE)
+                .putExtra(android.provider.MediaStore.EXTRA_OUTPUT, PhotoSlot.uri())
+                .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        shot.setClipData(android.content.ClipData.newRawUri("", PhotoSlot.uri()));
+        try {
+            // Written at once: the system may close this window while the camera is open.
+            getSharedPreferences("talk", MODE_PRIVATE).edit().putBoolean(SHOT_WAITING, true).commit();
+            startActivityForResult(shot, TAKE_PHOTO);
+        } catch (android.content.ActivityNotFoundException e) {
+            getSharedPreferences("talk", MODE_PRIVATE).edit().putBoolean(SHOT_WAITING, false).commit();
+            Diag.log(this, "camera: no camera app");
+        }
+    }
+
+    /** Picks up a picture the camera left, even if this window was rebuilt meanwhile. */
+    private void collectShot() {
+        android.content.SharedPreferences sp = getSharedPreferences("talk", MODE_PRIVATE);
+        if (!sp.getBoolean(SHOT_WAITING, false)) {
+            return;
+        }
+        java.io.File f = PhotoSlot.file(this);
+        // The size of the file itself, not what an index says while the camera is still closing.
+        if (f.length() > 0) {
+            sp.edit().putBoolean(SHOT_WAITING, false).commit();
+            attachImage(PhotoSlot.uri());
+        }
+    }
+
     /** The phone's photo picker: recent shots and albums, no folders and no permission. */
     private void pickPhoto() {
         if (Build.VERSION.SDK_INT >= 33) {
@@ -594,6 +641,18 @@ public final class TalkActivity extends Activity {
         super.onActivityResult(request, result, data);
         if (request == PICK_IMAGE && result == RESULT_OK && data != null && data.getData() != null) {
             attachImage(data.getData());
+            return;
+        }
+        if (request == TAKE_PHOTO) {
+            if (result != RESULT_OK) {
+                getSharedPreferences("talk", MODE_PRIVATE).edit().putBoolean(SHOT_WAITING, false).commit();
+                Diag.log(this, "camera: closed without a picture");
+            } else if (PhotoSlot.file(this).length() == 0 && data != null && data.getData() != null) {
+                // Some cameras keep the picture themselves and hand back its address.
+                getSharedPreferences("talk", MODE_PRIVATE).edit().putBoolean(SHOT_WAITING, false).commit();
+                Diag.log(this, "camera: picture came back by its own address");
+                attachImage(data.getData());
+            }
             return;
         }
         if (request == HoraFolder.PICK) {

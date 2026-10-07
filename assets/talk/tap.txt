@@ -62,10 +62,10 @@ ru.greet.4|Слушаю.
 ru.greet.4|Здравствуй.
 ru.greet.4|Здесь.
 ru.greet.4|Привет.
-ru.name.4|Боян.
-ru.name.4|Я — Боян.
-ru.name.4|Это Боян.
-ru.name.4|Боян на месте.
+ru.name.4|Порфирий.
+ru.name.4|Я — Порфирий.
+ru.name.4|Это Порфирий.
+ru.name.4|Порфирий на месте.
 ru.self.4|Чтец.
 ru.self.4|Читаю книги. Отвечаю коротко.
 ru.self.4|Без лишних слов.
@@ -74,7 +74,7 @@ ru.invite.4|Вопрос?
 ru.invite.4|Что нужно?
 ru.invite.4|Спрашивай.
 ru.invite.4|Жду вопроса.
-ru.flat.4|Боян. Чтец.
+ru.flat.4|Порфирий. Чтец.
 
 ru.greet.5|Привет!
 ru.greet.5|Здорово!
@@ -152,10 +152,10 @@ en.greet.4|Listening.
 en.greet.4|Hello.
 en.greet.4|Here.
 en.greet.4|Hi.
-en.name.4|Boyan.
-en.name.4|I'm Boyan.
-en.name.4|This is Boyan.
-en.name.4|Boyan here.
+en.name.4|Porfiry.
+en.name.4|I'm Porfiry.
+en.name.4|This is Porfiry.
+en.name.4|Porfiry here.
 en.self.4|A reader.
 en.self.4|I read books. I answer briefly.
 en.self.4|No wasted words.
@@ -164,7 +164,7 @@ en.invite.4|Question?
 en.invite.4|What do you need?
 en.invite.4|Ask.
 en.invite.4|Waiting for your question.
-en.flat.4|Boyan. Reader.
+en.flat.4|Porfiry. Reader.
 
 en.greet.5|Hi!
 en.greet.5|Hey!

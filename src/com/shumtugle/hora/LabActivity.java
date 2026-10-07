@@ -79,7 +79,7 @@ public final class LabActivity extends Activity {
         LinearLayout row = Ui.row(this);
         row.setGravity(Gravity.BOTTOM);
         for (int i = 0; i < Cast.COUNT; i++) {
-            final int v = i + 1;
+            final int v = Cast.at(i);
             LinearLayout cell = Ui.column(this);
             cell.setGravity(Gravity.CENTER_HORIZONTAL);
             faces[i] = Ui.portrait(this, v);
@@ -439,12 +439,12 @@ public final class LabActivity extends Activity {
     private void choose(final int v) {
         voice = v;
         for (int i = 0; i < Cast.COUNT; i++) {
-            boolean on = i + 1 == v;
+            boolean on = Cast.at(i) == v;
             int size = dp(on ? 52 : 44);
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(size, size);
             faces[i].setLayoutParams(p);
             faces[i].setPadding(on ? dp(3) : 0, on ? dp(3) : 0, on ? dp(3) : 0, on ? dp(3) : 0);
-            faces[i].setBackground(on ? Ui.oval(Palette.BG, Palette.voice(i + 1), 2, this) : null);
+            faces[i].setBackground(on ? Ui.oval(Palette.BG, Palette.voice(Cast.at(i)), 2, this) : null);
             faces[i].setAlpha(on ? 1f : 0.7f);
             names[i].setTextColor(on ? Palette.INK : Palette.MUTED);
             names[i].setTypeface(on ? Palette.bodyStrong(this) : Palette.body(this));

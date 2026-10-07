@@ -33,6 +33,28 @@ final class Cast {
         return voice >= 1 && voice <= names.length ? names[voice - 1] : String.valueOf(voice);
     }
 
+    /**
+     * The order the troupe stands in on screen, by voice number: the main
+     * female voice, the main male one, then the rest. Numbers stay what they
+     * were, so samples, portraits and saved choices keep their places.
+     */
+    private static final int[] ORDER = {1, 5, 2, 4, 3};
+
+    /** The voice standing at a place in the row, counted from 0. */
+    static int at(int place) {
+        return ORDER[Math.max(0, Math.min(COUNT - 1, place))];
+    }
+
+    /** Where a voice stands in the row, counted from 0. */
+    static int place(int voice) {
+        for (int i = 0; i < ORDER.length; i++) {
+            if (ORDER[i] == voice) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
     private static final int[] PORTRAITS = {
         R.drawable.portrait_1, R.drawable.portrait_2, R.drawable.portrait_3,
         R.drawable.portrait_4, R.drawable.portrait_5,

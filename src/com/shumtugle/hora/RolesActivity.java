@@ -128,7 +128,8 @@ public final class RolesActivity extends Activity {
         line.addView(chosen[i]);
         box.addView(line, Ui.lp(Ui.MATCH, Ui.WRAP));
         LinearLayout faceRow = Ui.row(this);
-        for (int v = 1; v <= Cast.COUNT; v++) {
+        for (int place = 0; place < Cast.COUNT; place++) {
+            final int v = Cast.at(place);
             final int voice = v;
             ImageView f = Ui.portrait(this, v);
             f.setPadding(dp(3), dp(3), dp(3), dp(3));

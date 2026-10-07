@@ -105,7 +105,8 @@ final class Prefs {
     private static final String RESPELL = "respell";
     private static final String EVEN_TEMPO = "even_tempo";
     private static final String ROLE_PREFIX = "role_";
-    private static final int[] ROLE_DEFAULT = {4, 3, 2, 2, 1};
+    /** Book, dialogue A (male), dialogue B (female), notifications, talk: all to the main voice. */
+    private static final int[] ROLE_DEFAULT = {1, 5, 2, 1, 1};
 
     /** Voice number for a role: the book, the two sides of a dialogue, notifications, the talk. */
     static int role(Context c, int role) {
@@ -120,7 +121,7 @@ final class Prefs {
     private static int readRole(SharedPreferences p, int role) {
         int def = ROLE_DEFAULT[role];
         if (role == Cast.NARRATOR && p.getBoolean(MAIN_SECOND, false)) {
-            def = 3;
+            def = 5;
         }
         int v = p.getInt(ROLE_PREFIX + role, def);
         return v >= 1 && v <= Cast.COUNT ? v : ROLE_DEFAULT[role];

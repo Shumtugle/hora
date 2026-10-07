@@ -325,14 +325,14 @@ public final class MainActivity extends Activity {
         glow.setBackground(Ui.oval(Palette.voice(v, 0x29), 0, 0, this));
         ring.setBackground(Ui.oval(Color.TRANSPARENT, Palette.voice(v), 2, this));
         for (int i = 0; i < dots.length; i++) {
-            boolean on = i + 1 == v;
+            boolean on = Cast.at(i) == v;
             int size = dp(on ? 36 : 26);
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(size, size);
             p.leftMargin = dp(7);
             p.rightMargin = dp(7);
             dots[i].setLayoutParams(p);
             dots[i].setPadding(on ? dp(3) : 0, on ? dp(3) : 0, on ? dp(3) : 0, on ? dp(3) : 0);
-            dots[i].setBackground(on ? Ui.oval(Palette.BG, Palette.voice(i + 1), 2, this) : null);
+            dots[i].setBackground(on ? Ui.oval(Palette.BG, Palette.voice(Cast.at(i)), 2, this) : null);
             dots[i].setAlpha(on ? 1f : 0.55f);
         }
         hint.setVisibility(Prefs.troupeHintsLeft(this) > 0 ? View.VISIBLE : View.GONE);
@@ -395,7 +395,7 @@ public final class MainActivity extends Activity {
                             return false;
                         }
                         int step = vx < 0 ? 1 : Cast.COUNT - 1;
-                        choose((voice - 1 + step) % Cast.COUNT + 1);
+                        choose(Cast.at((Cast.place(voice) + step) % Cast.COUNT));
                         return true;
                     }
                 });
@@ -428,7 +428,7 @@ public final class MainActivity extends Activity {
         LinearLayout troupe = Ui.row(this);
         troupe.setGravity(Gravity.CENTER);
         for (int i = 0; i < dots.length; i++) {
-            final int v = i + 1;
+            final int v = Cast.at(i);
             dots[i] = Ui.portrait(this, v);
             dots[i].setClickable(true);
             dots[i].setContentDescription(getString(R.string.home_make_main, Cast.name(this, v)));

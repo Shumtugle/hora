@@ -275,7 +275,7 @@
         <item>Hora</item>
         <item>Sirin</item>
         <item>Bayun</item>
-        <item>Boyan</item>
+        <item>Porfiry</item>
         <item>Sadko</item>
     </string-array>
     <string name="slow_by_pauses">Slow down with pauses, not stretching</string>
@@ -397,9 +397,9 @@
     <string-array name="voice_kinds">
         <item>female · main</item>
         <item>female</item>
-        <item>male · main</item>
+        <item>male</item>
         <item>male · deep</item>
-        <item>male · young</item>
+        <item>male · main</item>
     </string-array>
     <string name="fonts_license">Cormorant, Manrope · OFL 1.1</string>
     <string name="tools">Tools</string>
@@ -809,6 +809,7 @@
     <string name="brain_no_vision">To describe photos, the model needs an add-on for pictures, about 1 GB. It is downloaded separately.</string>
     <string name="brain_no_model">To answer free questions and describe photos, the Gemma 4 AI model is needed, about 4 GB. It is downloaded separately.</string>
     <string name="talk_image_default">What is in this picture?</string>
+    <string name="talk_camera">Camera</string>
     <string name="talk_attach">Picture</string>
     <string name="talk_attach_remove">Remove picture</string>
     <string-array name="brain_guard_titles">
@@ -853,7 +854,7 @@
         <item>Hora. I\'m answering now. Ask away.</item>
         <item>Sirin. I\'m the one talking to you now.</item>
         <item>Bayun. I\'m here. Ask, take your time.</item>
-        <item>Boyan. I\'m answering now, short and to the point.</item>
+        <item>Porfiry. I\'m answering now, short and to the point.</item>
         <item>Sadko. You\'re with me now. What\'s new?</item>
     </string-array>
     <string name="lang_title">Languages</string>

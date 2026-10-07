@@ -310,21 +310,21 @@ public final class WorkshopActivity extends Activity {
     private View voicesPage() {
         LinearLayout grid = Ui.column(this);
         LinearLayout line = null;
-        for (int v = 1; v <= Cast.COUNT; v++) {
-            if ((v - 1) % 2 == 0) {
+        for (int place = 0; place < Cast.COUNT; place++) {
+            if (place % 2 == 0) {
                 line = Ui.row(this);
                 line.setGravity(Gravity.TOP);
                 LinearLayout.LayoutParams p = Ui.lp(Ui.MATCH, Ui.WRAP);
-                if (v > 1) {
+                if (place > 0) {
                     p.topMargin = dp(10);
                 }
                 grid.addView(line, p);
             }
             LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0, Ui.WRAP, 1f);
-            if ((v - 1) % 2 == 1) {
+            if (place % 2 == 1) {
                 cp.leftMargin = dp(10);
             }
-            line.addView(card(v), cp);
+            line.addView(card(Cast.at(place)), cp);
         }
         if (Cast.COUNT % 2 == 1) {
             // Keeps the last card half wide, like the others.

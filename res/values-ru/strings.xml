@@ -327,7 +327,7 @@
         <item>Гамаюн</item>
         <item>Сирин</item>
         <item>Баюн</item>
-        <item>Боян</item>
+        <item>Порфирий</item>
         <item>Садко</item>
     </string-array>
     <string name="slow_by_pauses">Замедлять паузами, а не растяжкой</string>
@@ -823,9 +823,9 @@
     <string-array name="voice_kinds">
         <item>женский · главный</item>
         <item>женский</item>
-        <item>мужской · главный</item>
+        <item>мужской</item>
         <item>мужской · глубокий</item>
-        <item>мужской · молодой</item>
+        <item>мужской · главный</item>
     </string-array>
     <string name="tools">Инструменты</string>
     <string-array name="respell_untouched">
@@ -1501,7 +1501,7 @@
         <item>Теперь читаю я, {voice}.</item>
     </string-array>
     <string-array name="bot_say_no_voice">
-        <item>Я не знаю такого голоса. Есть Гамаюн, Сирин, Баюн, Боян и Садко.</item>
+        <item>Я не знаю такого голоса. Есть Гамаюн, Садко, Сирин, Порфирий и Баюн.</item>
     </string-array>
     <string-array name="bot_say_unknown">
         <item>Этого я пока не умею. Спроси «что ты умеешь».</item>
@@ -1813,6 +1813,7 @@
     <string name="brain_no_vision">Чтобы описывать фото, модели нужно дополнение для картинок, около 1 ГБ. Оно скачивается отдельно.</string>
     <string name="brain_no_model">Чтобы отвечать на свободные вопросы и описывать фото, нужна модель ИИ Gemma 4, около 4 ГБ. Она скачивается отдельно.</string>
     <string name="talk_image_default">Что на этой картинке?</string>
+    <string name="talk_camera">Камера</string>
     <string name="talk_attach">Картинка</string>
     <string name="talk_attach_remove">Убрать картинку</string>
     <string-array name="brain_guard_titles">
@@ -1859,7 +1860,7 @@
         <item>Гамаюн. Теперь отвечаю я. Спрашивай.</item>
         <item>Сирин. Теперь с тобой говорю я.</item>
         <item>Баюн. Я рядом. Спрашивай, не торопись.</item>
-        <item>Боян. Теперь отвечаю я, коротко и по делу.</item>
+        <item>Порфирий. Теперь отвечаю я, коротко и по делу.</item>
         <item>Садко. Теперь со мной. Что нового?</item>
     </string-array>
     <string name="lang_title">Языки</string>
