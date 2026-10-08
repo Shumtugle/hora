@@ -78,6 +78,8 @@ public final class BookActivity extends Activity {
     private static final long HANDS_OFF_MS = 8000;
     /** Set once a finger has moved the ribbon, so the ribbon's own scrolling is not taken for the user's. */
     private boolean userScroll;
+    /** The heard paragraph changed while the user's hands were on the text; the ribbon catches up after. */
+    private boolean followOwed;
     /** The text of the book shown, read here once per book; null until it is read. */
     private static String loadedUri = "";
     private static List<String> text;
@@ -394,6 +396,8 @@ public final class BookActivity extends Activity {
             current = i;
             rows.notifyDataSetChanged();
             follow(first);
+        } else if (followOwed && System.currentTimeMillis() - touchedAt >= HANDS_OFF_MS) {
+            follow(false);
         }
         boolean playing = Reading.playing(this);
         toggle.setImageResource(playing ? R.drawable.ic_pause : R.drawable.ic_play);
@@ -612,9 +616,19 @@ public final class BookActivity extends Activity {
             return;
         }
         if (System.currentTimeMillis() - touchedAt < HANDS_OFF_MS) {
+            followOwed = true;
             return;
         }
+        followOwed = false;
         userScroll = false;
+        int first = ribbon.getFirstVisiblePosition();
+        int last = ribbon.getLastVisiblePosition();
+        // A smooth scroll measures rows as it goes and stops short of a far one: far away, the ribbon jumps.
+        if (current < first - 2 || current > last + 2) {
+            Diag.log(this, "book screen: ribbon jumps to paragraph " + current + " from " + first + ".." + last);
+            ribbon.setSelectionFromTop(current, dp(48));
+            return;
+        }
         ribbon.smoothScrollToPositionFromTop(current, dp(48), 420);
     }
 
@@ -972,6 +986,9 @@ public final class BookActivity extends Activity {
             @Override
             public void onClick(View v) {
                 startForegroundService(BookPlayer.intent(BookActivity.this, action));
+                // A press on the controls asks to see where the voice is.
+                touchedAt = 0;
+                followOwed = true;
             }
         };
     }
