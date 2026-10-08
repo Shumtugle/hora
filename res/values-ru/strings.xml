@@ -1830,6 +1830,11 @@
     <string name="talk_camera">Камера</string>
     <string name="talk_attach">Картинка</string>
     <string name="talk_attach_remove">Убрать картинку</string>
+    <string name="talk_shot_save">Сохранить в галерею</string>
+    <string name="talk_shot_saved">В галерее</string>
+    <string name="talk_shot_failed">Не сохранилось. Ещё раз</string>
+    <string name="talk_shot_need_folder">Сначала покажи папку Hora</string>
+    <string name="folder_photos">Снимки</string>
     <string-array name="brain_guard_titles">
         <item>Команды</item>
         <item>Время, дата, погода</item>

@@ -826,6 +826,11 @@
     <string name="talk_camera">Camera</string>
     <string name="talk_attach">Picture</string>
     <string name="talk_attach_remove">Remove picture</string>
+    <string name="talk_shot_save">Save to gallery</string>
+    <string name="talk_shot_saved">In the gallery</string>
+    <string name="talk_shot_failed">Not saved. Try again</string>
+    <string name="talk_shot_need_folder">Show the Hora folder first</string>
+    <string name="folder_photos">Photos</string>
     <string-array name="brain_guard_titles">
         <item>Commands</item>
         <item>Time, date, weather</item>

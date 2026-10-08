@@ -40,6 +40,10 @@ public final class TalkActivity extends Activity {
         String file;
         /** A picture that went with this line, as a file in the app's cache; null if none. */
         String image;
+        /** The full camera shot behind the picture, kept so one touch can put it in the gallery; null if none. */
+        String shot;
+        /** Set once the shot has gone to the gallery. */
+        boolean saved;
         /** Set when the line says the AI model is missing: a button under it fetches what is missing. */
         boolean needsModel;
         /** Where the answer came from, opened by a tap on the line under it; null if nowhere. */
@@ -73,6 +77,10 @@ public final class TalkActivity extends Activity {
     private ImageView attachedThumb;
     /** A picture picked for the next request, ready as a small JPEG; null if none. */
     private byte[] pending;
+    /** The full camera shot behind the pending picture; null when the picture came from elsewhere. */
+    private String pendingShot;
+    /** The camera button: shown only when the model can look at pictures. */
+    private ImageView shoot;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -100,6 +108,7 @@ public final class TalkActivity extends Activity {
             return;
         }
         showVoice(Prefs.role(this, Cast.TALK));
+        showCamera();
         collectShot();
     }
 
@@ -210,7 +219,7 @@ public final class TalkActivity extends Activity {
         });
         line.setPadding(dp(6), dp(6), dp(6), dp(6));
         line.addView(clip, Ui.lp(dp(40), dp(40)));
-        ImageView shoot = Ui.iconButton(this, R.drawable.ic_camera, Palette.SURFACE, 40, getString(R.string.talk_camera));
+        shoot = Ui.iconButton(this, R.drawable.ic_camera, Palette.SURFACE, 40, getString(R.string.talk_camera));
         shoot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -276,6 +285,7 @@ public final class TalkActivity extends Activity {
             @Override
             public void onClick(View v) {
                 pending = null;
+                pendingShot = null;
                 attached.setVisibility(View.GONE);
             }
         });
@@ -290,6 +300,17 @@ public final class TalkActivity extends Activity {
         root.addView(line, lp);
         Kit.edgeToEdge(this, root, dp(20), dp(16), dp(20), dp(12));
         return whole;
+    }
+
+    /**
+     * A camera with nothing to look through its pictures is a promise the app
+     * cannot keep, so the button is there only with the model and its photo part.
+     * The paper clip stays: it is the way to learn that a download is missing.
+     */
+    private void showCamera() {
+        Brain b = Brain.get(this);
+        boolean eyes = b.hasModel() && b.has(Brain.SLOT_VISION) && !b.visionRefused();
+        shoot.setVisibility(eyes ? View.VISIBLE : View.GONE);
     }
 
     private void showVoice(int v) {
@@ -309,11 +330,13 @@ public final class TalkActivity extends Activity {
         if (pending != null) {
             byte[] jpeg = pending;
             pending = null;
+            String shotFile = pendingShot;
+            pendingShot = null;
             attached.setVisibility(View.GONE);
             draft.setText("");
             InputMethodManager im = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
             im.hideSoftInputFromWindow(draft.getWindowToken(), 0);
-            look(text.isEmpty() ? getString(R.string.talk_image_default) : text, jpeg);
+            look(text.isEmpty() ? getString(R.string.talk_image_default) : text, jpeg, shotFile);
             return;
         }
         draft.setText("");
@@ -401,6 +424,7 @@ public final class TalkActivity extends Activity {
             if (b == null) {
                 return null;
             }
+            b = upright(b, uri);
             float k = 768f / Math.max(b.getWidth(), b.getHeight());
             if (k < 1f) {
                 b = android.graphics.Bitmap.createScaledBitmap(b, Math.round(b.getWidth() * k),
@@ -415,9 +439,144 @@ public final class TalkActivity extends Activity {
         }
     }
 
+    /**
+     * Turns a picture the way it was held. A camera writes the pixels as the
+     * sensor sees them and only notes the turn in the file's tags; drawn as is,
+     * a portrait shot lies on its side, for the eye and for the model alike.
+     */
+    private android.graphics.Bitmap upright(android.graphics.Bitmap b, android.net.Uri uri) {
+        int turn;
+        try (java.io.InputStream in = getContentResolver().openInputStream(uri)) {
+            if (in == null) {
+                return b;
+            }
+            turn = new android.media.ExifInterface(in).getAttributeInt(
+                    android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
+        } catch (Exception e) {
+            return b;
+        }
+        android.graphics.Matrix m = new android.graphics.Matrix();
+        switch (turn) {
+            case android.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                m.setScale(-1, 1);
+                break;
+            case android.media.ExifInterface.ORIENTATION_ROTATE_180:
+                m.setRotate(180);
+                break;
+            case android.media.ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                m.setScale(1, -1);
+                break;
+            case android.media.ExifInterface.ORIENTATION_TRANSPOSE:
+                m.setRotate(90);
+                m.postScale(-1, 1);
+                break;
+            case android.media.ExifInterface.ORIENTATION_ROTATE_90:
+                m.setRotate(90);
+                break;
+            case android.media.ExifInterface.ORIENTATION_TRANSVERSE:
+                m.setRotate(-90);
+                m.postScale(-1, 1);
+                break;
+            case android.media.ExifInterface.ORIENTATION_ROTATE_270:
+                m.setRotate(-90);
+                break;
+            default:
+                return b;
+        }
+        android.graphics.Bitmap r = android.graphics.Bitmap.createBitmap(b, 0, 0, b.getWidth(), b.getHeight(), m, true);
+        Diag.log(this, "talk: picture turned, tag " + turn);
+        return r;
+    }
+
+    /** Copies a camera shot whole into the talk's cache; returns the file, or null. */
+    private String keepShot(android.net.Uri uri) {
+        try {
+            java.io.File dir = new java.io.File(getCacheDir(), "talk");
+            dir.mkdirs();
+            java.io.File f = new java.io.File(dir, "shot-" + System.currentTimeMillis() + ".jpg");
+            try (java.io.InputStream in = getContentResolver().openInputStream(uri)) {
+                if (in == null) {
+                    return null;
+                }
+                java.nio.file.Files.copy(in, f.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+            return f.getPath();
+        } catch (Exception e) {
+            Diag.log(this, "camera: shot not kept", e);
+            return null;
+        }
+    }
+
+    /**
+     * Puts a camera shot into the gallery, tags and all, under the app's own
+     * album. On older phones, where the gallery cannot be written without a
+     * storage permission the app does not ask for, it goes to the Hora folder.
+     */
+    private void saveShot(final Line l, final TextView label) {
+        label.setEnabled(false);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean ok = false;
+                String name = "Hora " + new java.text.SimpleDateFormat("yyyy-MM-dd HH-mm-ss", java.util.Locale.ROOT)
+                        .format(new java.util.Date()) + ".jpg";
+                try {
+                    if (Build.VERSION.SDK_INT >= 29) {
+                        android.content.ContentValues v = new android.content.ContentValues();
+                        v.put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, name);
+                        v.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+                        v.put(android.provider.MediaStore.Images.Media.RELATIVE_PATH,
+                                android.os.Environment.DIRECTORY_PICTURES + "/Hora");
+                        v.put(android.provider.MediaStore.Images.Media.IS_PENDING, 1);
+                        android.net.Uri where = getContentResolver().insert(
+                                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, v);
+                        if (where != null) {
+                            try (java.io.OutputStream out = getContentResolver().openOutputStream(where)) {
+                                java.nio.file.Files.copy(new java.io.File(l.shot).toPath(), out);
+                            }
+                            v.clear();
+                            v.put(android.provider.MediaStore.Images.Media.IS_PENDING, 0);
+                            getContentResolver().update(where, v, null, null);
+                            ok = true;
+                        }
+                    } else if (HoraFolder.tree(TalkActivity.this) != null) {
+                        android.net.Uri dir = HoraFolder.sub(TalkActivity.this, getString(R.string.folder_photos));
+                        android.net.Uri file = android.provider.DocumentsContract.createDocument(
+                                getContentResolver(), dir, "image/jpeg", name);
+                        if (file != null) {
+                            try (java.io.OutputStream out = getContentResolver().openOutputStream(file)) {
+                                java.nio.file.Files.copy(new java.io.File(l.shot).toPath(), out);
+                            }
+                            ok = true;
+                        }
+                    }
+                } catch (Exception e) {
+                    Diag.log(TalkActivity.this, "camera: shot not saved", e);
+                }
+                final boolean done = ok;
+                Diag.mark(TalkActivity.this, done ? "camera: shot saved" : "camera: shot not saved");
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (done) {
+                            l.saved = true;
+                            label.setText(R.string.talk_shot_saved);
+                            label.setTextColor(Palette.MUTED);
+                        } else {
+                            label.setEnabled(true);
+                            label.setText(Build.VERSION.SDK_INT < 29 && HoraFolder.tree(TalkActivity.this) == null
+                                    ? R.string.talk_shot_need_folder : R.string.talk_shot_failed);
+                        }
+                    }
+                });
+            }
+        }, "talk-save-shot").start();
+    }
+
     /** A request with a picture: always for the model's eyes, when it has them. */
-    private void look(String text, byte[] jpeg) {
+    private void look(String text, byte[] jpeg, String shotFile) {
         Line mine = new Line(true, text, "");
+        mine.shot = shotFile;
         try {
             java.io.File dir = new java.io.File(getCacheDir(), "talk");
             dir.mkdirs();
@@ -597,7 +756,7 @@ public final class TalkActivity extends Activity {
         // The size of the file itself, not what an index says while the camera is still closing.
         if (f.length() > 0) {
             sp.edit().putBoolean(SHOT_WAITING, false).commit();
-            attachImage(PhotoSlot.uri());
+            attachImage(PhotoSlot.uri(), true);
         }
     }
 
@@ -651,7 +810,7 @@ public final class TalkActivity extends Activity {
                 // Some cameras keep the picture themselves and hand back its address.
                 getSharedPreferences("talk", MODE_PRIVATE).edit().putBoolean(SHOT_WAITING, false).commit();
                 Diag.log(this, "camera: picture came back by its own address");
-                attachImage(data.getData());
+                attachImage(data.getData(), true);
             }
             return;
         }
@@ -666,10 +825,19 @@ public final class TalkActivity extends Activity {
 
     /** Shrinks a picture off the main thread and shows it above the field, waiting for a question. */
     private void attachImage(final android.net.Uri uri) {
+        attachImage(uri, false);
+    }
+
+    /**
+     * The same, and for a camera shot the full picture is copied aside: the
+     * camera slot is emptied by the next shot, while the talk may want to keep this one.
+     */
+    private void attachImage(final android.net.Uri uri, final boolean fromCamera) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 final byte[] jpeg = shrink(uri);
+                final String kept = fromCamera && jpeg != null ? keepShot(uri) : null;
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -678,6 +846,7 @@ public final class TalkActivity extends Activity {
                             return;
                         }
                         pending = jpeg;
+                        pendingShot = kept;
                         attachedThumb.setImageBitmap(android.graphics.BitmapFactory.decodeByteArray(jpeg, 0,
                                 jpeg.length));
                         attached.setVisibility(View.VISIBLE);
@@ -939,6 +1108,28 @@ public final class TalkActivity extends Activity {
                         Math.min(260, 200f * bm.getHeight() / Math.max(1, bm.getWidth())))));
                 pp.bottomMargin = dp(6);
                 holder.addView(pic, pp);
+                if (l.shot != null) {
+                    final Line shotLine = l;
+                    final TextView keep = Kit.link(this, getString(l.saved ? R.string.talk_shot_saved
+                            : R.string.talk_shot_save), null);
+                    keep.setTextSize(14);
+                    keep.setPadding(dp(4), 0, dp(4), dp(10));
+                    if (l.saved) {
+                        keep.setTextColor(Palette.MUTED);
+                    } else {
+                        keep.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                if (Build.VERSION.SDK_INT < 29 && HoraFolder.tree(TalkActivity.this) == null) {
+                                    HoraFolder.ask(TalkActivity.this);
+                                } else if (!shotLine.saved) {
+                                    saveShot(shotLine, keep);
+                                }
+                            }
+                        });
+                    }
+                    holder.addView(keep, Ui.lp(Ui.WRAP, Ui.WRAP));
+                }
             }
         }
         holder.addView(t, Ui.lp(Ui.WRAP, Ui.WRAP));
