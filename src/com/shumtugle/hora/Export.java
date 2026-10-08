@@ -100,10 +100,12 @@ final class Export {
     }
 
     /** Puts a book in the queue, read by the given voice, and asks to be woken on the charger. */
-    static void add(Context c, String uri, String name, String title, int reader, int chapters) {
+    static void add(Context c, String uri, String name, String title, int reader, int chapters,
+            String author, String cover) {
         JSONArray q = queue(c);
         try {
             JSONObject j = new JSONObject();
+            j.put("author", author == null ? "" : author).put("cover", cover);
             j.put("uri", uri).put("name", name).put("title", title).put("reader", reader)
                     .put("chapters", chapters).put("chapter", 0).put("paragraph", -1).put("added", System.currentTimeMillis());
             q.put(j);
@@ -122,6 +124,7 @@ final class Export {
             JSONObject j = q.optJSONObject(i);
             if (uri.equals(j.optString("uri"))) {
                 pcm(c).delete();
+                chosenCover(c, uri).delete();
             } else {
                 rest.put(j);
             }
@@ -472,7 +475,9 @@ final class Export {
         String title = job.getString("title");
         String label = b.chapters.isEmpty() || chapter >= b.chapters.size() ? title : b.chapters.get(chapter).label;
         try {
-            tag(m4a, title, label, chapter + 1, job.optInt("chapters"), b.author, cover(c, job, title, b.author));
+            // The author only as the book or the person names it; older queues knew only the book's.
+            String author = job.has("author") ? job.optString("author") : b.author;
+            tag(m4a, title, label, chapter + 1, job.optInt("chapters"), author, cover(c, job));
         } catch (IOException e) {
             Diag.log(c, "export: chapter not tagged", e);
         }
@@ -520,12 +525,38 @@ final class Export {
     private static String coverFor = "";
     private static byte[] coverBytes;
 
-    /** The book's front picture, found once per book and kept while its chapters are made. */
-    private static synchronized byte[] cover(Context c, JSONObject job, String title, String author) {
+    /** Where a book's cover comes from: the book itself, a picture the person chose, or nowhere. */
+    static final String COVER_BOOK = "book";
+    static final String COVER_NONE = "none";
+
+    /** A chosen cover, kept in the app's own files while the book is in the queue. */
+    static File chosenCover(Context c, String uri) {
+        File dir = new File(c.getFilesDir(), "export-covers");
+        if (!dir.isDirectory() && !dir.mkdirs()) {
+            Diag.log(c, "export: no room for covers");
+        }
+        return new File(dir, Integer.toHexString(uri.hashCode()) + ".jpg");
+    }
+
+    /** The cover the chapters carry, found once per book and kept while its chapters are made. */
+    private static synchronized byte[] cover(Context c, JSONObject job) {
         String uri = job.optString("uri");
-        if (!uri.equals(coverFor)) {
-            coverFor = uri;
-            coverBytes = BookCover.jpeg(c, uri, job.optString("name"), title, author);
+        String mode = job.optString("cover", COVER_BOOK);
+        String key = uri + "|" + mode;
+        if (!key.equals(coverFor)) {
+            coverFor = key;
+            if (COVER_NONE.equals(mode)) {
+                coverBytes = null;
+            } else if (COVER_BOOK.equals(mode)) {
+                coverBytes = BookCover.jpeg(c, uri, job.optString("name"));
+            } else {
+                try {
+                    coverBytes = java.nio.file.Files.readAllBytes(chosenCover(c, uri).toPath());
+                } catch (IOException e) {
+                    Diag.log(c, "export: chosen cover missing", e);
+                    coverBytes = null;
+                }
+            }
         }
         return coverBytes;
     }
@@ -713,6 +744,7 @@ final class Export {
 
     /** A whole book done: the chapter names beside the files, and a word to the user. */
     private static void finished(Context c, JSONObject job) {
+        chosenCover(c, job.optString("uri")).delete();
         try {
             Book b = load(c, job.getString("uri"), job.getString("name"));
             StringBuilder list = new StringBuilder();

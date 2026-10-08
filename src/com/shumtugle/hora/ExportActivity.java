@@ -31,6 +31,14 @@ public final class ExportActivity extends Activity {
     private LinearLayout queueBox;
     private TextView whereRow;
     private Book book;
+    private static final int PICK_COVER = 92;
+    /** The book's own cover, small, or null when the file carries none. */
+    private byte[] bookCover;
+    /** What the chapters will carry: the book's cover, the person's own picture, or none. */
+    private String coverMode;
+    private byte[] chosenCover;
+    /** The author written into the chapters; empty means none. */
+    private String author;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Runnable tick = new Runnable() {
         @Override
@@ -115,10 +123,14 @@ public final class ExportActivity extends Activity {
                     Diag.log(ExportActivity.this, "export: book not read", e);
                 }
                 final Book got = b;
+                final byte[] own = BookCover.jpeg(ExportActivity.this, uri, name);
                 main.post(new Runnable() {
                     @Override
                     public void run() {
                         book = got;
+                        bookCover = own;
+                        coverMode = own != null ? Export.COVER_BOOK : Export.COVER_NONE;
+                        author = got == null || got.author == null ? "" : got.author.trim();
                         showOffer(uri, name);
                     }
                 });
@@ -143,6 +155,30 @@ public final class ExportActivity extends Activity {
         t.setPadding(Ui.dp(this, 16), Ui.dp(this, 14), Ui.dp(this, 16), Ui.dp(this, 14));
         plate.addView(t);
         offer.addView(plate, Kit.wide());
+
+        // What the files will say about the book: only what the book itself says, or what the person adds.
+        offer.addView(Kit.section(this, getString(R.string.export_files_section)));
+        LinearLayout tags = Kit.plate(this);
+        String coverValue = getString(Export.COVER_BOOK.equals(coverMode) ? R.string.export_cover_book
+                : Export.COVER_NONE.equals(coverMode) ? R.string.export_cover_none : R.string.export_cover_own);
+        tags.addView(Kit.rowNav(this, getString(R.string.export_cover), coverValue, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                coverSheet(uri, name);
+            }
+        }));
+        tags.addView(Kit.rowNav(this, getString(R.string.export_author),
+                author.isEmpty() ? getString(R.string.export_author_none) : author, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        authorSheet(uri, name);
+                    }
+                }));
+        offer.addView(tags, Kit.wide());
+        TextView note = Ui.text(this, getString(R.string.export_files_note), 13, Palette.MUTED);
+        note.setPadding(Ui.dp(this, 4), Ui.dp(this, 8), Ui.dp(this, 4), 0);
+        offer.addView(note, Kit.wide());
+
         offer.addView(Kit.primary(this, getString(R.string.export_start), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -150,11 +186,84 @@ public final class ExportActivity extends Activity {
                     HoraFolder.ask(ExportActivity.this);
                     return;
                 }
-                Export.add(ExportActivity.this, uri, name, title, reader, chapters);
+                Export.add(ExportActivity.this, uri, name, title, reader, chapters, author, coverMode);
                 offer.removeAllViews();
                 showQueue();
             }
         }), Kit.below(this, 16));
+    }
+
+    /** The cover: what it is now, and the ways to change it. */
+    private void coverSheet(final String uri, final String name) {
+        LinearLayout box = Ui.column(this);
+        byte[] now = Export.COVER_BOOK.equals(coverMode) ? bookCover
+                : Export.COVER_NONE.equals(coverMode) ? null : chosenCover;
+        if (now != null) {
+            android.widget.ImageView pic = new android.widget.ImageView(this);
+            pic.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+            pic.setClipToOutline(true);
+            pic.setBackground(Ui.round(Palette.RAISED, 10, this));
+            pic.setImageBitmap(android.graphics.BitmapFactory.decodeByteArray(now, 0, now.length));
+            box.addView(pic, Ui.lp(Ui.dp(this, 120), Ui.dp(this, 180)));
+        }
+        box.addView(Kit.lead(this, getString(bookCover != null ? R.string.export_cover_about_has
+                : R.string.export_cover_about_none)), Kit.below(this, now != null ? 14 : 0));
+        final android.app.Dialog[] d = new android.app.Dialog[1];
+        LinearLayout lesser = Ui.column(this);
+        if (bookCover != null && !Export.COVER_BOOK.equals(coverMode)) {
+            lesser.addView(Kit.link(this, getString(R.string.export_cover_take_book), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    coverMode = Export.COVER_BOOK;
+                    d[0].dismiss();
+                    showOffer(uri, name);
+                }
+            }));
+        }
+        if (!Export.COVER_NONE.equals(coverMode)) {
+            lesser.addView(Kit.link(this, getString(R.string.export_cover_drop), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    coverMode = Export.COVER_NONE;
+                    d[0].dismiss();
+                    showOffer(uri, name);
+                }
+            }));
+        }
+        d[0] = Kit.sheet(this, getString(R.string.export_cover), box, getString(R.string.export_cover_choose),
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        Intent pick = android.os.Build.VERSION.SDK_INT >= 33
+                                ? new Intent(android.provider.MediaStore.ACTION_PICK_IMAGES)
+                                : new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
+                                        .setType("image/*");
+                        startActivityForResult(pick, PICK_COVER);
+                    }
+                }, lesser);
+        d[0].show();
+    }
+
+    /** The author: what the book says, which the person may correct or clear. */
+    private void authorSheet(final String uri, final String name) {
+        final android.widget.EditText field = new android.widget.EditText(this);
+        Ui.field(field);
+        field.setText(author);
+        field.setSelection(author.length());
+        field.setHint(R.string.export_author_hint);
+        field.setHintTextColor(Palette.HINT);
+        field.setTextColor(Palette.INK);
+        field.setSingleLine(true);
+        LinearLayout box = Ui.column(this);
+        box.addView(Kit.lead(this, getString(R.string.export_author_about)));
+        box.addView(field, Kit.below(this, 12));
+        Kit.sheet(this, getString(R.string.export_author), box, getString(R.string.kit_done), new Runnable() {
+            @Override
+            public void run() {
+                author = field.getText().toString().trim();
+                showOffer(uri, name);
+            }
+        }).show();
     }
 
     /** Minutes in plain words, or hours once there are sixty of them. */
@@ -255,6 +364,38 @@ public final class ExportActivity extends Activity {
     @Override
     protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
+        if (request == PICK_COVER) {
+            if (result == RESULT_OK && data != null && data.getData() != null) {
+                final Uri picture = data.getData();
+                final String uri = getIntent().getStringExtra(EXTRA_URI);
+                final String name = getIntent().getStringExtra(EXTRA_NAME);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final byte[] got = BookCover.chosen(ExportActivity.this, picture);
+                        if (got != null && uri != null) {
+                            try {
+                                java.nio.file.Files.write(Export.chosenCover(ExportActivity.this, uri).toPath(), got);
+                            } catch (java.io.IOException e) {
+                                Diag.log(ExportActivity.this, "export: chosen cover not kept", e);
+                                return;
+                            }
+                        }
+                        main.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (got != null) {
+                                    chosenCover = got;
+                                    coverMode = "own";
+                                    showOffer(uri, name);
+                                }
+                            }
+                        });
+                    }
+                }, "export-cover").start();
+            }
+            return;
+        }
         if (request == PICK_FOLDER && result == RESULT_OK) {
             Export.acceptFolder(this, data);
         } else if (request == HoraFolder.PICK && result == RESULT_OK) {

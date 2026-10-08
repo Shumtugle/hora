@@ -3,9 +3,7 @@ package com.shumtugle.hora;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.net.Uri;
-import android.view.View;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -18,8 +16,8 @@ import java.util.zip.ZipInputStream;
 /**
  * The picture for the front of an audiobook: the book's own cover when it
  * carries one (fb2 keeps it as a coded binary, epub as an image its package
- * names), otherwise the plain paper cover Hora draws on the shelf. Always a
- * small JPEG, since every chapter file carries its own copy.
+ * names), or a picture the person chose by hand; never anything else. Always
+ * a small JPEG, since every chapter file carries its own copy.
  */
 final class BookCover {
     private static final int SIDE = 600;
@@ -28,8 +26,12 @@ final class BookCover {
     private BookCover() {
     }
 
-    /** JPEG bytes for the book, or null when not even the drawn cover could be made. */
-    static byte[] jpeg(Context c, String uri, String name, String title, String author) {
+    /**
+     * The book's own cover as a small JPEG, or null when the file carries none.
+     * Nothing is ever made up or looked for beside the file: a picture lying in
+     * the same folder may be anything, a private photo too.
+     */
+    static byte[] jpeg(Context c, String uri, String name) {
         byte[] own = null;
         try (InputStream in = c.getContentResolver().openInputStream(Uri.parse(uri))) {
             if (in != null) {
@@ -38,17 +40,43 @@ final class BookCover {
         } catch (Exception e) {
             Diag.log(c, "export: no cover in the book", e);
         }
-        if (own != null) {
-            Bitmap b = BitmapFactory.decodeByteArray(own, 0, own.length);
-            if (b != null) {
-                Diag.log(c, "export: the book's own cover");
-                return small(b);
-            }
+        if (own == null) {
+            return null;
         }
+        Bitmap b = BitmapFactory.decodeByteArray(own, 0, own.length);
+        return b == null ? null : small(b);
+    }
+
+    /** A picture the person chose for the cover themselves, turned the way it was held, as a small JPEG. */
+    static byte[] chosen(Context c, Uri uri) {
         try {
-            return small(drawn(c, title, author));
-        } catch (RuntimeException e) {
-            Diag.log(c, "export: no drawn cover", e);
+            Bitmap b;
+            try (InputStream in = c.getContentResolver().openInputStream(uri)) {
+                b = BitmapFactory.decodeStream(in);
+            }
+            if (b == null) {
+                return null;
+            }
+            int turn = android.media.ExifInterface.ORIENTATION_NORMAL;
+            try (InputStream in = c.getContentResolver().openInputStream(uri)) {
+                if (in != null) {
+                    turn = new android.media.ExifInterface(in).getAttributeInt(
+                            android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
+                }
+            } catch (Exception ignored) {
+                // No tags: the picture stands as it is.
+            }
+            int degrees = turn == android.media.ExifInterface.ORIENTATION_ROTATE_90 ? 90
+                    : turn == android.media.ExifInterface.ORIENTATION_ROTATE_180 ? 180
+                    : turn == android.media.ExifInterface.ORIENTATION_ROTATE_270 ? 270 : 0;
+            if (degrees != 0) {
+                android.graphics.Matrix m = new android.graphics.Matrix();
+                m.setRotate(degrees);
+                b = Bitmap.createBitmap(b, 0, 0, b.getWidth(), b.getHeight(), m, true);
+            }
+            return small(b);
+        } catch (Exception e) {
+            Diag.log(c, "export: chosen cover unreadable", e);
             return null;
         }
     }
@@ -157,21 +185,6 @@ final class BookCover {
             }
         }
         return null;
-    }
-
-    /** The shelf's own paper cover, drawn off screen. */
-    private static Bitmap drawn(Context c, String title, String author) {
-        Cover v = new Cover(c);
-        v.set(title, author);
-        int w = 400;
-        v.measure(View.MeasureSpec.makeMeasureSpec(w, View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-        v.layout(0, 0, v.getMeasuredWidth(), v.getMeasuredHeight());
-        Bitmap b = Bitmap.createBitmap(v.getMeasuredWidth(), v.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-        Canvas k = new Canvas(b);
-        k.drawColor(0xFFF3E7CF);
-        v.draw(k);
-        return b;
     }
 
     private static byte[] small(Bitmap b) {
