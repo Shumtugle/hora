@@ -52,6 +52,8 @@ public final class BookActivity extends Activity {
     private TextView where;
     private ImageView readerFace;
     private TextView readerName;
+    private TextView bedState;
+    private TextView bedFlip;
     private int shownReader = -1;
     private ListView ribbon;
     private ImageView backdrop;
@@ -262,6 +264,51 @@ public final class BookActivity extends Activity {
         rdp.topMargin = dp(12);
         book.addView(reader, rdp);
 
+        // The background under the voice, under the reader: switched with one touch, set in a sheet.
+        LinearLayout bedRow = Ui.row(this);
+        bedRow.setGravity(Gravity.CENTER_VERTICAL);
+        bedRow.setBackground(Ui.pressable(Ui.round(Palette.SURFACE, 24, this)));
+        bedRow.setPadding(dp(6), dp(6), dp(16), dp(6));
+        bedRow.setClickable(true);
+        bedRow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BedSheet.show(BookActivity.this, new Runnable() {
+                    @Override
+                    public void run() {
+                        showBed();
+                    }
+                });
+            }
+        });
+        ImageView note = new ImageView(this);
+        note.setImageResource(R.drawable.ic_note);
+        note.setImageTintList(android.content.res.ColorStateList.valueOf(Palette.MUTED));
+        note.setScaleType(ImageView.ScaleType.CENTER);
+        note.setBackground(Ui.oval(Palette.RAISED, Palette.RAISED, 0, this));
+        note.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        bedRow.addView(note, Ui.lp(dp(36), dp(36)));
+        bedState = Ui.text(this, "", 14, Palette.INK);
+        bedState.setSingleLine(true);
+        bedState.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        LinearLayout.LayoutParams bsp = Ui.weight(1);
+        bsp.leftMargin = dp(10);
+        bedRow.addView(bedState, bsp);
+        bedFlip = Ui.text(this, "", 13, Palette.ACCENT_TEXT);
+        bedFlip.setTypeface(Palette.bodyStrong(this));
+        bedFlip.setPadding(dp(12), dp(8), 0, dp(8));
+        bedFlip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BedSheet.flip(BookActivity.this, Prefs.bed(BookActivity.this) == Bed.OFF);
+                showBed();
+            }
+        });
+        bedRow.addView(bedFlip);
+        LinearLayout.LayoutParams bdp = Ui.lp(Ui.MATCH, Ui.WRAP);
+        bdp.topMargin = dp(8);
+        book.addView(bedRow, bdp);
+
         // The whole text runs as one ribbon; the paragraph being heard stands on a raised plate.
         FrameLayout card = new FrameLayout(this);
         card.setBackground(Ui.round(Palette.SURFACE, 24, this));
@@ -372,6 +419,7 @@ public final class BookActivity extends Activity {
             readerName.setText(getString(R.string.book_reader, Cast.name(this, narrator)));
         }
         setBackdrop(narrator);
+        showBed();
         bar.set(Reading.permille(this) / 1000f);
         load();
         int i = Reading.index(this);
@@ -387,6 +435,18 @@ public final class BookActivity extends Activity {
         boolean playing = Reading.playing(this);
         toggle.setImageResource(playing ? R.drawable.ic_pause : R.drawable.ic_play);
         toggle.setContentDescription(getString(playing ? R.string.book_pause : R.string.book_play));
+    }
+
+    /** What lies under the voice, and the one-touch switch beside it. */
+    private void showBed() {
+        if (bedState == null) {
+            return;
+        }
+        String now = BedSheet.state(this);
+        if (!now.equals(bedState.getText().toString())) {
+            bedState.setText(now);
+        }
+        bedFlip.setText(Prefs.bed(this) == Bed.OFF ? R.string.bed_row_turn_on : R.string.bed_row_turn_off);
     }
 
     /** The open book's text for the search room, or null when it is not read yet. */

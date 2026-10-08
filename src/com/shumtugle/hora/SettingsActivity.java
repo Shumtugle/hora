@@ -267,7 +267,7 @@ public final class SettingsActivity extends Activity {
                         public void onClick(View view) {
                             Prefs.setBed(SettingsActivity.this, kind);
                             ((TextView) which.getChildAt(1)).setText(kinds[kind]);
-                            Bed.refresh(SettingsActivity.this);
+                            BedSheet.tell(SettingsActivity.this);
                             d[0].dismiss();
                         }
                     });

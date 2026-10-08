@@ -88,6 +88,18 @@ final class Bed {
         }
     }
 
+    /** A playing background takes the volume from the setting again; the noise does so by itself. */
+    static synchronized void retune(Context c) {
+        if (running != null && running.music != null) {
+            float v = Math.min(1f, 1.2f * level(c) / CEILING);
+            try {
+                running.music.setVolume(v, v);
+            } catch (RuntimeException ignored) {
+                // Released in between.
+            }
+        }
+    }
+
     /** Volume from the setting, 0..1, curved so the low half of the slider stays truly quiet. */
     static float level(Context c) {
         float v = Prefs.bedVolume(c) / 100f;

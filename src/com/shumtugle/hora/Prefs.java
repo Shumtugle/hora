@@ -108,6 +108,8 @@ final class Prefs {
     private static final String NAME_PREFIX = "voice_name_";
     private static final String BED = "bed";
     private static final String BED_VOLUME = "bed_volume";
+    private static final String BED_LAST = "bed_last";
+    private static final String BED_ONLY = "bed_only";
 
     /** The background under a book read aloud; off unless chosen. */
     @SuppressWarnings("deprecation")
@@ -116,8 +118,30 @@ final class Prefs {
         return v >= 0 && v < Bed.KINDS ? v : Bed.OFF;
     }
 
+    /** Written at once: the reading process reads it as soon as it is told of the change. */
     static void setBed(Context c, int kind) {
-        sp(c).edit().putInt(BED, kind).apply();
+        SharedPreferences.Editor e = sp(c).edit().putInt(BED, kind);
+        if (kind != Bed.OFF) {
+            e.putInt(BED_LAST, kind);
+        }
+        e.commit();
+    }
+
+    /** The last background that was not silence, to bring back with one touch. */
+    @SuppressWarnings("deprecation")
+    static int bedLast(Context c) {
+        int v = c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getInt(BED_LAST, Bed.BROWN);
+        return v > Bed.OFF && v < Bed.KINDS ? v : Bed.BROWN;
+    }
+
+    /** Whether the voice is silent on purpose while the background plays; kept by the reading process. */
+    @SuppressWarnings("deprecation")
+    static boolean bedOnly(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(BED_ONLY, false);
+    }
+
+    static void setBedOnly(Context c, boolean on) {
+        sp(c).edit().putBoolean(BED_ONLY, on).commit();
     }
 
     /** 0..100; low by default, the background stays under the voice. */

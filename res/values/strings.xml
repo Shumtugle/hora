@@ -530,6 +530,26 @@
     <string name="bed">Background under the book</string>
     <string name="bed_volume">Background volume</string>
     <string name="bed_volume_value">%1$d%%</string>
+    <string name="bed_switch">Background under the voice</string>
+    <string-array name="bed_kinds_short">
+        <item>Silence</item>
+        <item>Brown</item>
+        <item>Pink</item>
+        <item>White</item>
+        <item>Rain</item>
+        <item>Surf</item>
+        <item>Music</item>
+    </string-array>
+    <string name="bed_volume_near_voice">Background volume</string>
+    <string name="bed_volume_low">barely there</string>
+    <string name="bed_volume_high">almost as loud as the voice</string>
+    <string name="bed_voice_quiet">Voice silent</string>
+    <string name="bed_voice_quiet_sub">The book keeps its place, the background plays on</string>
+    <string name="bed_row_off">Background: silence</string>
+    <string name="bed_row_on">Background: %1$s · %2$d%%</string>
+    <string name="bed_row_voice_quiet">Background: %1$s · voice silent</string>
+    <string name="bed_row_turn_on">Turn on</string>
+    <string name="bed_row_turn_off">Turn off</string>
     <string-array name="bed_kinds">
         <item>Silence</item>
         <item>Brown noise</item>

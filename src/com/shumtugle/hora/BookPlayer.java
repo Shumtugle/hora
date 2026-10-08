@@ -45,6 +45,11 @@ public final class BookPlayer extends Service {
     /** Pauses the reading after EXTRA_MINUTES minutes; zero minutes takes the timer away. */
     static final String ACTION_SLEEP = "sleep";
     static final String EXTRA_MINUTES = "minutes";
+    /** The background under the book was changed: a playing one follows at once. */
+    static final String ACTION_BED = "bed";
+    /** EXTRA_ON true: the voice falls silent and the background goes on; false: the voice reads again. */
+    static final String ACTION_VOICE_QUIET = "voice_quiet";
+    static final String EXTRA_ON = "on";
     static final String EXTRA_URI = "uri";
     static final String EXTRA_NAME = "name";
     static final String EXTRA_INDEX = "index";
@@ -65,6 +70,8 @@ public final class BookPlayer extends Service {
     private static BookPlayer live;
     /** Paused to let a notification through; resumes when it is over. */
     private boolean heldForNews;
+    /** The voice is silent on purpose while the background plays on. */
+    private boolean bedOnly;
     /** A paragraph is being made; the end of the book is not reached while it is. */
     private volatile boolean busy;
     private volatile int generation;
@@ -186,6 +193,14 @@ public final class BookPlayer extends Service {
             seek(playIndex + 1);
         } else if (ACTION_PREV.equals(action)) {
             seek(Math.max(0, playIndex - 1));
+        } else if (ACTION_BED.equals(action)) {
+            followBed();
+        } else if (ACTION_VOICE_QUIET.equals(action)) {
+            if (intent.getBooleanExtra(EXTRA_ON, false)) {
+                voiceQuiet();
+            } else {
+                ensureLoaded(true);
+            }
         } else if (ACTION_SLEEP.equals(action)) {
             sleepIn(intent.getIntExtra(EXTRA_MINUTES, 0));
         } else if (ACTION_WARM.equals(action)) {
@@ -328,6 +343,18 @@ public final class BookPlayer extends Service {
         if (paragraphs == null || playing) {
             return;
         }
+        if (bedOnly) {
+            // The background was already playing with focus and the phone awake; the voice joins it.
+            bedOnly = false;
+            Prefs.setBedOnly(this, false);
+            Diag.mark(this, "book: the voice is back, " + why);
+            synchronized (lock) {
+                playing = true;
+                lock.notifyAll();
+            }
+            publish();
+            return;
+        }
         Diag.mark(this, "book: playing, " + why + ", " + Diag.state(this));
         if (focus == null) {
             focus = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
@@ -350,10 +377,12 @@ public final class BookPlayer extends Service {
     }
 
     private void pause(String why) {
-        if (!playing) {
+        if (!playing && !bedOnly) {
             return;
         }
         Diag.mark(this, "book: paused, " + why);
+        bedOnly = false;
+        Prefs.setBedOnly(this, false);
         synchronized (lock) {
             playing = false;
             lock.notifyAll();
@@ -364,6 +393,53 @@ public final class BookPlayer extends Service {
             audio.abandonAudioFocusRequest(focus);
         }
         publish();
+    }
+
+    /**
+     * The voice falls silent while the background plays on, as when a person
+     * wants only the rain for a while. The place in the book stays where it is.
+     */
+    private void voiceQuiet() {
+        if (Prefs.bed(this) == Bed.OFF || bedOnly) {
+            return;
+        }
+        if (playing) {
+            synchronized (lock) {
+                playing = false;
+                lock.notifyAll();
+            }
+        } else {
+            if (focus == null) {
+                focus = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                        .setAudioAttributes(attributes())
+                        .setOnAudioFocusChangeListener(focusChange)
+                        .build();
+            }
+            audio.requestAudioFocus(focus);
+            if (!receiverOn) {
+                registerReceiver(noisy, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
+                receiverOn = true;
+            }
+            Awake.hold(this);
+        }
+        bedOnly = true;
+        Prefs.setBedOnly(this, true);
+        Bed.start(this);
+        Diag.mark(this, "book: voice quiet, the background goes on");
+        publish();
+    }
+
+    /** A change of the background made on a screen, heard at once if anything plays. */
+    private void followBed() {
+        if (!playing && !bedOnly) {
+            return;
+        }
+        if (bedOnly && Prefs.bed(this) == Bed.OFF) {
+            pause("background off");
+            return;
+        }
+        Bed.start(this);
+        Bed.retune(this);
     }
 
     private void seek(int index) {
@@ -626,7 +702,7 @@ public final class BookPlayer extends Service {
         Library.progress(this, uri, i, Prefs.roleShared(this, Cast.NARRATOR));
         NotificationManager nm = getSystemService(NotificationManager.class);
         nm.notify(NOTE, note());
-        if (!playing) {
+        if (!playing && !bedOnly) {
             stopForeground(STOP_FOREGROUND_DETACH);
         } else {
             startForeground(NOTE, note());
