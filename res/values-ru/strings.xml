@@ -1450,14 +1450,12 @@
         <item>Могу читать книгу: «читай», «стоп», «дальше», «назад», «где мы», «глава пять», «найди сад». Могу почитать тебе перед сном: «почитай ещё двадцать минут». Скажу время, число и погоду. И можно попросить другой голос: «пусть читает Сирин».</item>
     </string-array>
     <string-array name="bot_say_hello">
-        <item>Привет. Что почитаем?</item>
-        <item>Здравствуй. Я здесь.</item>
-        <item>Привет. Книга ждёт.</item>
+        <item>Здравствуй.</item>
+        <item>Привет.</item>
     </string-array>
     <string-array name="bot_say_thanks">
         <item>Пожалуйста.</item>
-        <item>Всегда рада.</item>
-        <item>На здоровье.</item>
+        <item>Не за что.</item>
     </string-array>
     <string-array name="bot_say_read">
         <item>Читаю «{book}».</item>
@@ -1869,18 +1867,18 @@
     <string name="intro_talk_sub">Время, погода, книга — простыми словами</string>
     <string name="intro_start">Начать</string>
     <string-array name="voice_talk_open">
-        <item>Я здесь. Время, погода, книга — выбери внизу или напиши.</item>
-        <item>Спрашивай: который час, какая погода, где мы в книге.</item>
-        <item>Не спеши. Внизу время, погода и книга, а можно и написать.</item>
-        <item>Садись, потолкуем. Время, погода, книга — всё внизу, остальное пиши словами.</item>
-        <item>Привет! Жми внизу или пиши, что нужно.</item>
+        <item>Время, погода и книга — внизу. Остальное можно написать.</item>
+        <item>Внизу время, погода и книга. Или напиши.</item>
+        <item>Время, погода, книга — кнопки внизу. Можно и словами.</item>
+        <item>Кнопки внизу. Или пиши.</item>
+        <item>Внизу время, погода и книга. Можно написать.</item>
     </string-array>
     <string-array name="voice_step_forward">
-        <item>%1$s. Теперь отвечаю я. Спрашивай.</item>
-        <item>%1$s. Теперь с тобой говорю я.</item>
-        <item>%1$s. Я рядом. Спрашивай, не торопись.</item>
-        <item>%1$s. Теперь отвечаю я, коротко и по делу.</item>
-        <item>%1$s. Теперь со мной. Что нового?</item>
+        <item>%1$s. Теперь отвечаю я.</item>
+        <item>%1$s. Теперь говорю я.</item>
+        <item>%1$s. Теперь отвечаю я.</item>
+        <item>%1$s. Отвечаю я.</item>
+        <item>%1$s. Теперь отвечаю я.</item>
     </string-array>
     <string name="lang_title">Языки</string>
     <string name="lang_lead">Те же голоса читают на других языках. Каждый язык скачивается отдельно.</string>
@@ -2047,99 +2045,93 @@
     <string name="brain_restore_default">Вернуть модель по умолчанию</string>
     <string name="brain_part_unfit">не подходит к этой модели</string>
     <string-array name="bot_say_hello_v1">
-        <item>Здравствуй. Я здесь.</item>
-        <item>Привет. Тихо у нас, можно читать.</item>
+        <item>Здравствуй.</item>
+        <item>Слушаю.</item>
     </string-array>
     <string-array name="bot_say_hello_v2">
-        <item>Привет-привет. Что сегодня?</item>
-        <item>О, это ты. Рада. Что читаем?</item>
+        <item>Привет.</item>
+        <item>Слушаю.</item>
     </string-array>
     <string-array name="bot_say_hello_v3">
-        <item>Здравствуй, здравствуй. Не спеши, я тут.</item>
-        <item>Привет. Устраивайся поудобнее.</item>
+        <item>Здравствуй.</item>
+        <item>Слушаю.</item>
     </string-array>
     <string-array name="bot_say_hello_v4">
-        <item>Здрав будь. Что почитаем?</item>
-        <item>Привет. Садись, начнём.</item>
+        <item>Здравствуй.</item>
     </string-array>
     <string-array name="bot_say_hello_v5">
-        <item>Привет! Что делаем?</item>
-        <item>Хей, привет! Почитаем?</item>
+        <item>Привет.</item>
+        <item>Слушаю.</item>
     </string-array>
     <string-array name="bot_say_thanks_v1">
         <item>Пожалуйста.</item>
         <item>Не за что.</item>
     </string-array>
     <string-array name="bot_say_thanks_v2">
-        <item>Всегда рада.</item>
-        <item>Обращайся, мне не трудно.</item>
+        <item>Пожалуйста.</item>
+        <item>Не за что.</item>
     </string-array>
     <string-array name="bot_say_thanks_v3">
-        <item>На здоровье.</item>
-        <item>Не за что, не за что.</item>
+        <item>Пожалуйста.</item>
+        <item>Не за что.</item>
     </string-array>
     <string-array name="bot_say_thanks_v4">
-        <item>Сочтёмся.</item>
-        <item>Было бы за что.</item>
+        <item>Пожалуйста.</item>
     </string-array>
     <string-array name="bot_say_thanks_v5">
-        <item>Да не за что!</item>
-        <item>Обращайся!</item>
+        <item>Пожалуйста.</item>
+        <item>Не за что.</item>
     </string-array>
     <string-array name="bot_say_pause_v1">
+        <item>Остановилась.</item>
         <item>Пауза.</item>
-        <item>Жду.</item>
     </string-array>
     <string-array name="bot_say_pause_v2">
-        <item>Остановилась. Скажи, когда дальше.</item>
-        <item>Замолчала.</item>
+        <item>Остановилась.</item>
     </string-array>
     <string-array name="bot_say_pause_v3">
-        <item>Тихо-тихо. Подожду.</item>
         <item>Остановился.</item>
+        <item>Пауза.</item>
     </string-array>
     <string-array name="bot_say_pause_v4">
-        <item>Придержу коней.</item>
-        <item>Стою, жду.</item>
+        <item>Стоп.</item>
     </string-array>
     <string-array name="bot_say_pause_v5">
-        <item>Стоп!</item>
-        <item>Жду.</item>
+        <item>Остановился.</item>
     </string-array>
     <string-array name="bot_say_read_v1">
         <item>Продолжаю «{book}».</item>
         <item>Читаю «{book}».</item>
     </string-array>
     <string-array name="bot_say_read_v2">
-        <item>Возвращаемся в «{book}».</item>
-        <item>Дальше «{book}», слушай.</item>
+        <item>Продолжаю «{book}».</item>
+        <item>Читаю «{book}».</item>
     </string-array>
     <string-array name="bot_say_read_v3">
-        <item>Читаю «{book}», не торопясь.</item>
-        <item>Продолжаю «{book}». Устраивайся.</item>
+        <item>Продолжаю «{book}».</item>
+        <item>Читаю «{book}».</item>
     </string-array>
     <string-array name="bot_say_read_v4">
-        <item>Сказ продолжается: «{book}».</item>
-        <item>Дальше «{book}».</item>
+        <item>Читаю «{book}».</item>
     </string-array>
     <string-array name="bot_say_read_v5">
-        <item>Погнали: «{book}»!</item>
-        <item>Включаю «{book}».</item>
+        <item>Продолжаю «{book}».</item>
+        <item>Читаю «{book}».</item>
     </string-array>
     <string-array name="bot_say_unknown_v1">
         <item>Этого я не умею. Спроси «что ты умеешь».</item>
     </string-array>
     <string-array name="bot_say_unknown_v2">
-        <item>Не поняла. Спроси «что ты умеешь» — расскажу.</item>
+        <item>Этого я не умею. Спроси «что ты умеешь».</item>
     </string-array>
     <string-array name="bot_say_unknown_v3">
-        <item>Не понял я. Спроси «что ты умеешь».</item>
+        <item>Этого я не умею. Спроси «что ты умеешь».</item>
     </string-array>
     <string-array name="bot_say_unknown_v4">
-        <item>Не уразумел. Спроси «что ты умеешь».</item>
+        <item>Не умею. Спроси «что ты умеешь».</item>
     </string-array>
     <string-array name="bot_say_unknown_v5">
-        <item>Хм, не понял. Спроси «что ты умеешь»!</item>
+        <item>Этого я не умею. Спроси «что ты умеешь».</item>
     </string-array>
     <string-array name="bot_search_world">
         <item>что-нибудь о</item>

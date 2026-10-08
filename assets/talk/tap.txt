@@ -1,186 +1,68 @@
-# Lines for a tap on the voice's line on the main screen: lang.cell.voice|line.
-# {name} is the voice's current name.
-# A phrase is greet + name + self + invite, a line from each cell, never the same one twice in a row.
-# Plain words only: a joke that comes back is no longer a joke.
-# Taps in a row cool it down: the fourth drops greet, from the fifth on only the flat line, a little slower.
-# Voices: 1..5 in the order of the troupe.
+# Lines for a tap on the voice's line on the main screen: lang.kind|line or lang.kind.voice|line.
+# A reply is the voice's name and one fact that is true right now; a voice's own line wins over the common one.
+# Marks: {time} {weekday} {day} {month} {book} {place} {pct} {weather} {degrees}; {name} in the flat line.
+# No feelings, no closeness, no talk about the voice's own manner: the variety is in the facts.
+# Taps in a row cool it down: the fourth drops the short word, from the fifth on only the flat line, a little slower.
+# Voices: 1..5 by their numbers.
 
-ru.greet.1|Здравствуй.
-ru.greet.1|Слушаю тебя.
-ru.greet.1|Я здесь.
-ru.greet.1|Привет.
-ru.name.1|Я — {name}.
-ru.name.1|{name} на месте.
-ru.name.1|Это {name}.
-ru.name.1|Меня зовут {name}.
-ru.self.1|Голосовая помощница.
-ru.self.1|Та, что отвечает.
-ru.self.1|Знаю время, погоду и кое-что из энциклопедии.
-ru.self.1|Отвечаю на вопросы.
+ru.time|Сейчас {time}.
+ru.date|Сегодня {weekday}, {day} {month}.
+ru.book|«{book}», {place}.
+ru.battery|Заряд {pct} %.
+ru.charging|Телефон на зарядке, {pct} %.
+ru.weather|На улице {weather}.
+ru.role_book|Книги читаю я.
+ru.role_news|Уведомления читаю я.
+ru.quiet|Сейчас тихие часы, уведомления молчат.
+
+ru.time.4|{time}.
+ru.date.4|{weekday}, {day}.
+ru.book.4|{place}.
+ru.battery.4|Заряд {pct} %.
+ru.charging.4|На зарядке, {pct} %.
+ru.weather.4|{degrees}.
+ru.role_book.4|Книги — мне.
+ru.role_news.4|Уведомления — мне.
+ru.quiet.4|Тихие часы.
+
 ru.invite.1|Спрашивай.
-ru.invite.1|Что узнать?
-ru.invite.1|Говори, я слушаю.
-ru.invite.1|Чем помочь?
+ru.invite.2|Слушаю.
+ru.invite.3|Спрашивай.
+ru.invite.5|Слушаю.
+
 ru.flat.1|{name}. Помощница.
-
-ru.greet.2|Привет.
-ru.greet.2|Вот и ты.
-ru.greet.2|Здравствуй.
-ru.greet.2|Слушаю.
-ru.name.2|Я — {name}.
-ru.name.2|{name} тут.
-ru.name.2|Это я, {name}.
-ru.name.2|{name} на связи.
-ru.self.2|Собеседница.
-ru.self.2|Читаю тебе уведомления в наушники.
-ru.self.2|Могу просто поговорить.
-ru.self.2|Говорю с тобой.
-ru.invite.2|Поболтаем?
-ru.invite.2|Рассказывай.
-ru.invite.2|Что нового?
-ru.invite.2|Спроси что-нибудь.
 ru.flat.2|{name}. Собеседница.
-
-ru.greet.3|Здравствуй.
-ru.greet.3|Я тут.
-ru.greet.3|Не спеши.
-ru.greet.3|Слушаю.
-ru.name.3|Я — {name}.
-ru.name.3|{name} рядом.
-ru.name.3|Это {name}.
-ru.name.3|Меня зовут {name}.
-ru.self.3|Сказочник.
-ru.self.3|Говорю неторопливо.
-ru.self.3|Рассказываю, а не докладываю.
-ru.self.3|Помощник, который не торопит.
-ru.invite.3|Спрашивай, не торопись.
-ru.invite.3|Что рассказать?
-ru.invite.3|Говори, я слушаю.
-ru.invite.3|Время есть. Спрашивай.
 ru.flat.3|{name}. Сказочник.
-
-ru.greet.4|Слушаю.
-ru.greet.4|Здравствуй.
-ru.greet.4|Здесь.
-ru.greet.4|Привет.
-ru.name.4|{name}.
-ru.name.4|Я — {name}.
-ru.name.4|Это {name}.
-ru.name.4|{name} на месте.
-ru.self.4|Чтец.
-ru.self.4|Читаю книги. Отвечаю коротко.
-ru.self.4|Без лишних слов.
-ru.self.4|Читаю вслух.
-ru.invite.4|Вопрос?
-ru.invite.4|Что нужно?
-ru.invite.4|Спрашивай.
-ru.invite.4|Жду вопроса.
 ru.flat.4|{name}. Чтец.
-
-ru.greet.5|Привет!
-ru.greet.5|Здорово!
-ru.greet.5|Рад тебя слышать.
-ru.greet.5|Здравствуй!
-ru.name.5|Я — {name}.
-ru.name.5|{name} к твоим услугам.
-ru.name.5|Это {name}.
-ru.name.5|{name} на месте.
-ru.self.5|Гусляр.
-ru.self.5|Голос полегче да повеселее.
-ru.self.5|Собеседник на лёгкую руку.
-ru.self.5|Помощник с хорошим настроением.
-ru.invite.5|Что нового?
-ru.invite.5|Рассказывай!
-ru.invite.5|Спрашивай, отвечу с удовольствием.
-ru.invite.5|Чем помочь?
 ru.flat.5|{name}. Гусляр.
 
-en.greet.1|Hello.
-en.greet.1|I'm listening.
-en.greet.1|I'm here.
-en.greet.1|Hi.
-en.name.1|I'm {name}.
-en.name.1|{name} here.
-en.name.1|This is {name}.
-en.name.1|My name is {name}.
-en.self.1|Your voice assistant.
-en.self.1|The one who answers.
-en.self.1|I know the time, the weather and a bit of the encyclopedia.
-en.self.1|I answer questions.
-en.invite.1|Ask away.
-en.invite.1|What shall we find out?
-en.invite.1|Go on, I'm listening.
-en.invite.1|How can I help?
+en.time|It's {time}.
+en.date|Today is {weekday}, {month} {day}.
+en.book|“{book}”, {place}.
+en.battery|Battery at {pct} %.
+en.charging|The phone is charging, {pct} %.
+en.weather|Outside it's {weather}.
+en.role_book|I read the books.
+en.role_news|I read the notifications.
+en.quiet|Quiet hours now, notifications stay silent.
+
+en.time.4|{time}.
+en.date.4|{weekday}, the {day}.
+en.book.4|{place}.
+en.battery.4|Battery {pct} %.
+en.charging.4|Charging, {pct} %.
+en.weather.4|{degrees}.
+en.role_book.4|Books are mine.
+en.role_news.4|Notifications are mine.
+en.quiet.4|Quiet hours.
+
+en.invite.1|Ask.
+en.invite.2|Listening.
+en.invite.3|Ask.
+en.invite.5|Listening.
+
 en.flat.1|{name}. Assistant.
-
-en.greet.2|Hi.
-en.greet.2|There you are.
-en.greet.2|Hello.
-en.greet.2|Listening.
-en.name.2|I'm {name}.
-en.name.2|{name} here.
-en.name.2|It's me, {name}.
-en.name.2|{name} on the line.
-en.self.2|Your companion.
-en.self.2|I read your notifications into your headphones.
-en.self.2|We can just talk.
-en.self.2|I'm the one talking to you.
-en.invite.2|Shall we chat?
-en.invite.2|Tell me.
-en.invite.2|What's new?
-en.invite.2|Ask me anything.
 en.flat.2|{name}. Companion.
-
-en.greet.3|Hello.
-en.greet.3|I'm here.
-en.greet.3|No rush.
-en.greet.3|Listening.
-en.name.3|I'm {name}.
-en.name.3|{name}'s close by.
-en.name.3|This is {name}.
-en.name.3|My name is {name}.
-en.self.3|A storyteller.
-en.self.3|I speak slowly.
-en.self.3|I tell, I don't report.
-en.self.3|An assistant who never hurries you.
-en.invite.3|Ask, take your time.
-en.invite.3|What shall I tell you?
-en.invite.3|Go on, I'm listening.
-en.invite.3|There's time. Ask.
 en.flat.3|{name}. Storyteller.
-
-en.greet.4|Listening.
-en.greet.4|Hello.
-en.greet.4|Here.
-en.greet.4|Hi.
-en.name.4|{name}.
-en.name.4|I'm {name}.
-en.name.4|This is {name}.
-en.name.4|{name} here.
-en.self.4|A reader.
-en.self.4|I read books. I answer briefly.
-en.self.4|No wasted words.
-en.self.4|I read aloud.
-en.invite.4|Question?
-en.invite.4|What do you need?
-en.invite.4|Ask.
-en.invite.4|Waiting for your question.
 en.flat.4|{name}. Reader.
-
-en.greet.5|Hi!
-en.greet.5|Hey!
-en.greet.5|Good to hear you.
-en.greet.5|Hello!
-en.name.5|I'm {name}.
-en.name.5|{name} at your service.
-en.name.5|This is {name}.
-en.name.5|{name} here.
-en.self.5|A minstrel.
-en.self.5|The lighter, brighter voice.
-en.self.5|Easy company.
-en.self.5|An assistant in a good mood.
-en.invite.5|What's new?
-en.invite.5|Tell me!
-en.invite.5|Ask, I'll be glad to answer.
-en.invite.5|How can I help?
 en.flat.5|{name}. Minstrel.

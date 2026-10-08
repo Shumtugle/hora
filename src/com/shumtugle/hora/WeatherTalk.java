@@ -329,6 +329,13 @@ final class WeatherTalk {
         return list == null || list.isEmpty() ? "" : list.get(0);
     }
 
+    /** Degrees with a word for the sky, and degrees alone. */
+    String[] brief(Facts f) {
+        String t = degrees(f.temp);
+        String sky = first("brief." + sky(f.code));
+        return new String[] {sky.isEmpty() ? t : t + ", " + sky, t};
+    }
+
     private String degrees(int d) {
         if (d == 0) {
             return first("sign.zero");

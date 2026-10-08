@@ -163,6 +163,15 @@ close.5.any|Всё, погода доставлена.
 sign.plus|плюс
 sign.minus|минус
 sign.zero|ноль
+# A few words for the sky, when a voice names the weather in passing.
+brief.clear|ясно
+brief.partly|облачно
+brief.overcast|пасмурно
+brief.fog|туман
+brief.drizzle|морось
+brief.rain|дождь
+brief.snow|снег
+brief.storm|гроза
 unit.wind|метр в секунду|метра в секунду|метров в секунду
 
 wait|Смотрю на небо…

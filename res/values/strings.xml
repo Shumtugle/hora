@@ -863,18 +863,18 @@
     <string name="intro_talk_sub">Time, weather, the book, in plain words</string>
     <string name="intro_start">Start</string>
     <string-array name="voice_talk_open">
-        <item>I am here. Time, weather, the book: pick below or write.</item>
-        <item>Ask away: the time, the weather, where we are in the book.</item>
-        <item>No hurry. Time, weather and the book are below, or just write.</item>
-        <item>Sit down, let us talk. Time, weather, the book are below; the rest, in words.</item>
-        <item>Hi! Tap below or write what you need.</item>
+        <item>Time, weather and the book are below. Anything else, just type.</item>
+        <item>Time, weather and the book are below. Or type.</item>
+        <item>Time, weather, the book: the buttons below. Or say it in words.</item>
+        <item>Buttons below. Or type.</item>
+        <item>Time, weather and the book are below. You can type too.</item>
     </string-array>
     <string-array name="voice_step_forward">
-        <item>%1$s. I\'m answering now. Ask away.</item>
-        <item>%1$s. I\'m the one talking to you now.</item>
-        <item>%1$s. I\'m here. Ask, take your time.</item>
-        <item>%1$s. I\'m answering now, short and to the point.</item>
-        <item>%1$s. You\'re with me now. What\'s new?</item>
+        <item>%1$s. I\'m answering now.</item>
+        <item>%1$s. I\'m talking now.</item>
+        <item>%1$s. I\'m answering now.</item>
+        <item>%1$s. Answering.</item>
+        <item>%1$s. I\'m answering now.</item>
     </string-array>
     <string name="lang_title">Languages</string>
     <string name="lang_lead">The same voices read in other languages. Each language is downloaded separately.</string>
@@ -973,79 +973,91 @@
     <string name="brain_restore_default">Bring back the default model</string>
     <string name="brain_part_unfit">does not fit this model</string>
     <string-array name="bot_say_hello_v1">
-        <item>Hello. I am here.</item>
+        <item>Hello.</item>
+        <item>Listening.</item>
     </string-array>
     <string-array name="bot_say_hello_v2">
-        <item>Hi there. What today?</item>
+        <item>Hi.</item>
+        <item>Listening.</item>
     </string-array>
     <string-array name="bot_say_hello_v3">
-        <item>Hello, hello. No hurry, I am here.</item>
+        <item>Hello.</item>
+        <item>Listening.</item>
     </string-array>
     <string-array name="bot_say_hello_v4">
-        <item>Greetings. What shall we read?</item>
+        <item>Hello.</item>
     </string-array>
     <string-array name="bot_say_hello_v5">
-        <item>Hi! What are we doing?</item>
+        <item>Hi.</item>
+        <item>Listening.</item>
     </string-array>
     <string-array name="bot_say_thanks_v1">
-        <item>You are welcome.</item>
+        <item>You\'re welcome.</item>
+        <item>Not at all.</item>
     </string-array>
     <string-array name="bot_say_thanks_v2">
-        <item>Any time.</item>
+        <item>You\'re welcome.</item>
+        <item>Not at all.</item>
     </string-array>
     <string-array name="bot_say_thanks_v3">
-        <item>You are most welcome.</item>
+        <item>You\'re welcome.</item>
+        <item>Not at all.</item>
     </string-array>
     <string-array name="bot_say_thanks_v4">
-        <item>Think nothing of it.</item>
+        <item>You\'re welcome.</item>
     </string-array>
     <string-array name="bot_say_thanks_v5">
-        <item>No problem!</item>
+        <item>You\'re welcome.</item>
+        <item>Not at all.</item>
     </string-array>
     <string-array name="bot_say_pause_v1">
         <item>Paused.</item>
     </string-array>
     <string-array name="bot_say_pause_v2">
-        <item>Stopped. Say when to go on.</item>
+        <item>Paused.</item>
     </string-array>
     <string-array name="bot_say_pause_v3">
-        <item>Quiet now. I will wait.</item>
+        <item>Paused.</item>
     </string-array>
     <string-array name="bot_say_pause_v4">
-        <item>Holding the horses.</item>
+        <item>Stop.</item>
     </string-array>
     <string-array name="bot_say_pause_v5">
-        <item>Stop!</item>
+        <item>Paused.</item>
     </string-array>
     <string-array name="bot_say_read_v1">
         <item>Going on with “{book}”.</item>
+        <item>Reading “{book}”.</item>
     </string-array>
     <string-array name="bot_say_read_v2">
-        <item>Back to “{book}”.</item>
+        <item>Going on with “{book}”.</item>
+        <item>Reading “{book}”.</item>
     </string-array>
     <string-array name="bot_say_read_v3">
-        <item>Reading “{book}”, slowly.</item>
+        <item>Going on with “{book}”.</item>
+        <item>Reading “{book}”.</item>
     </string-array>
     <string-array name="bot_say_read_v4">
-        <item>The tale goes on: “{book}”.</item>
+        <item>Reading “{book}”.</item>
     </string-array>
     <string-array name="bot_say_read_v5">
-        <item>Here we go: “{book}”!</item>
+        <item>Going on with “{book}”.</item>
+        <item>Reading “{book}”.</item>
     </string-array>
     <string-array name="bot_say_unknown_v1">
-        <item>I cannot do that yet. Ask “what can you do”.</item>
+        <item>I can\'t do that. Ask “what can you do”.</item>
     </string-array>
     <string-array name="bot_say_unknown_v2">
-        <item>Did not get that. Ask “what can you do”.</item>
+        <item>I can\'t do that. Ask “what can you do”.</item>
     </string-array>
     <string-array name="bot_say_unknown_v3">
-        <item>I did not understand. Ask “what can you do”.</item>
+        <item>I can\'t do that. Ask “what can you do”.</item>
     </string-array>
     <string-array name="bot_say_unknown_v4">
-        <item>I did not grasp that. Ask “what can you do”.</item>
+        <item>Can\'t. Ask “what can you do”.</item>
     </string-array>
     <string-array name="bot_say_unknown_v5">
-        <item>Hm, missed that. Ask “what can you do”!</item>
+        <item>I can\'t do that. Ask “what can you do”.</item>
     </string-array>
     <string-array name="bot_search_world">
         <item>something about</item>

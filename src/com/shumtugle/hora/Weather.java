@@ -112,6 +112,18 @@ final class Weather {
         }
     }
 
+    /**
+     * The weather in a few words from what was fetched lately, without going
+     * to the network: degrees and sky, then degrees alone. Null when nothing is fresh.
+     */
+    static synchronized String[] brief(Context c) {
+        if (cached == null || System.currentTimeMillis() - cachedAt >= FRESH_MS) {
+            return null;
+        }
+        line(c, "");
+        return talk == null ? null : talk.brief(cached);
+    }
+
     private static WeatherTalk.Facts facts(Context c) {
         String lat = sp(c).getString(LAT, "");
         String lon = sp(c).getString(LON, "");

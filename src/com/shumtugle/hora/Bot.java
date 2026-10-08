@@ -124,7 +124,7 @@ final class Bot {
         c.startForegroundService(i);
     }
 
-    private static String bookTitle(Library.Entry e) {
+    static String bookTitle(Library.Entry e) {
         if (e == null) {
             return "";
         }
@@ -277,7 +277,7 @@ final class Bot {
     }
 
     /** "Chapter six, 24 %", or only the percent in a book without chapters. */
-    private static String place(Library.Entry e) {
+    static String place(Library.Entry e) {
         int ch = e.chapterAt(e.index);
         String pct = e.percent() + "\u00a0%";
         return ch < 0 ? pct : chapterNameStatic(e.chapters.get(ch).label) + ", " + pct;
