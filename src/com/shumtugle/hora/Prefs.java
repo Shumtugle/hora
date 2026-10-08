@@ -144,14 +144,27 @@ final class Prefs {
         sp(c).edit().putBoolean(BED_ONLY, on).commit();
     }
 
-    /** 0..100; low by default, the background stays under the voice. */
-    @SuppressWarnings("deprecation")
+    /**
+     * 0..100, kept for each background on its own: noises are loud by nature
+     * and sit low, the music is soft and sits higher. Each starts where it
+     * sounded right under the voice.
+     */
+    private static final int[] BED_VOLUME_DEFAULT = {0, 8, 7, 6, 7, 11, 53};
+
     static int bedVolume(Context c) {
-        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getInt(BED_VOLUME, 35);
+        return bedVolume(c, bed(c));
     }
 
+    @SuppressWarnings("deprecation")
+    static int bedVolume(Context c, int kind) {
+        int k = kind >= 0 && kind < BED_VOLUME_DEFAULT.length ? kind : 0;
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getInt(BED_VOLUME + "_" + k,
+                BED_VOLUME_DEFAULT[k]);
+    }
+
+    /** Sets the volume of the background chosen now. */
     static void setBedVolume(Context c, int v) {
-        sp(c).edit().putInt(BED_VOLUME, Math.max(0, Math.min(100, v))).apply();
+        sp(c).edit().putInt(BED_VOLUME + "_" + bed(c), Math.max(0, Math.min(100, v))).apply();
     }
     private static final String NAME_ASKED_PREFIX = "voice_name_asked_";
     /** Longest name a person may give a voice. */
@@ -234,12 +247,12 @@ final class Prefs {
 
     /** Evens out the pace between chunks, which the model varies on its own. */
     static boolean evenTempo(Context c) {
-        return sp(c).getBoolean(EVEN_TEMPO, false);
+        return sp(c).getBoolean(EVEN_TEMPO, true);
     }
 
     @SuppressWarnings("deprecation")
     static boolean evenTempoShared(Context c) {
-        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(EVEN_TEMPO, false);
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(EVEN_TEMPO, true);
     }
 
     static void setEvenTempo(Context c, boolean on) {

@@ -34,6 +34,13 @@ final class Brain {
     private static final String LOG = "server.log";
     private static final String PROGRAM = "libhora_brain.so";
     private static final int PORT = 18521;
+    /**
+     * A fresh secret for every start of the server: any app on the phone may
+     * knock on the local port, only Hora knows the word. Kept in memory; the
+     * file the server reads it from is gone once the server is up.
+     */
+    private static volatile String key;
+    private static final String KEY_FILE = "server.key";
     private static final int CONTEXT = 2048;
     private static final int THREADS = 4;
     private static final long WAKE_LIMIT_MS = 120_000;
@@ -325,6 +332,19 @@ final class Brain {
                 new File(libs, PROGRAM).getPath(),
                 "-m", modelFile().getPath(), "--host", "127.0.0.1", "--port", String.valueOf(PORT),
                 "-c", String.valueOf(CONTEXT), "-t", String.valueOf(THREADS), "--jinja"));
+        File keyFile = new File(folder(), KEY_FILE);
+        byte[] raw = new byte[24];
+        new java.security.SecureRandom().nextBytes(raw);
+        StringBuilder hex = new StringBuilder();
+        for (byte x : raw) {
+            hex.append(String.format(java.util.Locale.ROOT, "%02x", x & 0xff));
+        }
+        java.nio.file.Files.write(keyFile.toPath(), hex.toString().getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+        key = hex.toString();
+        cmd.add("--api-key-file");
+        cmd.add(keyFile.getPath());
+        // The list of the server's working slots tells what it is busy with; nobody needs it.
+        cmd.add("--no-slots");
         servingVision = withVision;
         if (withVision) {
             cmd.add("--mmproj");
@@ -355,6 +375,9 @@ final class Brain {
                 throw new IOException("server stopped: " + tail());
             }
             if (healthy()) {
+                if (!keyFile.delete()) {
+                    Diag.log(context, TAG + ": key file left behind");
+                }
                 wokeInSeconds = (System.nanoTime() - started) / 1e9;
                 Diag.mark(context, String.format(java.util.Locale.ROOT, "%s: awake in %.1f s", TAG, wokeInSeconds));
                 return;
@@ -423,7 +446,12 @@ final class Brain {
     }
 
     private static HttpURLConnection open(String path) throws IOException {
-        return (HttpURLConnection) new URL("http://127.0.0.1:" + PORT + path).openConnection();
+        HttpURLConnection c = (HttpURLConnection) new URL("http://127.0.0.1:" + PORT + path).openConnection();
+        String k = key;
+        if (k != null) {
+            c.setRequestProperty("Authorization", "Bearer " + k);
+        }
+        return c;
     }
 
     /**

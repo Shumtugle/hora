@@ -990,6 +990,9 @@
     <string name="brain_draft_about">A small model that guesses words ahead. For Hora’s short answers it makes little difference; long ones can come faster. It fits the default model only. About 100 MB.</string>
     <string name="brain_get_draft">Download · about 100 MB</string>
     <string name="brain_pick_file">Pick a file</string>
+    <string name="brain_own_file_title">Your own file</string>
+    <string name="brain_own_file_warning">This file is not on Hora\'s list, and Hora cannot check it: only whoever made it knows what is inside. The model may answer worse than you expect, or differently. It can take no actions, only words, but words can be someone else\'s too. Take files from places you trust.</string>
+    <string name="brain_own_file_go">Choose a file</string>
     <string name="brain_custom_model">Another model is in place. “For photos” and the accelerator are made for Gemma 4 and may not work with it.</string>
     <string name="brain_custom_no_photo">This model does not understand photos: the “For photos” add-on fits the default model, Gemma 4, only.</string>
     <string name="brain_restore_default">Bring back the default model</string>

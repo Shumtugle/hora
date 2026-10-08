@@ -2067,6 +2067,9 @@
     <string name="brain_draft_about">Маленькая модель, которая угадывает слова наперёд. На коротких ответах Hora разницы почти нет; на длинных бывает быстрее. Подходит только к модели по умолчанию. Около 100 МБ.</string>
     <string name="brain_get_draft">Скачать · около 100 МБ</string>
     <string name="brain_pick_file">Выбрать файл</string>
+    <string name="brain_own_file_title">Свой файл</string>
+    <string name="brain_own_file_warning">Этого файла нет в списке Hora, и проверить его Hora не сможет: что внутри, знает только тот, кто его сделал. Модель может отвечать хуже или иначе, чем ждёшь. Действий у неё нет — только слова, но слова тоже бывают чужими. Бери файлы из мест, которым доверяешь.</string>
+    <string name="brain_own_file_go">Выбрать файл</string>
     <string name="brain_custom_model">Сейчас стоит другая модель. «Для фото» и «Ускоритель» сделаны под Gemma 4 и с ней могут не заработать.</string>
     <string name="brain_custom_no_photo">Эта модель не понимает фото: дополнение «Для фото» подходит только к модели по умолчанию, Gemma 4.</string>
     <string name="brain_restore_default">Вернуть модель по умолчанию</string>

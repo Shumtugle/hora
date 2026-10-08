@@ -850,10 +850,21 @@ public final class BrainActivity extends Activity {
         fetch(photo ? new int[] {Brain.SLOT_MODEL, Brain.SLOT_VISION} : new int[] {Brain.SLOT_MODEL}, false);
     }
 
-    private void pick(int slot) {
-        picking = slot;
-        startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
-                .setType("*/*"), PICK);
+    /**
+     * A file brought in by hand is not on Hora's list, and nothing checks what
+     * is inside it: the person hears that once, plainly, before choosing it.
+     */
+    private void pick(final int slot) {
+        TextView why = Kit.lead(this, getString(R.string.brain_own_file_warning));
+        Kit.sheet(this, getString(R.string.brain_own_file_title), why, getString(R.string.brain_own_file_go),
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        picking = slot;
+                        startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT)
+                                .addCategory(Intent.CATEGORY_OPENABLE).setType("*/*"), PICK);
+                    }
+                }).show();
     }
 
     @Override
