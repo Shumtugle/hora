@@ -297,7 +297,7 @@ public final class MainActivity extends Activity {
         // Changing the voice is quiet: its card is shown, and a tap on it makes the voice speak.
         TapTalk.reset();
         showCard(v);
-        if (Cast.renamable(v) && !Prefs.nameAsked(this, v)) {
+        if (v == Cast.RENAMABLE && !Prefs.nameAsked(this, v)) {
             Prefs.setNameAsked(this, v);
             askName(v);
         }

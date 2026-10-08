@@ -679,6 +679,7 @@
         <item quantity="other">%d minutes</item>
     </plurals>
     <string-array name="bot_weekdays"/>
+    <string name="bot_and">and</string>
     <string name="bot_date">Today is %1$s, %2$s.</string>
     <string name="bot_question_words">who what where when how which why</string>
     <string-array name="bot_days"/>

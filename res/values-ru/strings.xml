@@ -324,7 +324,7 @@
     <string name="role_speaker_b">Собеседник 2</string>
     <!-- Voice names: singers and storytellers of folklore; the first two female, the rest male. -->
     <string-array name="voice_names">
-        <item>Гамаюн</item>
+        <item>Хора</item>
         <item>Сирин</item>
         <item>Дима</item>
         <item>Порфирий</item>
@@ -1435,6 +1435,8 @@
         <item>баюн</item>
         <item>боян</item>
         <item>садко</item>
+        <item>порфирий</item>
+        <item>дима</item>
     </string-array>
     <!-- Numbers said in words, by stem; ordinals too ("пятую главу"). -->
     <string-array name="bot_numbers">
@@ -1534,7 +1536,7 @@
         <item>Теперь читаю я, {voice}.</item>
     </string-array>
     <string-array name="bot_say_no_voice">
-        <item>Я не знаю такого голоса. Есть Гамаюн, Садко, Сирин, Порфирий и Дима.</item>
+        <item>Я не знаю такого голоса. Есть {names}.</item>
     </string-array>
     <string-array name="bot_say_unknown">
         <item>Этого я пока не умею. Спроси «что ты умеешь».</item>
@@ -1554,6 +1556,7 @@
         <item>пятница</item>
         <item>суббота</item>
     </string-array>
+    <string name="bot_and">и</string>
     <string name="bot_date">Сегодня %1$s, %2$s.</string>
     <string name="bot_question_words">кто что где когда как какой какая какое какие сколько почему зачем чей можно можешь умеешь</string>
     <!-- The day of the month as said in "today is the third of October". -->
@@ -1794,11 +1797,14 @@
         <item>твоя</item>
         <item>твоё</item>
         <item>твои</item>
+        <item>хора</item>
         <item>гамаюн</item>
         <item>сирин</item>
         <item>баюн</item>
         <item>боян</item>
         <item>садко</item>
+        <item>порфирий</item>
+        <item>дима</item>
     </string-array>
     <string name="folder_talks">Разговоры</string>
     <string name="talk_folder_ask">Покажи папку Hora — один раз, и разговоры будут ложиться туда.</string>

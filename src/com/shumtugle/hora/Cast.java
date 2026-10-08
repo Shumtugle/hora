@@ -52,11 +52,13 @@ final class Cast {
         return voice >= 1 && voice <= names.length ? names[voice - 1] : String.valueOf(voice);
     }
 
-    /** The one voice that came with a plain label for a name; the person may give it another. */
+    /** The voice that came with a plain label for a name; it asks for a name when first chosen. */
     static final int RENAMABLE = 3;
+    /** The first voice, named after the app; the person may give her another name too, unasked. */
+    static final int HOST = 1;
 
     static boolean renamable(int voice) {
-        return voice == RENAMABLE;
+        return voice == RENAMABLE || voice == HOST;
     }
 
     /**

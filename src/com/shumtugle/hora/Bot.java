@@ -267,13 +267,25 @@ final class Bot {
             case "other_voice": {
                 int v = hit.intent.equals("other_voice") ? voice % Cast.COUNT + 1 : voiceByName(c, hit.slot("q"));
                 if (v <= 0) {
-                    return new Answer(SAY, line(r, "no_voice"), voice);
+                    return new Answer(SAY, line(r, "no_voice", "names", troupe(c, r)), voice);
                 }
                 return new Answer(VOICE, line(r, "voice", "voice", Cast.name(c, v)), v);
             }
             default:
                 return new Answer(SAY, line(r, "unknown"), voice);
         }
+    }
+
+    /** The five names as they stand now, in the troupe's order: "A, B, C, D and E". */
+    private static String troupe(Context c, Resources r) {
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < Cast.COUNT; i++) {
+            if (i > 0) {
+                out.append(i == Cast.COUNT - 1 ? " " + r.getString(R.string.bot_and) + " " : ", ");
+            }
+            out.append(Cast.name(c, Cast.at(i)));
+        }
+        return out.toString();
     }
 
     /** "Chapter six, 24 %", or only the percent in a book without chapters. */
