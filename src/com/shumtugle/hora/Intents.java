@@ -43,6 +43,8 @@ final class Intents {
     private final List<List<String>> slotNames = new ArrayList<List<String>>();
     private final List<String> fillers = new ArrayList<String>();
     private final List<String> callnames = new ArrayList<String>();
+    /** Names the person gave the voices, which a request may open with as well. */
+    private volatile List<String> ownNames = new ArrayList<String>();
     /** Number words by stem, longest stems first: "fifteen" before "five". */
     private final List<String[]> numberStems = new ArrayList<String[]>();
 
@@ -140,12 +142,26 @@ final class Intents {
         }
     }
 
+    /** Takes the names the person gave the voices, so "Name, what time is it" is understood. */
+    void ownNames(List<String> names) {
+        List<String> folded = new ArrayList<String>();
+        for (String n : names) {
+            String f = SPACES.matcher(NOT_WORD.matcher(fold(n)).replaceAll(" ")).replaceAll(" ").trim();
+            if (!f.isEmpty()) {
+                folded.add(f);
+            }
+        }
+        ownNames = folded;
+    }
+
     /** The sentence as templates see it: lower case, yo as ye, no punctuation, no fillers at the ends. */
     String clean(String text) {
         String t = fold(text);
         t = NOT_WORD.matcher(t).replaceAll(" ");
         t = SPACES.matcher(t).replaceAll(" ").trim();
-        for (String n : callnames) {
+        List<String> names = new ArrayList<String>(ownNames);
+        names.addAll(callnames);
+        for (String n : names) {
             if (t.startsWith(n + " ")) {
                 t = t.substring(n.length() + 1).trim();
                 break;

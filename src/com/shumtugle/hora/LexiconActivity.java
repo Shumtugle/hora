@@ -68,6 +68,15 @@ public final class LexiconActivity extends Activity {
                 Intent pick = new Intent(Intent.ACTION_OPEN_DOCUMENT)
                         .addCategory(Intent.CATEGORY_OPENABLE)
                         .setType("*/*");
+                // The chooser opens in the Hora folder's dictionaries, where such files are kept.
+                if (HoraFolder.tree(LexiconActivity.this) != null) {
+                    try {
+                        pick.putExtra(android.provider.DocumentsContract.EXTRA_INITIAL_URI,
+                                HoraFolder.sub(LexiconActivity.this, getString(R.string.folder_dictionaries)));
+                    } catch (java.io.IOException e) {
+                        Diag.log(LexiconActivity.this, "lexicon: no dictionaries folder", e);
+                    }
+                }
                 startActivityForResult(pick, PICK_DICTIONARY);
             }
         });

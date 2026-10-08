@@ -291,8 +291,8 @@
         <item>y=и</item>
         <item>z=з</item>
     </string-array>
-    <string name="probe">Проба голоса</string>
-    <string name="probe_hint">в «Загрузки»</string>
+    <string name="probe">Записать пробу голоса</string>
+    <string name="probe_hint"></string>
     <string name="probe_text">Серое небо висело над городом. Сейчас восемнадцать часов со́рок две минуты.</string>
     <string name="probe_done">Сохранено: %1$s. %2$.1f с речи за %3$.1f с</string>
     <string name="probe_failed">Проба не удалась: %1$s</string>
@@ -987,12 +987,12 @@
     <string name="look_lamp">Лампа</string>
     <string name="look_ink">Чернила</string>
     <string name="look_sample">Аа</string>
-    <string name="text_check_record">Прочитать в «Загрузки»</string>
+    <string name="text_check_record">Прочитать в файл</string>
     <string name="text_check_lead">Увидишь, что услышит голос, или получишь запись прочитанного.</string>
     <string name="recording">Запись</string>
     <string name="text_check_starting">Готовлю голос…</string>
     <string name="text_check_progress">Абзац %1$d из %2$d · %3$d %%</string>
-    <string name="text_check_saved">Готово: «%1$s» в «Загрузках», %2$s мин</string>
+    <string name="text_check_saved">Готово: %1$s, %2$s мин</string>
     <string name="text_check_not_saved">Прочитано, но не сохранено</string>
     <string name="text_check_failed">Не получилось: %1$s</string>
     <string name="breath_vowels">аеёиоуыэюя</string>
@@ -1612,8 +1612,8 @@
     <string name="lab_title">Настройки голосов</string>
     <string name="lab_hint">Вставь сюда текст — он останется, пока не сменишь</string>
     <string name="lab_listen">Послушать</string>
-    <string name="lab_save">В «Загрузки»</string>
-    <string name="lab_saving">Пишу в «Загрузки»…</string>
+    <string name="lab_save">Записать в файл</string>
+    <string name="lab_saving">Записываю…</string>
     <string name="lab_clear">Очистить</string>
     <string name="lab_kept">Текст остаётся здесь, пока его не сменишь.</string>
     <string name="lab_ratio">Текст остаётся здесь. Последний прогон: голос работал в %1$s раза быстрее речи.</string>
@@ -1806,6 +1806,10 @@
         <item>порфирий</item>
         <item>дима</item>
     </string-array>
+    <string name="folder_recordings">Записи</string>
+    <string name="folder_dictionaries">Словари</string>
+    <string name="record_reading_name">Чтение</string>
+    <string name="record_probe_name">Проба голоса</string>
     <string name="folder_talks">Разговоры</string>
     <string name="talk_folder_ask">Покажи папку Hora — один раз, и разговоры будут ложиться туда.</string>
     <string name="talk_saved">Сохранено: «%1$s».</string>

@@ -27,9 +27,7 @@ public final class VoiceService extends Service {
     private static final String ACTION_PROBE = "com.shumtugle.hora.action.PROBE";
     /** Sent to this app's screens when nothing is left to say. */
     static final String ACTION_IDLE = "com.shumtugle.hora.action.IDLE";
-    private static final String PROBE_FILE = "hora-probe.wav";
     private static final String EXTRA_TEXT = "text";
-    private static final String READING_FILE = "hora-reading.wav";
     private static final String ACTION_RECORD = "com.shumtugle.hora.RECORD";
     /** Sent to this app only while a recording goes on: done and total paragraphs, then the outcome. */
     static final String ACTION_RECORD_STATE = "com.shumtugle.hora.RECORD_STATE";
@@ -250,8 +248,8 @@ public final class VoiceService extends Service {
                     double spent = (System.nanoTime() - t0) / 1e9;
                     int rate = voice.sampleRate();
                     voice.takeRatio();
-                    String name = WavOut.saveToDownloads(VoiceService.this,
-                            own ? READING_FILE : PROBE_FILE, audio, rate);
+                    String name = WavOut.saveRecording(VoiceService.this,
+                            getString(own ? R.string.record_reading_name : R.string.record_probe_name), audio, rate);
                     message = getString(R.string.probe_done, name,
                             audio.length / (double) rate, spent);
                     voice.play(audio, new Voice.Cancel() {
@@ -334,7 +332,7 @@ public final class VoiceService extends Service {
                     int narrator = voiceNo > 0 ? voiceNo : Prefs.roleShared(VoiceService.this, Cast.NARRATOR);
                     end.putExtra(EXTRA_SECONDS, all.length / (float) rate);
                     end.putExtra(EXTRA_FILE, cancel.cancelled() ? ""
-                            : WavOut.saveToDownloads(VoiceService.this, READING_FILE, all, rate));
+                            : WavOut.saveRecording(VoiceService.this, getString(R.string.record_reading_name), all, rate));
                     Diag.mark(VoiceService.this, String.format(java.util.Locale.ROOT,
                             "record: %d paragraphs, %.1f s", paras.size(), all.length / (float) rate));
                 } catch (Throwable t) {

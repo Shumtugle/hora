@@ -241,8 +241,8 @@
         <item quantity="other">billion</item>
     </plurals>
     <string-array name="translit"/>
-    <string name="probe">Voice test</string>
-    <string name="probe_hint">to Downloads</string>
+    <string name="probe">Record a voice sample</string>
+    <string name="probe_hint"></string>
     <string name="probe_text">The grey sky hung over the city.</string>
     <string name="probe_done">Saved: %1$s. %2$.1f s of speech in %3$.1f s</string>
     <string name="probe_failed">Test failed: %1$s</string>
@@ -565,12 +565,12 @@
     <string name="look_lamp">Lamp</string>
     <string name="look_ink">Ink</string>
     <string name="look_sample">Aa</string>
-    <string name="text_check_record">Read aloud into Downloads</string>
+    <string name="text_check_record">Read into a file</string>
     <string name="text_check_lead">See what the voice will hear, or get a recording of it.</string>
     <string name="recording">Recording</string>
     <string name="text_check_starting">Getting the voice ready…</string>
     <string name="text_check_progress">Paragraph %1$d of %2$d · %3$d %%</string>
-    <string name="text_check_saved">Done: “%1$s” in Downloads, %2$s min</string>
+    <string name="text_check_saved">Done: %1$s, %2$s min</string>
     <string name="text_check_not_saved">Read, but not saved</string>
     <string name="text_check_failed">Failed: %1$s</string>
     <string name="breath_vowels">aeiouy</string>
@@ -702,8 +702,8 @@
     <string name="lab_title">Voice settings</string>
     <string name="lab_hint">Paste text here — it stays until you change it</string>
     <string name="lab_listen">Listen</string>
-    <string name="lab_save">To Downloads</string>
-    <string name="lab_saving">Writing to Downloads…</string>
+    <string name="lab_save">Record to a file</string>
+    <string name="lab_saving">Recording…</string>
     <string name="lab_clear">Clear</string>
     <string name="lab_kept">The text stays here until you change it.</string>
     <string name="lab_ratio">The text stays here. Last run: the voice worked %1$s times faster than speech.</string>
@@ -799,6 +799,10 @@
         <item>uz=103</item>
     </string-array>
     <string-array name="bot_self_words"/>
+    <string name="folder_recordings">Recordings</string>
+    <string name="folder_dictionaries">Dictionaries</string>
+    <string name="record_reading_name">Reading</string>
+    <string name="record_probe_name">Voice sample</string>
     <string name="folder_talks">Talks</string>
     <string name="talk_folder_ask">Show me the Hora folder — once, and talks will go there.</string>
     <string name="talk_saved">Saved: “%1$s”.</string>

@@ -472,10 +472,11 @@ final class Export {
         String title = job.getString("title");
         String label = b.chapters.isEmpty() || chapter >= b.chapters.size() ? title : b.chapters.get(chapter).label;
         try {
-            tag(m4a, title, label, chapter + 1, job.optInt("chapters"));
+            tag(m4a, title, label, chapter + 1, job.optInt("chapters"), b.author, cover(c, job, title, b.author));
         } catch (IOException e) {
             Diag.log(c, "export: chapter not tagged", e);
         }
+        checkLength(c, m4a, rate, chapter + 1);
         Uri root = target(c);
         if (root == null) {
             throw new IOException("no folder for audiobooks");
@@ -485,6 +486,48 @@ final class Export {
         m4a.delete();
         pcm(c).delete();
         Diag.mark(c, "export: chapter " + (chapter + 1) + " of " + job.optInt("chapters") + " made");
+    }
+
+    /**
+     * Opens the packed chapter the way a player would and compares its length
+     * with the sound that went in. A short file means the packing broke off;
+     * the sound is still kept, so the next try packs it again.
+     */
+    private static void checkLength(Context c, File m4a, int rate, int number) throws IOException {
+        double want = pcm(c).length() / 2.0 / rate;
+        android.media.MediaExtractor x = new android.media.MediaExtractor();
+        double got;
+        try {
+            x.setDataSource(m4a.getPath());
+            if (x.getTrackCount() < 1) {
+                throw new IOException("packed chapter has no track");
+            }
+            android.media.MediaFormat f = x.getTrackFormat(0);
+            got = f.containsKey(android.media.MediaFormat.KEY_DURATION)
+                    ? f.getLong(android.media.MediaFormat.KEY_DURATION) / 1e6 : 0;
+        } finally {
+            x.release();
+        }
+        double off = Math.abs(got - want);
+        String line = String.format(java.util.Locale.ROOT, "export: chapter %d packed %.1f s of %.1f s", number, got, want);
+        if (off > Math.max(1.0, want * 0.02)) {
+            Diag.mark(c, line + ", packing again");
+            throw new IOException("packed chapter " + number + " is " + got + " s, sound " + want + " s");
+        }
+        Diag.log(c, line);
+    }
+
+    private static String coverFor = "";
+    private static byte[] coverBytes;
+
+    /** The book's front picture, found once per book and kept while its chapters are made. */
+    private static synchronized byte[] cover(Context c, JSONObject job, String title, String author) {
+        String uri = job.optString("uri");
+        if (!uri.equals(coverFor)) {
+            coverFor = uri;
+            coverBytes = BookCover.jpeg(c, uri, job.optString("name"), title, author);
+        }
+        return coverBytes;
     }
 
     private static String safe(String title) {
@@ -588,6 +631,12 @@ final class Export {
      * The platform's muxer puts the movie box last, so a user-data box is appended to it.
      */
     static void tag(File m4a, String book, String chapter, int number, int of) throws IOException {
+        tag(m4a, book, chapter, number, of, null, null);
+    }
+
+    /** The same, with the author as the artist and a cover picture when there are such. */
+    static void tag(File m4a, String book, String chapter, int number, int of, String author, byte[] cover)
+            throws IOException {
         byte[] d = java.nio.file.Files.readAllBytes(m4a.toPath());
         int at = 0;
         int moov = -1;
@@ -616,6 +665,16 @@ final class Export {
         ilst.write(item("\u00a9nam", text(chapter)));
         ilst.write(item("\u00a9cmt", text(SYNTHETIC)));
         ilst.write(item("\u00a9too", text("Hora")));
+        if (author != null && !author.trim().isEmpty()) {
+            ilst.write(item("\u00a9ART", text(author.trim())));
+            ilst.write(item("aART", text(author.trim())));
+        }
+        if (cover != null && cover.length > 0) {
+            // Type 13 marks a JPEG picture.
+            ByteBuffer pic = ByteBuffer.allocate(16 + cover.length);
+            pic.putInt(16 + cover.length).put("data".getBytes("ISO-8859-1")).putInt(13).putInt(0).put(cover);
+            ilst.write(box("covr", pic.array()));
+        }
         ByteBuffer track = ByteBuffer.allocate(16 + 8);
         track.putInt(16 + 8).put("data".getBytes("ISO-8859-1")).putInt(0).putInt(0)
                 .putShort((short) 0).putShort((short) number).putShort((short) of).putShort((short) 0);

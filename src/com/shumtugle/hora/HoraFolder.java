@@ -168,6 +168,28 @@ final class HoraFolder {
         return tree == null ? null : child(c, tree, DocumentsContract.getDocumentId(dir), name);
     }
 
+    /** Writes any file into a subfolder and returns where it is. */
+    static Uri writeBytes(Context c, String folder, String fileName, String mime, byte[] data) throws IOException {
+        Uri dir = sub(c, folder);
+        Uri file;
+        try {
+            file = DocumentsContract.createDocument(c.getContentResolver(), dir, mime, fileName);
+        } catch (RuntimeException e) {
+            throw new IOException(e.getMessage());
+        }
+        if (file == null) {
+            throw new IOException("file not made");
+        }
+        try (OutputStream out = c.getContentResolver().openOutputStream(file)) {
+            if (out == null) {
+                throw new IOException("file not open");
+            }
+            out.write(data);
+        }
+        Diag.mark(c, "folder: saved a file");
+        return file;
+    }
+
     /** Writes a text file into a subfolder and returns where it is. */
     static Uri writeText(Context c, String folder, String fileName, String text) throws IOException {
         Uri dir = sub(c, folder);

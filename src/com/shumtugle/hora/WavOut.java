@@ -20,6 +20,28 @@ final class WavOut {
         return saveBytesToDownloads(c, name, encode(samples, rate));
     }
 
+    /**
+     * A recording made by the user: into the Hora folder's recordings with the
+     * time in its name, so one does not overwrite another; into Downloads only
+     * while no Hora folder has been shown.
+     * @return where it went, as the user would look for it
+     */
+    static String saveRecording(Context c, String base, float[] samples, int rate) throws IOException {
+        byte[] wav = encode(samples, rate);
+        if (HoraFolder.tree(c) != null) {
+            String folder = c.getString(R.string.folder_recordings);
+            String name = base + " " + new java.text.SimpleDateFormat("yyyy-MM-dd HH-mm-ss", java.util.Locale.ROOT)
+                    .format(new java.util.Date()) + ".wav";
+            try {
+                HoraFolder.writeBytes(c, folder, name, "audio/wav", wav);
+                return c.getString(R.string.folder_root) + "/" + folder + "/" + name;
+            } catch (IOException e) {
+                Diag.log(c, "record: Hora folder refused, Downloads instead", e);
+            }
+        }
+        return saveBytesToDownloads(c, base + ".wav", wav);
+    }
+
     static String saveBytesToDownloads(Context c, String name, byte[] wav) throws IOException {
         ContentResolver cr = c.getContentResolver();
         ContentValues v = new ContentValues();

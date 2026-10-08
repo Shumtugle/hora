@@ -140,6 +140,7 @@ final class Bot {
     static Answer handle(Context c, String text, int voice) {
         speaker = voice;
         Resources r = SpeechLanguage.resources(c);
+        intents(r).ownNames(ownNames(c));
         Intents.Hit hit = intents(r).match(text);
         // "Find something about X" asks the world, not the book; so does any search with no book open.
         if (hit != null && hit.intent.equals("search")
@@ -274,6 +275,21 @@ final class Bot {
             default:
                 return new Answer(SAY, line(r, "unknown"), voice);
         }
+    }
+
+    /** Names the person gave the voices, as they stand now; seen by the question check too. */
+    private static java.util.List<String> ownNamesOf = new java.util.ArrayList<String>();
+
+    private static java.util.List<String> ownNames(Context c) {
+        java.util.List<String> out = new java.util.ArrayList<String>();
+        for (int v = 1; v <= Cast.COUNT; v++) {
+            String own = Prefs.voiceName(c, v);
+            if (!own.isEmpty()) {
+                out.add(own);
+            }
+        }
+        ownNamesOf = out;
+        return out;
     }
 
     /** The five names as they stand now, in the troupe's order: "A, B, C, D and E". */
@@ -435,6 +451,11 @@ final class Bot {
         // About the voice itself: that is talk.
         String padded = " " + t.replaceAll("[^\\p{L}\\p{N}]+", " ") + " ";
         for (String w : r.getStringArray(R.array.bot_self_words)) {
+            if (padded.contains(" " + Intents.fold(w) + " ")) {
+                return false;
+            }
+        }
+        for (String w : ownNamesOf) {
             if (padded.contains(" " + Intents.fold(w) + " ")) {
                 return false;
             }
