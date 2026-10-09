@@ -168,6 +168,8 @@
     <string name="about_data">Данные из сети</string>
     <string name="about_weather">Погода</string>
     <string name="about_wikipedia">Википедия</string>
+    <string name="about_texts">Полные тексты</string>
+    <string name="about_apache_text">Лицензия Apache</string>
     <string name="about_look">Вид</string>
     <string name="about_fonts">Шрифты</string>
     <string name="about_portraits">Портреты и сцены</string>

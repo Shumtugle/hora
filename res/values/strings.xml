@@ -164,6 +164,8 @@
     <string name="about_data">Data from the network</string>
     <string name="about_weather">Weather</string>
     <string name="about_wikipedia">Wikipedia</string>
+    <string name="about_texts">Full texts</string>
+    <string name="about_apache_text">Apache License</string>
     <string name="about_look">Look</string>
     <string name="about_fonts">Fonts</string>
     <string name="about_portraits">Portraits and scenes</string>
