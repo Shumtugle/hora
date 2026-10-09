@@ -30,6 +30,15 @@ public final class HoraTtsService extends TextToSpeechService {
     private static final String LEGACY_SECOND = "ru-ru-x-hora-male";
     /** Prefix of voice names that pin one numbered voice as the narrator. */
     static final String NUMBERED = "ru-ru-x-hora-";
+    /** The same voices speaking English, offered while the English module is installed. */
+    static final String EN_MAIN = "en-us-x-hora-main";
+    static final String EN_ALT = "en-us-x-hora-alt";
+    static final String EN_NUMBERED = "en-us-x-hora-";
+    private static final String EN_ISO3 = "eng";
+    private static final String EN_COUNTRY3 = "USA";
+
+    /** The language last loaded by a client, answered back by onGetLanguage. */
+    private volatile boolean englishLoaded;
 
     private final AtomicInteger generation = new AtomicInteger();
     /** One piece at a time is made ahead; the voice is never asked for two at once. */
@@ -50,11 +59,29 @@ public final class HoraTtsService extends TextToSpeechService {
                     android.speech.tts.Voice.QUALITY_HIGH, android.speech.tts.Voice.LATENCY_NORMAL,
                     false, new java.util.HashSet<String>()));
         }
+        if (englishReady()) {
+            java.util.Locale en = java.util.Locale.US;
+            java.util.List<String> enNames = new java.util.ArrayList<String>();
+            enNames.add(EN_MAIN);
+            enNames.add(EN_ALT);
+            for (int v = 1; v <= Cast.COUNT; v++) {
+                enNames.add(EN_NUMBERED + v);
+            }
+            for (String name : enNames) {
+                list.add(new android.speech.tts.Voice(name, en,
+                        android.speech.tts.Voice.QUALITY_NORMAL, android.speech.tts.Voice.LATENCY_NORMAL,
+                        false, new java.util.HashSet<String>()));
+            }
+        }
         return list;
     }
 
     @Override
     public int onIsValidVoiceName(String name) {
+        if (englishVoice(name)) {
+            return englishReady() && (EN_MAIN.equals(name) || EN_ALT.equals(name) || numbered(name) > 0)
+                    ? TextToSpeech.SUCCESS : TextToSpeech.ERROR;
+        }
         return VOICE_MAIN.equals(name) || VOICE_ALT.equals(name)
                 || LEGACY_FIRST.equals(name) || LEGACY_SECOND.equals(name)
                 || numbered(name) > 0 ? TextToSpeech.SUCCESS : TextToSpeech.ERROR;
@@ -62,11 +89,22 @@ public final class HoraTtsService extends TextToSpeechService {
 
     @Override
     public String onGetDefaultVoiceNameFor(String lang, String country, String variant) {
+        if (isEnglish(lang)) {
+            return englishReady() ? EN_MAIN : null;
+        }
         return SpeechLanguage.isLanguage(lang) ? VOICE_MAIN : null;
     }
 
     @Override
     protected int onIsLanguageAvailable(String lang, String country, String variant) {
+        if (isEnglish(lang)) {
+            // One English voice, American in its sound; other countries get the language alone.
+            if (!englishReady()) {
+                return TextToSpeech.LANG_NOT_SUPPORTED;
+            }
+            return EN_COUNTRY3.equalsIgnoreCase(country) || "US".equalsIgnoreCase(country)
+                    ? TextToSpeech.LANG_COUNTRY_AVAILABLE : TextToSpeech.LANG_AVAILABLE;
+        }
         if (!matches(lang)) {
             return TextToSpeech.LANG_NOT_SUPPORTED;
         }
@@ -77,12 +115,17 @@ public final class HoraTtsService extends TextToSpeechService {
 
     @Override
     protected String[] onGetLanguage() {
-        return new String[] {SpeechLanguage.ISO3, SpeechLanguage.COUNTRY3, ""};
+        return englishLoaded ? new String[] {EN_ISO3, EN_COUNTRY3, ""}
+                : new String[] {SpeechLanguage.ISO3, SpeechLanguage.COUNTRY3, ""};
     }
 
     @Override
     protected int onLoadLanguage(String lang, String country, String variant) {
-        return onIsLanguageAvailable(lang, country, variant);
+        int r = onIsLanguageAvailable(lang, country, variant);
+        if (r >= TextToSpeech.LANG_AVAILABLE) {
+            englishLoaded = isEnglish(lang);
+        }
+        return r;
     }
 
     @Override
@@ -150,13 +193,21 @@ public final class HoraTtsService extends TextToSpeechService {
         CharSequence raw = request.getCharSequenceText();
         String given = raw == null ? "" : raw.toString();
         Diag.log(this, "engine: raw " + TextPrep.reveal(given.length() > 240 ? given.substring(0, 240) + "..." : given));
-        String text = voice.normalize(Lexicon.get(this).applyRules(TextPrep.clean(given)));
+        String asked = request.getVoiceName();
+        // English is asked for by language or by one of the English voice names.
+        boolean english = asked != null && !asked.isEmpty() ? englishVoice(asked) : isEnglish(request.getLanguage());
+        if (english && !voice.speaksEnglish()) {
+            Diag.mark(this, "engine: English asked, module not installed");
+            callback.error();
+            return;
+        }
+        String text = english ? voice.normalizeEnglish(TextPrep.clean(given))
+                : voice.normalize(Lexicon.get(this).applyRules(TextPrep.clean(given)));
         Diag.log(this, "engine: text " + (text.length() > 240 ? text.substring(0, 240) + "..." : text));
         // Settings decide; "alt" lends the narrator part to the first dialogue voice,
         // and a numbered name pins that voice as the narrator.
-        String asked = request.getVoiceName();
         int narrator = numbered(asked);
-        if (VOICE_ALT.equals(asked) || LEGACY_SECOND.equals(asked)) {
+        if (VOICE_ALT.equals(asked) || EN_ALT.equals(asked) || LEGACY_SECOND.equals(asked)) {
             narrator = Prefs.roleShared(this, Cast.SPEAKER_A);
         }
         // The system rate slider scales the tempo chosen in this app's settings.
@@ -168,7 +219,7 @@ public final class HoraTtsService extends TextToSpeechService {
         // made after the last one is handed over leaves a gap as long as its own synthesis.
         // The next piece is made while the current one is handed over; the first is short.
         java.util.List<Voice.Part> parts = new java.util.ArrayList<Voice.Part>();
-        for (Voice.Part p : Voice.quickParts(text, SpeechLanguage.locale())) {
+        for (Voice.Part p : Voice.quickParts(text, english ? java.util.Locale.US : SpeechLanguage.locale())) {
             if (!p.text.isEmpty()) {
                 parts.add(p);
             }
@@ -223,11 +274,13 @@ public final class HoraTtsService extends TextToSpeechService {
 
     /** Voice number from a numbered voice name, or 0. */
     private static int numbered(String name) {
-        if (name == null || !name.startsWith(NUMBERED)) {
+        String prefix = name == null ? null : name.startsWith(NUMBERED) ? NUMBERED
+                : name.startsWith(EN_NUMBERED) ? EN_NUMBERED : null;
+        if (prefix == null) {
             return 0;
         }
         try {
-            int v = Integer.parseInt(name.substring(NUMBERED.length()));
+            int v = Integer.parseInt(name.substring(prefix.length()));
             return v >= 1 && v <= Cast.COUNT ? v : 0;
         } catch (NumberFormatException e) {
             return 0;
@@ -236,6 +289,27 @@ public final class HoraTtsService extends TextToSpeechService {
 
     private static boolean matches(String lang) {
         return SpeechLanguage.isLanguage(lang);
+    }
+
+    /** English by its two- or three-letter code, alone or with a country after it. */
+    static boolean isEnglish(String lang) {
+        if (lang == null) {
+            return false;
+        }
+        String l = lang.toLowerCase(java.util.Locale.ROOT);
+        int cut = Math.max(l.indexOf('-'), l.indexOf('_'));
+        if (cut > 0) {
+            l = l.substring(0, cut);
+        }
+        return l.equals("en") || l.equals(EN_ISO3);
+    }
+
+    private static boolean englishVoice(String name) {
+        return name != null && name.startsWith("en-");
+    }
+
+    private boolean englishReady() {
+        return LanguagePack.installed(this, LanguagePack.ENGLISH);
     }
 
     private static boolean send(SynthesisCallback cb, byte[] pcm) {

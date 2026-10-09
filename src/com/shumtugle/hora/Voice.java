@@ -64,6 +64,16 @@ final class Voice {
 
     private final Context context;
     private OfflineTts engine;
+    /** The English model, made when English is first heard; null while there is none. */
+    private OfflineTts english;
+    private boolean englishTried;
+    /** The pack's own tempo for English: the same person, a little slower than in the native language. */
+    private float englishTempo = 0.85f;
+    /** Said before an English chunk, so the model does not swallow its first word. */
+    private String englishLead = "\u2014 ";
+    private final float[] levelEn = new float[Cast.COUNT + 1];
+    /** Silence between a native and an English piece of one chunk. */
+    private static final float LANGUAGE_GAP_S = 0.12f;
     private Breath breath;
     private final Sample[] samples = new Sample[2 * (Cast.COUNT + 1)];
     private File root;
@@ -123,6 +133,7 @@ final class Voice {
             // The decoder was switched in the lab: the engine is built again around the other one.
             engine.release();
             engine = null;
+            releaseEnglish();
             Diag.mark(context, "voice: decoder switched, full " + full);
         }
         fullDecoder = full;
@@ -158,8 +169,87 @@ final class Voice {
         engine = new OfflineTts(config);
     }
 
-    /** Makes arbitrary text readable for this voice. Call after prepare(). */
+    /**
+     * Makes arbitrary text readable for this voice. Call after prepare().
+     * With the English module in place, English spans are marked and left as
+     * they are, for the English model; the rest is rewritten for the native one.
+     */
     synchronized String normalize(String text) {
+        // Marks already in a source text are not ours and are dropped before marking.
+        String bare = Foreign.plain(text);
+        String marked = LanguagePack.installed(context, LanguagePack.ENGLISH) ? Foreign.mark(bare) : bare;
+        if (!Foreign.has(marked)) {
+            return nativeText(marked);
+        }
+        StringBuilder out = new StringBuilder();
+        for (Foreign.Piece p : Foreign.pieces(marked)) {
+            if (out.length() > 0) {
+                out.append(' ');
+            }
+            if (p.english) {
+                out.append(Foreign.OPEN).append(p.text).append(Foreign.CLOSE);
+            } else {
+                out.append(nativeText(p.text));
+            }
+        }
+        return out.toString();
+    }
+
+    /** A text asked for in English, read whole by the English model. */
+    String normalizeEnglish(String text) {
+        return Foreign.whole(Foreign.plain(text).trim());
+    }
+
+    /** Whether English can be read at all: the module is installed. */
+    boolean speaksEnglish() {
+        return LanguagePack.installed(context, LanguagePack.ENGLISH);
+    }
+
+    /** The English model, built once from the module beside the native model's encoder and decoder. */
+    private synchronized OfflineTts englishEngine() {
+        if (english != null || englishTried || root == null) {
+            return english;
+        }
+        englishTried = true;
+        if (!LanguagePack.installed(context, LanguagePack.ENGLISH)) {
+            return null;
+        }
+        try {
+            File en = LanguagePack.dir(context, LanguagePack.ENGLISH);
+            org.json.JSONObject set = LanguagePack.settings(context, LanguagePack.ENGLISH);
+            englishTempo = (float) set.optDouble("tempo", englishTempo);
+            englishLead = set.optString("lead", englishLead);
+            OfflineTtsConfig config = new OfflineTtsConfig();
+            config.model.numThreads = THREADS;
+            config.model.pocket.lmFlow = path(en, "lm_flow.onnx");
+            config.model.pocket.lmMain = path(en, "lm_main.onnx");
+            config.model.pocket.textConditioner = path(en, "text_conditioner.onnx");
+            config.model.pocket.vocabJson = path(en, "vocab.json");
+            config.model.pocket.tokenScoresJson = path(en, "token_scores.json");
+            // Both languages share the sound coder: the same encoder, the same decoder.
+            config.model.pocket.encoder = path(root, "encoder.onnx");
+            File whole = new File(root, "decoder_full.onnx");
+            config.model.pocket.decoder = path(root, fullDecoder && whole.isFile() ? "decoder_full.onnx" : "decoder.onnx");
+            config.model.pocket.voiceEmbeddingCacheCapacity = 4;
+            english = new OfflineTts(config);
+            Diag.mark(context, "voice: English model ready, tempo " + englishTempo);
+        } catch (RuntimeException e) {
+            Diag.log(context, "voice: English model failed", e);
+            english = null;
+        }
+        return english;
+    }
+
+    private synchronized void releaseEnglish() {
+        if (english != null) {
+            english.release();
+            english = null;
+        }
+        englishTried = false;
+    }
+
+    /** The native rewriting: numbers, stress, the letter yo, respelling. */
+    private String nativeText(String text) {
         // Words produced by normalization (numbers, abbreviations) get stress marks too.
         Lexicon lex = Lexicon.get(context);
         String out = Homographs.get(context).apply(prep.apply(text), lex);
@@ -261,6 +351,9 @@ final class Voice {
     }
 
     private float[] synthesizeVoiceTimed(String chunk, float speed, int voice, boolean inManner) {
+        if (Foreign.has(chunk)) {
+            return mixed(chunk, speed, voice, inManner);
+        }
         Sample use;
         try {
             use = sample(voice);
@@ -331,7 +424,72 @@ final class Voice {
         return DOUBLE_COMMA.matcher(t).replaceAll(",").trim();
     }
 
+    /** A chunk holding English: each piece by its own model, in the same voice, joined with a short breath. */
+    private float[] mixed(String chunk, float speed, int voice, boolean inManner) {
+        List<float[]> parts = new ArrayList<float[]>();
+        int gap = Math.round(LANGUAGE_GAP_S * MODEL_RATE);
+        for (Foreign.Piece p : Foreign.pieces(chunk)) {
+            float[] a;
+            if (p.english && englishEngine() != null) {
+                a = englishPiece(p.text, speed, voice);
+            } else {
+                // No English model after all: the piece is read the native way, spelled out.
+                a = synthesizeVoiceTimed(p.english ? nativeText(p.text) : p.text, speed, voice, inManner);
+            }
+            if (a.length == 0) {
+                continue;
+            }
+            if (!parts.isEmpty()) {
+                parts.add(new float[gap]);
+            }
+            parts.add(a);
+        }
+        int n = 0;
+        for (float[] a : parts) {
+            n += a.length;
+        }
+        float[] out = new float[n];
+        int at = 0;
+        for (float[] a : parts) {
+            System.arraycopy(a, 0, out, at, a.length);
+            at += a.length;
+        }
+        return out;
+    }
+
+    /**
+     * English read by the English model with this voice's own sample: a light
+     * accent is expected and accepted. Slower than the native pace by the
+     * pack's tempo, and brought to its own level, since this model speaks louder.
+     */
+    private float[] englishPiece(String text, float speed, int voice) {
+        Sample use;
+        try {
+            use = sample(voice);
+        } catch (IOException e) {
+            Diag.log(context, "voice: sample " + voice + " unreadable", e);
+            return new float[0];
+        }
+        String said = englishLead + brackets(QUOTES.matcher(text).replaceAll(""));
+        try {
+            float[] a = generateWith(english, said, use, -1);
+            a = trimEdges(a, MODEL_RATE);
+            a = levelIn(levelEn, a, voice);
+            madeSeconds += a.length / (double) MODEL_RATE;
+            float tempo = Math.max(0.6f, Math.min(1.3f, englishTempo * speed / Prefs.SPEED_DEFAULT));
+            Diag.log(context, "voice: English piece, " + text.length() + " letters, tempo " + tempo);
+            return Math.abs(tempo - 1f) < 0.02f ? a : TimeStretch.apply(a, MODEL_RATE, tempo);
+        } catch (RuntimeException e) {
+            Diag.log(context, "voice: English piece failed: " + text, e);
+            return new float[0];
+        }
+    }
+
     private float[] generate(String text, Sample use, int seed) {
+        return generateWith(engine, text, use, seed);
+    }
+
+    private float[] generateWith(OfflineTts with, String text, Sample use, int seed) {
         GenerationConfig g = new GenerationConfig();
         g.referenceAudio = use.audio;
         g.referenceSampleRate = use.rate;
@@ -345,7 +503,7 @@ final class Voice {
         if (seed >= 0) {
             g.extra.put("seed", String.valueOf(seed));
         }
-        GeneratedAudio audio = engine.generate(text, g);
+        GeneratedAudio audio = with.generate(text, g);
         return audio == null || audio.samples == null ? new float[0] : audio.samples;
     }
 
@@ -610,7 +768,24 @@ final class Voice {
             all.add(0, new Part(first.text.substring(cut).trim(), first.role));
             all.add(0, new Part(first.text.substring(0, cut).trim(), first.role));
         }
-        return all;
+        return sealed(all);
+    }
+
+    /** Every part whole on its own: an English span cut between parts is closed and reopened at the cut. */
+    private static List<Part> sealed(List<Part> all) {
+        boolean[] inside = {false};
+        boolean any = false;
+        for (Part p : all) {
+            any |= Foreign.has(p.text);
+        }
+        if (!any) {
+            return all;
+        }
+        List<Part> out = new ArrayList<Part>(all.size());
+        for (Part p : all) {
+            out.add(new Part(Foreign.seal(p.text, inside), p.role));
+        }
+        return out;
     }
 
     /**
@@ -652,7 +827,7 @@ final class Voice {
                 }
             }
         }
-        return out;
+        return sealed(out);
     }
 
     /** Speech level every voice is brought to, as the RMS of its sounding part. */
@@ -670,6 +845,11 @@ final class Voice {
      * rise and fall within a reading is kept.
      */
     private float[] level(float[] audio, int voice) {
+        return levelIn(levelOf, audio, voice);
+    }
+
+    /** The same, against the level learned in the given table, one table per model. */
+    private float[] levelIn(float[] table, float[] audio, int voice) {
         double sum = 0;
         int n = 0;
         float peak = 0f;
@@ -686,8 +866,8 @@ final class Voice {
         }
         float rms = (float) Math.sqrt(sum / n);
         int v = Math.max(1, Math.min(Cast.COUNT, voice));
-        levelOf[v] = levelOf[v] == 0f ? rms : levelOf[v] * 0.85f + rms * 0.15f;
-        float gain = Math.max(LEVEL_MIN_GAIN, Math.min(LEVEL_MAX_GAIN, LEVEL_TARGET / levelOf[v]));
+        table[v] = table[v] == 0f ? rms : table[v] * 0.85f + rms * 0.15f;
+        float gain = Math.max(LEVEL_MIN_GAIN, Math.min(LEVEL_MAX_GAIN, LEVEL_TARGET / table[v]));
         if (peak * gain > 0.97f) {
             gain = 0.97f / peak;
         }

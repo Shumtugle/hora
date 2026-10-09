@@ -474,7 +474,9 @@ public final class Herald extends NotificationListenerService {
         current = out;
         try {
             boolean started = false;
-            for (String chunk : Voice.chunks(spoken, SpeechLanguage.locale())) {
+            boolean[] inside = {false};
+            for (String piece : Voice.chunks(spoken, SpeechLanguage.locale())) {
+                String chunk = Foreign.seal(piece, inside);
                 if (stopped(out)) {
                     break;
                 }

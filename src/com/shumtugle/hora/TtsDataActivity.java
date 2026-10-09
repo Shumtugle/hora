@@ -21,6 +21,9 @@ public final class TtsDataActivity extends Activity {
         } else {
             ArrayList<String> available = new ArrayList<String>();
             available.add(SpeechLanguage.ISO3 + "-" + SpeechLanguage.COUNTRY3);
+            if (LanguagePack.installed(this, LanguagePack.ENGLISH)) {
+                available.add("eng-USA");
+            }
             result.putStringArrayListExtra(TextToSpeech.Engine.EXTRA_AVAILABLE_VOICES, available);
             result.putStringArrayListExtra(TextToSpeech.Engine.EXTRA_UNAVAILABLE_VOICES,
                     new ArrayList<String>());
