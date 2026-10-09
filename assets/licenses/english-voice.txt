@@ -1,0 +1,12 @@
+English voice module (downloaded separately, not part of the app)
+
+The English speech model is Pocket TTS by Kyutai Labs, licensed CC BY 4.0
+(https://creativecommons.org/licenses/by/4.0/). Pocket TTS was created by
+Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Vaclav Volhejn, Neil Zeghidour
+and Alexandre Defossez.
+
+Changes: the model was exported to ONNX and partly quantized to 8-bit integers
+for on-device use; the input and output types of two of its graphs were widened
+from 16-bit to 32-bit floats. The weights were not retrained.
+
+The same five built-in voices speak through it; there is no voice cloning.

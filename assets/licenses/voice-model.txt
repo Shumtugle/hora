@@ -11,8 +11,11 @@ https://github.com/kyutai-labs/pocket-tts
 
 Changes: the model was exported to ONNX and partly quantized to 8-bit integers
 for on-device use; the input and output types of two of its graphs were widened
-from 16-bit to 32-bit floats. The weights were not retrained.
+from 16-bit to 32-bit floats. The weights were not retrained. The full-precision
+audio decoder offered as an option is Kyutai's own, taken from the English
+Pocket TTS export and widened the same way.
 
-Voice cloning is used only with samples the user has the right to use.
-The model must not be used to impersonate people, to mislead, or for any
-harmful or unlawful purpose.
+The app has no voice cloning: it speaks only with its five built-in samples, whose
+origin is described in the notices for the voice samples. The model must not be
+used to impersonate people, to mislead, or for any harmful or unlawful purpose.
+Chapters of audiobooks carry a note that their speech is synthetic.

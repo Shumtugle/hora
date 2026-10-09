@@ -143,6 +143,34 @@
         <item>пятьдесят восемь</item>
         <item>пятьдесят девять</item>
     </string-array>
+    <string name="about_title">Лицензии и источники</string>
+    <string name="about_lead">Откуда в Hora каждая часть и на каких условиях. Касание строки открывает полный текст.</string>
+    <string name="about_app">Hora</string>
+    <string name="about_hora">Hora</string>
+    <string name="about_hora_license">GNU GPL 3</string>
+    <string name="about_source">Исходники</string>
+    <string name="about_source_where">GitHub</string>
+    <string name="about_voice">Голос</string>
+    <string name="about_voice_model">Модель голоса</string>
+    <string name="about_samples_123">Голоса 1–3</string>
+    <string name="about_samples_45">Голоса 4–5</string>
+    <string name="about_english">Английский модуль</string>
+    <string name="about_speech_engine">Движок речи</string>
+    <string name="about_text">Текст и ударения</string>
+    <string name="about_stress">Словарь ударений</string>
+    <string name="about_stress_extended">Редкие слова</string>
+    <string name="about_stress_net">Ударения для незнакомых слов</string>
+    <string name="about_ruaccent">Сверка словарей</string>
+    <string name="about_yo">Буква «ё»</string>
+    <string name="about_ai">Модель ИИ</string>
+    <string name="about_gemma">Gemma 4</string>
+    <string name="about_model_engine">Движок модели</string>
+    <string name="about_data">Данные из сети</string>
+    <string name="about_weather">Погода</string>
+    <string name="about_wikipedia">Википедия</string>
+    <string name="about_look">Вид</string>
+    <string name="about_fonts">Шрифты</string>
+    <string name="about_portraits">Портреты и сцены</string>
     <string name="settings">Настройки</string>
     <string name="about">О приложении</string>
     <string name="build">Сборка</string>

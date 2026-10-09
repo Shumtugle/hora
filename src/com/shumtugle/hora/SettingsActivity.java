@@ -226,19 +226,14 @@ public final class SettingsActivity extends Activity {
         list.addView(rule());
         list.addView(row(getString(R.string.build), buildLabel()));
         list.addView(rule());
-        list.addView(row(getString(R.string.license), getString(R.string.license_name)));
-        list.addView(rule());
-        list.addView(row(getString(R.string.yo_dictionary), getString(R.string.yo_dictionary_license)));
-        list.addView(rule());
-        list.addView(row(getString(R.string.stress_dictionary), getString(R.string.stress_dictionary_license)));
-        list.addView(rule());
-        list.addView(row(getString(R.string.voices), getString(R.string.voices_license)));
-        list.addView(rule());
-        list.addView(row(getString(R.string.portraits), getString(R.string.portraits_note)));
-        list.addView(rule());
-        list.addView(row(getString(R.string.fonts), getString(R.string.fonts_license)));
-        list.addView(rule());
-        list.addView(row(getString(R.string.weather_data), getString(R.string.weather_license)));
+        View about = row(getString(R.string.about_title), "\u203a");
+        about.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(SettingsActivity.this, AboutActivity.class));
+            }
+        });
+        list.addView(about);
 
         ScrollView scroll = new ScrollView(this);
         scroll.setBackgroundColor(Palette.BG);

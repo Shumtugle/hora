@@ -1,0 +1,6 @@
+Reference answers
+
+Answers to questions about the world quote or retell articles of Wikipedia, the free
+encyclopedia. Wikipedia text is available under the Creative Commons
+Attribution-ShareAlike 4.0 License (https://creativecommons.org/licenses/by-sa/4.0/).
+Every such answer names its article and opens it with a touch.

@@ -1,0 +1,15 @@
+AI model (downloaded separately, not part of the app)
+
+The model for talk is Gemma 4 E2B instruct by Google, in the GGUF format,
+quantized to 4 bits. The part for photos (vision projector) and the accelerator
+(a small drafting model) belong to the same model.
+
+All three files are distributed under the Apache License 2.0, the licence of the
+model they come from; the full text is in apache-2.0.txt and is also published
+beside the files in the app's download release.
+
+Hora checks every downloaded file against the checksum of its original source.
+A model file chosen by the user is not checked: Hora cannot know what is inside it.
+
+The model answers in words only. It has no tools and takes no actions: looking up
+the reference, the weather or the book is done by Hora itself, on the user's request.
