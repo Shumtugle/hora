@@ -5,6 +5,7 @@ import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
+import android.os.SystemClock;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -40,12 +41,17 @@ final class Bed {
      */
     private static final float CEILING = 0.68f;
     private static final float FADE_IN_S = 3f;
+    /** After the last words: a breath of the background alone, then it fades away. */
+    private static final long FADE_AFTER_MS = 2500;
+    private static final long FADE_OUT_MS = 8000;
 
     private static Bed running;
 
     private final Context context;
     private final int kind;
     private volatile boolean stopped;
+    /** When the fade-out begins, by the uptime clock; 0 while none is asked for. */
+    private volatile long fadeFrom;
     private Thread thread;
     private MediaPlayer music;
 
@@ -58,7 +64,7 @@ final class Bed {
     static synchronized void start(Context c) {
         int kind = Prefs.bed(c);
         if (running != null) {
-            if (running.kind == kind) {
+            if (running.kind == kind && running.fadeFrom == 0) {
                 return;
             }
             running.halt();
@@ -79,6 +85,66 @@ final class Bed {
         }
     }
 
+    /**
+     * The book is over: the background stays a moment after the last words,
+     * then fades out and stops by itself, instead of playing on for ever.
+     */
+    static synchronized void fadeOut(Context c) {
+        if (running == null || running.fadeFrom != 0) {
+            return;
+        }
+        final Bed b = running;
+        b.fadeFrom = SystemClock.uptimeMillis() + FADE_AFTER_MS;
+        Diag.log(c, "bed: fading out after the end");
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                b.fadeAndHalt();
+            }
+        }, "bed-fade");
+        t.start();
+    }
+
+    /** 1 before the fade, falling to 0 at its end. */
+    private float fadeLeft(long now) {
+        long from = fadeFrom;
+        if (from == 0 || now <= from) {
+            return 1f;
+        }
+        return Math.max(0f, 1f - (now - from) / (float) FADE_OUT_MS);
+    }
+
+    /** Lowers the music step by step, then lets the background go; the noise lowers itself sample by sample. */
+    private void fadeAndHalt() {
+        while (!stopped) {
+            long now = SystemClock.uptimeMillis();
+            float left = fadeLeft(now);
+            synchronized (Bed.class) {
+                if (music != null) {
+                    float v = Math.min(1f, 1.2f * level(context) / CEILING) * left * left;
+                    try {
+                        music.setVolume(v, v);
+                    } catch (RuntimeException ignored) {
+                        // Released in between.
+                    }
+                }
+                if (left <= 0f) {
+                    halt();
+                    if (running == this) {
+                        running = null;
+                    }
+                    Diag.log(context, "bed: faded out");
+                    return;
+                }
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                return;
+            }
+        }
+    }
+
     /** After a change in settings: a running background follows it at once. */
     static synchronized void refresh(Context c) {
         if (running != null) {
@@ -90,7 +156,7 @@ final class Bed {
 
     /** A playing background takes the volume from the setting again; the noise does so by itself. */
     static synchronized void retune(Context c) {
-        if (running != null && running.music != null) {
+        if (running != null && running.music != null && running.fadeFrom == 0) {
             float v = Math.min(1f, 1.2f * level(c) / CEILING);
             try {
                 running.music.setVolume(v, v);
@@ -158,12 +224,17 @@ final class Bed {
             Noise n = new Noise(kind, RATE);
             float[] buf = new float[BLOCK];
             long made = 0;
+            long blockMs = BLOCK * 1000L / RATE;
             while (!stopped) {
                 float gain = level(context);
                 n.fill(buf);
+                long now = SystemClock.uptimeMillis();
+                float from = fadeLeft(now);
+                float to = fadeLeft(now + blockMs);
                 for (int i = 0; i < BLOCK; i++) {
                     float fade = Math.min(1f, (made + i) / (FADE_IN_S * RATE));
-                    buf[i] *= gain * fade;
+                    float out = from + (to - from) * i / BLOCK;
+                    buf[i] *= gain * fade * out * out;
                 }
                 made += BLOCK;
                 track.write(buf, 0, BLOCK, AudioTrack.WRITE_BLOCKING);
@@ -273,7 +344,7 @@ final class Bed {
 
     /** A score of a few minutes, then the next, never the same twice. */
     private void playMusic() {
-        if (stopped) {
+        if (stopped || fadeFrom != 0) {
             return;
         }
         try {

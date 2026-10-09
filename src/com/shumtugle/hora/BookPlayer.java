@@ -658,6 +658,8 @@ public final class BookPlayer extends Service {
     }
 
     private void finished() {
+        Diag.mark(this, "book: the end");
+        Bed.fadeOut(this);
         Awake.let(this);
         publish();
     }
