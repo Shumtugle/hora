@@ -458,7 +458,21 @@ public final class Herald extends NotificationListenerService {
     /** Returns true when everything was said, false when cut short. */
     private boolean speak(String said) throws Exception {
         Voice voice = Voice.get(this);
-        voice.prepare();
+        try {
+            voice.prepare();
+        } catch (Voice.Missing m) {
+            // No voice pack yet: the phone's own voice reads it, still only into the headphones.
+            if (Earpiece.find(audio) == null) {
+                return false;
+            }
+            cut = false;
+            return SpareVoice.say(this, TextPrep.clean(said), new Voice.Cancel() {
+                @Override
+                public boolean cancelled() {
+                    return cut || !Earpiece.present(audio);
+                }
+            });
+        }
         String spoken = voice.normalize(Lexicon.get(this).applyRules(TextPrep.clean(said)));
         int rate = voice.sampleRate();
         float speed = Prefs.speedShared(this);

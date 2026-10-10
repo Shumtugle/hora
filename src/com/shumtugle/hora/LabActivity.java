@@ -61,11 +61,13 @@ public final class LabActivity extends Activity {
             return;
         }
         showRatio();
+        decoder.resume();
     }
 
     @Override
     protected void onPause() {
         handler.removeCallbacksAndMessages(null);
+        decoder.pause();
         super.onPause();
     }
 
@@ -270,6 +272,12 @@ public final class LabActivity extends Activity {
         note.setPadding(dp(16), 0, dp(16), dp(14));
         engine.addView(note);
         list.addView(engine);
+        // The full decoder is fetched on its own; the switch above uses it once it is here.
+        decoder = new PackPanel(this, LanguagePack.DECODER, PICK_DECODER, 20, R.string.decoder_pack_bad_file,
+                0, true, null);
+        LinearLayout.LayoutParams under = Kit.wide();
+        under.topMargin = dp(8);
+        list.addView(decoder.view(), under);
 
         // The brain has its own room now.
         list.addView(Kit.section(this, getString(R.string.lab_brain)));
@@ -286,6 +294,8 @@ public final class LabActivity extends Activity {
     }
 
     private static final int PICK_MODEL = 51;
+    private static final int PICK_DECODER = 52;
+    private PackPanel decoder;
     private View modelRow;
     private TextView brainOut;
 
@@ -298,6 +308,9 @@ public final class LabActivity extends Activity {
     @Override
     protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
+        if (decoder.result(request, result, data)) {
+            return;
+        }
         if (request != PICK_MODEL || result != RESULT_OK || data == null || data.getData() == null) {
             return;
         }

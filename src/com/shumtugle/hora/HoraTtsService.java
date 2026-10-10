@@ -108,6 +108,10 @@ public final class HoraTtsService extends TextToSpeechService {
         if (!matches(lang)) {
             return TextToSpeech.LANG_NOT_SUPPORTED;
         }
+        if (!Voice.ready(this)) {
+            // The language is ours, but its voice is still to be fetched.
+            return TextToSpeech.LANG_MISSING_DATA;
+        }
         return SpeechLanguage.isCountry(country)
                 ? TextToSpeech.LANG_COUNTRY_AVAILABLE
                 : TextToSpeech.LANG_AVAILABLE;
@@ -182,6 +186,10 @@ public final class HoraTtsService extends TextToSpeechService {
         }
         try {
             voice.prepare();
+        } catch (Voice.Missing m) {
+            Diag.mark(this, "engine: asked to speak before the voice pack is fetched");
+            callback.error();
+            return;
         } catch (Throwable t) {
             Diag.log(this, "engine: voice failed to load", t);
             callback.error();
@@ -309,7 +317,8 @@ public final class HoraTtsService extends TextToSpeechService {
     }
 
     private boolean englishReady() {
-        return LanguagePack.installed(this, LanguagePack.ENGLISH);
+        // English shares the sound codec of the native pack.
+        return LanguagePack.installed(this, LanguagePack.ENGLISH) && Voice.ready(this);
     }
 
     private static boolean send(SynthesisCallback cb, byte[] pcm) {

@@ -1658,7 +1658,7 @@
     <string name="lab_decoder">Декодер звука</string>
     <string name="lab_decoder_small">сжатый</string>
     <string name="lab_decoder_full">полный</string>
-    <string name="lab_decoder_note">Полный декодер — тот же, только без сжатия: около +8 % работы. Меняется со следующей фразы.</string>
+    <string name="lab_decoder_note">Полный декодер — тот же, только без сжатия: около +8 % работы. Скачивается отдельно, около 20 МБ. Меняется со следующей фразы.</string>
     <string name="lab_warmer">теплее</string>
     <string name="lab_brighter">ярче</string>
     <string name="lab_lower">ниже</string>
@@ -1942,7 +1942,7 @@
         <item>%1$s. Теперь отвечаю я.</item>
     </string-array>
     <string name="lang_title">Языки</string>
-    <string name="lang_lead">Те же голоса читают на других языках. Каждый язык скачивается отдельно.</string>
+    <string name="lang_lead">Голос Hora и языки, на которых он читает. Всё скачивается отдельно от приложения.</string>
     <string name="lang_russian">Русский</string>
     <string name="lang_builtin">Встроен</string>
     <string name="lang_english">Английский</string>
@@ -1957,13 +1957,21 @@
     <string name="lang_waiting_net">Ждёт связи</string>
     <string name="lang_installing">Устанавливается…</string>
     <string name="lang_installed">Установлен · %1$d МБ</string>
-    <string name="lang_not_yet">Пока только хранится: чтение по-английски появится в следующих сборках.</string>
+    <string name="lang_not_yet">Цитаты по-английски в русских книгах читаются этим модулем тем же голосом.</string>
     <string name="lang_remove">Удалить</string>
     <string name="lang_cancel">Отменить</string>
     <string name="lang_failed">Не удалось скачать</string>
     <string name="lang_no_list">Не нашлось, откуда скачать</string>
     <string name="lang_bad_file">Этот файл — не английский язык для Hora</string>
     <string name="lang_download_title">Hora · английский язык</string>
+    <string name="first_voice_title">Голос Hora</string>
+    <string name="first_voice_text">Все пятеро говорят одной моделью голоса, около 100 МБ. Она скачается по Wi-Fi сама, пока ты отвечаешь на остальное. До тех пор говорит голос телефона, а книги ждут.</string>
+    <string name="first_voice_action">Скачать по Wi-Fi</string>
+    <string name="pack_get_wifi">Скачать по Wi-Fi · около %1$d МБ</string>
+    <string name="voice_pack_bad_file">Этот файл — не голос Hora</string>
+    <string name="voice_pack_note">Голос всех пятерых: книги, разговор, уведомления.</string>
+    <string name="voice_pack_needed">Голос Hora ещё не скачан: Настройки → Языки</string>
+    <string name="decoder_pack_bad_file">Этот файл — не полный декодер для Hora</string>
     <string name="brain_no_model_hint">Отвечать своими словами я смогу с моделью ИИ Gemma 4 — она скачивается отдельно.</string>
     <string name="brain_need_model">Чтобы отвечать своими словами и описывать фото, нужна модель ИИ Gemma 4. Она скачивается отдельно и работает прямо в телефоне, без интернета.</string>
     <string name="brain_need_vision">Чтобы описывать фото, модели нужно дополнение для картинок. Оно скачивается отдельно.</string>

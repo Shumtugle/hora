@@ -25,9 +25,10 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * The built-in voice, one per process. Bundled files live in the "voice" asset
- * folder and are unpacked once into private storage, because the synthesizer
- * reads real paths. The voice timbre comes from a short reference recording.
+ * The built-in voice, one per process. The voice samples come with the app and
+ * are unpacked once into private storage, because the synthesizer reads real
+ * paths; the speech model is a pack fetched once (or kept from an older build).
+ * The voice timbre comes from a short reference recording.
  * Synthesis is serialized: the native engine is not thread-safe.
  */
 final class Voice {
@@ -80,7 +81,23 @@ final class Voice {
     private static final float LANGUAGE_GAP_S = 0.12f;
     private Breath breath;
     private final Sample[] samples = new Sample[2 * (Cast.COUNT + 1)];
+    /** The samples, from the app. */
     private File root;
+    /** The speech model and its sound codec, from the native pack. */
+    private File model;
+
+    /** The speech model is not on the phone yet: the voices cannot speak until the pack is fetched. */
+    static final class Missing extends IOException {
+        Missing() {
+            super("the voice pack is not installed");
+        }
+    }
+
+    /** Whether the voices can speak at all: the speech model is on the phone. */
+    static boolean ready(Context c) {
+        return LanguagePack.installed(c, LanguagePack.NATIVE)
+                || new File(new File(c.getFilesDir(), SLOT), "lm_main.onnx").isFile();
+    }
 
     /** A voice sample and the file state it was read from. */
     private static final class Sample {
@@ -130,45 +147,62 @@ final class Voice {
 
     synchronized void prepare() throws IOException {
         boolean full = Prefs.fullDecoderShared(context);
-        if (engine != null && full == fullDecoder) {
+        // The same decoder as last time, and the same file for it: nothing to rebuild. A full decoder
+        // fetched after it was chosen changes the file, and the engine is built again around it.
+        if (engine != null && full == fullDecoder && decoderFor(full, model).equals(usedDecoder)) {
             return;
         }
         if (engine != null) {
-            // The decoder was switched in the lab: the engine is built again around the other one.
             engine.release();
             engine = null;
             releaseEnglish();
             Diag.mark(context, "voice: decoder switched, full " + full);
         }
-        fullDecoder = full;
         File root = new File(context.getFilesDir(), SLOT);
+        // An older build kept the model among the samples: it becomes the pack before that folder is renewed.
+        LanguagePack.adopt(context, root);
+        File model;
+        boolean oldPlace = false;
+        if (LanguagePack.installed(context, LanguagePack.NATIVE)) {
+            model = LanguagePack.dir(context, LanguagePack.NATIVE);
+        } else if (new File(root, "lm_main.onnx").isFile()) {
+            // The move did not happen (no room, a failed rename): the model keeps working where it is,
+            // and that folder is not renewed, so it is not lost.
+            model = root;
+            oldPlace = true;
+            Diag.mark(context, "voice: the model stays in its old place");
+        } else {
+            throw new Missing();
+        }
+        fullDecoder = full;
         File marker = new File(root, MARKER);
         // Unpacked again only when the voice itself changed, not with every new build of the app.
         String stamp = BuildConfigLite.assetStamp(context, SLOT + "/stamp.txt");
-        if (!marker.isFile() || !stamp.equals(readSmall(marker))) {
+        if (!oldPlace && (!marker.isFile() || !stamp.equals(readSmall(marker)))) {
             deleteTree(root);
             copyAssetTree(context.getAssets(), SLOT, root);
             writeSmall(marker, stamp);
         }
 
         this.root = root;
+        this.model = model;
         Cast.forgetOwnSamples(context);
         sample(1);
-        List<String> pieces = vocabulary(new File(root, "vocab.json"));
+        List<String> pieces = vocabulary(new File(model, "vocab.json"));
         respell = new Respell(SpeechLanguage.resources(context));
         modelStress = new ModelStress(pieces, StressNet.get(context), ModelStress.clitics(context));
         prep = new TextPrep(SpeechLanguage.resources(context), TextPrep.charsOf(pieces));
 
         OfflineTtsConfig config = new OfflineTtsConfig();
         config.model.numThreads = THREADS;
-        config.model.pocket.lmFlow = path(root, "lm_flow.onnx");
-        config.model.pocket.lmMain = path(root, "lm_main.onnx");
-        config.model.pocket.encoder = path(root, "encoder.onnx");
-        File whole = new File(root, "decoder_full.onnx");
-        config.model.pocket.decoder = path(root, fullDecoder && whole.isFile() ? "decoder_full.onnx" : "decoder.onnx");
-        config.model.pocket.textConditioner = path(root, "text_conditioner.onnx");
-        config.model.pocket.vocabJson = path(root, "vocab.json");
-        config.model.pocket.tokenScoresJson = path(root, "token_scores.json");
+        config.model.pocket.lmFlow = path(model, "lm_flow.onnx");
+        config.model.pocket.lmMain = path(model, "lm_main.onnx");
+        config.model.pocket.encoder = path(model, "encoder.onnx");
+        usedDecoder = decoderPath();
+        config.model.pocket.decoder = usedDecoder;
+        config.model.pocket.textConditioner = path(model, "text_conditioner.onnx");
+        config.model.pocket.vocabJson = path(model, "vocab.json");
+        config.model.pocket.tokenScoresJson = path(model, "token_scores.json");
         config.model.pocket.voiceEmbeddingCacheCapacity = 4;
         engine = new OfflineTts(config);
     }
@@ -211,7 +245,7 @@ final class Voice {
 
     /** The English model, built once from the module beside the native model's encoder and decoder. */
     private synchronized OfflineTts englishEngine() {
-        if (english != null || englishTried || root == null) {
+        if (english != null || englishTried || model == null) {
             return english;
         }
         englishTried = true;
@@ -230,9 +264,8 @@ final class Voice {
             config.model.pocket.vocabJson = path(en, "vocab.json");
             config.model.pocket.tokenScoresJson = path(en, "token_scores.json");
             // Both languages share the sound coder: the same encoder, the same decoder.
-            config.model.pocket.encoder = path(root, "encoder.onnx");
-            File whole = new File(root, "decoder_full.onnx");
-            config.model.pocket.decoder = path(root, fullDecoder && whole.isFile() ? "decoder_full.onnx" : "decoder.onnx");
+            config.model.pocket.encoder = path(model, "encoder.onnx");
+            config.model.pocket.decoder = decoderPath();
             config.model.pocket.voiceEmbeddingCacheCapacity = 4;
             english = new OfflineTts(config);
             Diag.mark(context, "voice: English model ready, tempo " + englishTempo);
@@ -241,6 +274,25 @@ final class Voice {
             english = null;
         }
         return english;
+    }
+
+    /** The decoder file the engine was built with. */
+    private String usedDecoder = "";
+
+    private String decoderPath() {
+        return decoderFor(fullDecoder, model);
+    }
+
+    /** The full decoder when it is chosen and fetched (or still beside an old model); otherwise the compact one. */
+    private String decoderFor(boolean full, File model) {
+        if (model == null) {
+            return "";
+        }
+        if (full && LanguagePack.installed(context, LanguagePack.DECODER)) {
+            return new File(LanguagePack.dir(context, LanguagePack.DECODER), "decoder_full.onnx").getAbsolutePath();
+        }
+        File beside = new File(model, "decoder_full.onnx");
+        return full && beside.isFile() ? beside.getAbsolutePath() : path(model, "decoder.onnx");
     }
 
     private synchronized void releaseEnglish() {

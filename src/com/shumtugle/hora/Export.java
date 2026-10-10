@@ -322,6 +322,11 @@ final class Export {
                 Diag.mark(c, "export: a book is playing, later");
                 return LATER_MS;
             }
+            if (!Voice.ready(c)) {
+                // Nothing to read with yet: the queue waits for the voice pack instead of failing book by book.
+                Diag.mark(c, "export: the voice pack is not fetched yet, later");
+                return LATER_MS;
+            }
             JSONArray q = queue(c);
             int at = next(q);
             if (at < 0) {

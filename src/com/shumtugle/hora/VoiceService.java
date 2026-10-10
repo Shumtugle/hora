@@ -161,7 +161,18 @@ public final class VoiceService extends Service {
                         return;
                     }
                     Voice voice = Voice.get(VoiceService.this);
-                    voice.prepare();
+                    try {
+                        voice.prepare();
+                    } catch (Voice.Missing m) {
+                        // No voice pack yet: the phone's own voice says it, so the answer is not lost.
+                        SpareVoice.say(VoiceService.this, TextPrep.clean(text), new Voice.Cancel() {
+                            @Override
+                            public boolean cancelled() {
+                                return gen != generation.get();
+                            }
+                        });
+                        return;
+                    }
                     String spoken = voice.normalize(Lexicon.get(VoiceService.this).applyRules(TextPrep.clean(text)));
                     // Speech asks for the floor and gives way when another sound takes it.
                     android.media.AudioManager audio = (android.media.AudioManager) getSystemService(AUDIO_SERVICE);

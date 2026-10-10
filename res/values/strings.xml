@@ -757,7 +757,7 @@
     <string name="lab_decoder">Sound decoder</string>
     <string name="lab_decoder_small">compressed</string>
     <string name="lab_decoder_full">full</string>
-    <string name="lab_decoder_note">The full decoder is the same one without compression: about 8% more work. Takes effect from the next phrase.</string>
+    <string name="lab_decoder_note">The full decoder is the same one without compression: about 8% more work. Downloaded separately, about 20 MB. Takes effect from the next phrase.</string>
     <string name="lab_warmer">warmer</string>
     <string name="lab_brighter">brighter</string>
     <string name="lab_lower">lower</string>
@@ -942,7 +942,7 @@
         <item>%1$s. I\'m answering now.</item>
     </string-array>
     <string name="lang_title">Languages</string>
-    <string name="lang_lead">The same voices read in other languages. Each language is downloaded separately.</string>
+    <string name="lang_lead">Hora\'s voice and the languages it reads in. Each is downloaded separately from the app.</string>
     <string name="lang_russian">Russian</string>
     <string name="lang_builtin">Built in</string>
     <string name="lang_english">English</string>
@@ -957,13 +957,21 @@
     <string name="lang_waiting_net">Waiting for a connection</string>
     <string name="lang_installing">Installing…</string>
     <string name="lang_installed">Installed · %1$d MB</string>
-    <string name="lang_not_yet">Stored for now: reading in English comes in later builds.</string>
+    <string name="lang_not_yet">English quotes inside Russian books are read with this module, in the same voice.</string>
     <string name="lang_remove">Remove</string>
     <string name="lang_cancel">Cancel</string>
     <string name="lang_failed">Download failed</string>
     <string name="lang_no_list">Could not find where to download it</string>
     <string name="lang_bad_file">This file is not the English language for Hora</string>
     <string name="lang_download_title">Hora · English language</string>
+    <string name="first_voice_title">Hora\'s voice</string>
+    <string name="first_voice_text">All five speak with one voice model, about 100 MB. It downloads over Wi-Fi by itself while you answer the rest. Until then the phone\'s own voice speaks, and books wait.</string>
+    <string name="first_voice_action">Download over Wi-Fi</string>
+    <string name="pack_get_wifi">Download over Wi-Fi · about %1$d MB</string>
+    <string name="voice_pack_bad_file">This file is not Hora\'s voice</string>
+    <string name="voice_pack_note">The voice of all five: books, talk, notifications.</string>
+    <string name="voice_pack_needed">Hora\'s voice is not downloaded yet: Settings → Languages</string>
+    <string name="decoder_pack_bad_file">This file is not the full decoder for Hora</string>
     <string name="brain_no_model_hint">I can answer in my own words with the Gemma 4 AI model; it is downloaded separately.</string>
     <string name="brain_need_model">To answer in its own words and describe photos, the app needs the Gemma 4 AI model. It is downloaded separately and runs on the phone itself, offline.</string>
     <string name="brain_need_vision">To describe photos, the model needs an add-on for pictures. It is downloaded separately.</string>

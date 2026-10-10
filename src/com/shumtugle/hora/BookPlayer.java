@@ -376,6 +376,18 @@ public final class BookPlayer extends Service {
         if (paragraphs == null || playing) {
             return;
         }
+        if (!Voice.ready(this)) {
+            // A book is read only by the voices themselves; without their pack there is nothing to read with.
+            Diag.mark(this, "book: not read, the voice pack is not fetched yet");
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    android.widget.Toast.makeText(BookPlayer.this, R.string.voice_pack_needed,
+                            android.widget.Toast.LENGTH_LONG).show();
+                }
+            });
+            return;
+        }
         if (bedOnly) {
             // The background was already playing with focus and the phone awake; the voice joins it.
             bedOnly = false;
@@ -596,6 +608,23 @@ public final class BookPlayer extends Service {
                         "book: paragraph %d, %.1f s of speech in %.1f s (%.2fx), first sound after %.1f s, %.0f s ahead, %s",
                         index, made[0], spent / 1000f, spent > 0 ? made[0] * 1000f / spent : 0f,
                         Math.max(0, firstAt[0]) / 1000f, queuedSeconds, Diag.state(this)));
+            } catch (Voice.Missing m) {
+                // No voice to read with: stop at this paragraph instead of running through the book in silence.
+                synchronized (lock) {
+                    if (gen == generation) {
+                        nextIndex = index;
+                    }
+                }
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        pause("no voice pack");
+                        android.widget.Toast.makeText(BookPlayer.this, R.string.voice_pack_needed,
+                                android.widget.Toast.LENGTH_LONG).show();
+                    }
+                });
+                // Give the pause a moment to land before this loop looks for work again.
+                SystemClock.sleep(1000);
             } catch (Throwable t) {
                 Diag.log(this, "book: paragraph " + index + " failed", t);
             } finally {

@@ -31,23 +31,25 @@ public final class FirstRunActivity extends Activity {
     private static final int REQUEST_NOTIFY = 1;
     private static final int REQUEST_PLACE = 2;
 
-    private static final int NOTIFY = 0;
-    private static final int HERALD = 1;
-    private static final int FOLDER = 2;
-    private static final int WEATHER = 3;
-    private static final int ENGINE = 4;
-    private static final int MODEL = 5;
-    private static final int STEPS = 6;
+    // The voice comes first: its download runs while the other pages are answered.
+    private static final int VOICE = 0;
+    private static final int NOTIFY = 1;
+    private static final int HERALD = 2;
+    private static final int FOLDER = 3;
+    private static final int WEATHER = 4;
+    private static final int ENGINE = 5;
+    private static final int MODEL = 6;
+    private static final int STEPS = 7;
 
-    private static final int[] TITLES = {R.string.first_notify_title, R.string.first_herald_title,
-        R.string.first_folder_title, R.string.first_weather_title, R.string.first_engine_title,
-        R.string.first_model_title};
-    private static final int[] TEXTS = {R.string.first_notify_text, R.string.first_herald_text,
-        R.string.first_folder_text, R.string.first_weather_text, R.string.first_engine_text,
-        R.string.first_model_text};
-    private static final int[] ACTIONS = {R.string.first_notify_action, R.string.first_open_settings,
-        R.string.first_folder_action, R.string.first_weather_action, R.string.first_open_settings,
-        R.string.first_model_action};
+    private static final int[] TITLES = {R.string.first_voice_title, R.string.first_notify_title,
+        R.string.first_herald_title, R.string.first_folder_title, R.string.first_weather_title,
+        R.string.first_engine_title, R.string.first_model_title};
+    private static final int[] TEXTS = {R.string.first_voice_text, R.string.first_notify_text,
+        R.string.first_herald_text, R.string.first_folder_text, R.string.first_weather_text,
+        R.string.first_engine_text, R.string.first_model_text};
+    private static final int[] ACTIONS = {R.string.first_voice_action, R.string.first_notify_action,
+        R.string.first_open_settings, R.string.first_folder_action, R.string.first_weather_action,
+        R.string.first_open_settings, R.string.first_model_action};
 
     private int built;
     private FrameLayout root;
@@ -215,6 +217,8 @@ public final class FirstRunActivity extends Activity {
     /** Whether what a page asks for is already given. */
     private boolean done(int s) {
         switch (s) {
+            case VOICE:
+                return Voice.ready(this) || Fetch.progress(this, LanguagePack.key(LanguagePack.NATIVE)) != null;
             case NOTIFY:
                 return Build.VERSION.SDK_INT < 33
                         || checkSelfPermission(NOTIFY_PERMISSION) == PackageManager.PERMISSION_GRANTED;
@@ -235,6 +239,21 @@ public final class FirstRunActivity extends Activity {
 
     private void act(int s) {
         switch (s) {
+            case VOICE:
+                // By Wi-Fi: the download waits for it and goes on by itself, even with the app closed.
+                final android.content.Context app = getApplicationContext();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            LanguagePack.start(app, LanguagePack.NATIVE, false);
+                        } catch (Exception e) {
+                            Diag.log(app, "pack: voice download could not start", e);
+                        }
+                    }
+                }, "first-voice").start();
+                show(VOICE + 1);
+                break;
             case NOTIFY:
                 requestPermissions(new String[] {NOTIFY_PERMISSION}, REQUEST_NOTIFY);
                 break;

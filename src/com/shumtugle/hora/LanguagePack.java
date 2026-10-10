@@ -27,19 +27,29 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * A second language for the same voices, fetched separately. A pack holds
- * the parts of the speech model that differ between languages; the sound
- * codec and the voice samples are shared with the built-in language.
+ * Parts of the speech model fetched separately from the app. The native pack
+ * is the voice itself: the speech model with its sound codec, without which
+ * the voices are silent. A language pack holds the parts that differ for
+ * another language and shares the native codec. The full decoder is an
+ * optional, larger codec for the same voice. The voice samples stay in the
+ * app and are shared by all.
  *
  * Where a pack comes from is told by the list Fetch reads; this class only
  * knows what a pack holds and how to put it in place.
  */
 final class LanguagePack {
+    static final String NATIVE = "ru";
     static final String ENGLISH = "en";
+    static final String DECODER = "decoder";
 
-    /** Every file a pack must have; nothing else is unpacked. */
+    /** Every file a language pack must have; nothing else is unpacked. */
     static final List<String> FILES = Arrays.asList(
             "lm_main.onnx", "lm_flow.onnx", "text_conditioner.onnx", "vocab.json", "token_scores.json", "pack.json");
+    /** The native pack: a language pack plus the sound codec. */
+    static final List<String> NATIVE_FILES = Arrays.asList(
+            "lm_main.onnx", "lm_flow.onnx", "text_conditioner.onnx", "vocab.json", "token_scores.json",
+            "encoder.onnx", "decoder.onnx", "pack.json");
+    static final List<String> DECODER_FILES = Arrays.asList("decoder_full.onnx", "pack.json");
     private static final Set<String> EXTRA = new HashSet<String>(Arrays.asList("LICENSE.txt"));
     /** A pack is far below this; anything larger is not one. */
     private static final long MAX_FILE = 400L * 1024 * 1024;
@@ -51,9 +61,13 @@ final class LanguagePack {
         return new File(new File(c.getFilesDir(), "lang"), lang);
     }
 
+    static List<String> files(String id) {
+        return NATIVE.equals(id) ? NATIVE_FILES : DECODER.equals(id) ? DECODER_FILES : FILES;
+    }
+
     static boolean installed(Context c, String lang) {
         File d = dir(c, lang);
-        for (String f : FILES) {
+        for (String f : files(lang)) {
             if (!new File(d, f).isFile()) {
                 return false;
             }
@@ -84,6 +98,7 @@ final class LanguagePack {
 
     static void remove(Context c, String lang) {
         delete(dir(c, lang));
+        clearLeftovers(c, lang);
     }
 
     static String key(String lang) {
@@ -120,7 +135,7 @@ final class LanguagePack {
      * folder that replaces the old one only when complete.
      */
     static void unpack(Context c, String lang, InputStream zipped) throws IOException {
-        File fresh = new File(dir(c, lang).getPath() + ".new");
+        File fresh = work(c, lang);
         delete(fresh);
         if (!fresh.mkdirs()) {
             throw new IOException("cannot make " + fresh);
@@ -132,7 +147,7 @@ final class LanguagePack {
                 String name = e.getName();
                 int slash = name.lastIndexOf('/');
                 name = slash < 0 ? name : name.substring(slash + 1);
-                if (e.isDirectory() || !(FILES.contains(name) || EXTRA.contains(name))) {
+                if (e.isDirectory() || !(files(lang).contains(name) || EXTRA.contains(name))) {
                     continue;
                 }
                 long n = 0;
@@ -148,7 +163,7 @@ final class LanguagePack {
                 }
             }
         }
-        for (String f : FILES) {
+        for (String f : files(lang)) {
             if (!new File(fresh, f).isFile()) {
                 delete(fresh);
                 throw new IOException("missing " + f);
@@ -156,7 +171,8 @@ final class LanguagePack {
         }
         String said;
         try {
-            said = new JSONObject(new String(read(new File(fresh, "pack.json")), "UTF-8")).optString("language");
+            JSONObject j = new JSONObject(new String(read(new File(fresh, "pack.json")), "UTF-8"));
+            said = j.optString("id", j.optString("language"));
         } catch (org.json.JSONException ex) {
             said = "";
         }
@@ -169,6 +185,91 @@ final class LanguagePack {
         if (!fresh.renameTo(old)) {
             delete(fresh);
             throw new IOException("cannot move into place");
+        }
+    }
+
+    /**
+     * Builds before the voice became a pack unpacked the model from the app into
+     * the samples folder. Those files are moved into the packs as they are, so
+     * an update keeps its voice without a download. Fast: renames only.
+     */
+    static synchronized void adopt(Context c, File old) {
+        try {
+            if (!installed(c, NATIVE) && new File(old, "lm_main.onnx").isFile()) {
+                if (move(c, old, NATIVE)) {
+                    Diag.mark(c, "voice: the model from the app kept as the voice pack");
+                }
+            }
+            if (!installed(c, DECODER) && new File(old, "decoder_full.onnx").isFile()) {
+                move(c, old, DECODER);
+            }
+        } catch (IOException e) {
+            Diag.log(c, "voice: the model from the app could not be kept", e);
+        }
+    }
+
+    private static boolean move(Context c, File old, String id) throws IOException {
+        File fresh = work(c, id);
+        delete(fresh);
+        if (!fresh.mkdirs()) {
+            throw new IOException("cannot make " + fresh);
+        }
+        // The description is written first: if even that fails, nothing has moved yet.
+        try (OutputStream out = new FileOutputStream(new File(fresh, "pack.json"))) {
+            out.write(("{\"id\": \"" + id + "\", \"language\": \"" + (DECODER.equals(id) ? "" : id)
+                    + "\", \"version\": 1}").getBytes("UTF-8"));
+        } catch (IOException e) {
+            delete(fresh);
+            throw e;
+        }
+        java.util.List<String> moved = new java.util.ArrayList<String>();
+        boolean whole = true;
+        for (String f : files(id)) {
+            if ("pack.json".equals(f)) {
+                continue;
+            }
+            if (!new File(old, f).renameTo(new File(fresh, f))) {
+                whole = false;
+                break;
+            }
+            moved.add(f);
+        }
+        if (whole) {
+            delete(dir(c, id));
+            whole = fresh.renameTo(dir(c, id));
+        }
+        if (!whole) {
+            // Everything goes back where it was: the old copy stays whole and keeps working.
+            for (String m : moved) {
+                new File(fresh, m).renameTo(new File(old, m));
+            }
+            delete(fresh);
+        }
+        return whole;
+    }
+
+    /** A folder of this process for a pack being put together; replaces the pack only when complete. */
+    private static File work(Context c, String id) {
+        clearLeftovers(c, id);
+        return new File(dir(c, id).getPath() + ".new" + android.os.Process.myPid());
+    }
+
+    /** Half-made folders of processes that are gone (killed mid-way) are removed; live ones are left alone. */
+    private static void clearLeftovers(Context c, String id) {
+        String stem = dir(c, id).getName() + ".new";
+        File[] all = dir(c, id).getParentFile().listFiles();
+        if (all == null) {
+            return;
+        }
+        for (File f : all) {
+            String n = f.getName();
+            if (!n.startsWith(stem)) {
+                continue;
+            }
+            String pid = n.substring(stem.length());
+            if (pid.isEmpty() || !pid.matches("\\d+") || !new File("/proc/" + pid).exists()) {
+                delete(f);
+            }
         }
     }
 

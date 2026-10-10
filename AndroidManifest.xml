@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.shumtugle.hora"
-    android:versionCode="183"
-    android:versionName="0.74.3">
+    android:versionCode="184"
+    android:versionName="0.75.0">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -18,6 +18,9 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
         </intent>
     </queries>
     <application
@@ -104,6 +107,10 @@
             android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="android.speech.tts.engine.CHECK_TTS_DATA"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.speech.tts.engine.INSTALL_TTS_DATA"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
             <intent-filter>
