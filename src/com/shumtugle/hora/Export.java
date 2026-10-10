@@ -334,6 +334,12 @@ final class Export {
             }
             JSONObject job = q.optJSONObject(at);
             String uri = job.optString("uri");
+            int reader = job.optInt("reader", 1);
+            if (reader > Cast.COUNT && !Demo.sample(c, reader).isFile()) {
+                // A trial voice whose sample is gone: wait for it rather than read with someone else.
+                Diag.mark(c, "export: the trial sample is not here, later");
+                return LATER_MS;
+            }
             Diag.mark(c, "export: working, chapter " + (job.optInt("chapter") + 1) + " of " + job.optInt("chapters")
                     + ", paragraph " + Math.max(0, job.optInt("paragraph")));
             try {

@@ -1851,6 +1851,7 @@
     <string name="beta_samples_half">Нашёлся один образец из двух</string>
     <string name="beta_samples_none">Положи beta-f.wav и beta-m.wav в папку Hora → «Образцы»</string>
     <string name="beta_where">Где звучат</string>
+    <string name="beta_audiobook">Аудиокнига на ночь</string>
     <string name="beta_for_books">Книги</string>
     <string name="beta_for_herald">Уведомления</string>
     <string name="beta_for_talk">Разговор</string>

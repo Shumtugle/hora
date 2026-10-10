@@ -37,6 +37,9 @@ final class Cast {
     }
 
     static String name(Context c, int voice) {
+        if (voice == BETA_F || voice == BETA_M) {
+            return c.getString(voice == BETA_F ? R.string.beta_female : R.string.beta_male);
+        }
         String own = Prefs.voiceName(c, voice);
         if (!own.isEmpty()) {
             return own;

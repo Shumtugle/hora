@@ -112,6 +112,23 @@ public final class BetaActivity extends Activity {
                 }
             }));
             body.addView(demo, Kit.wide());
+
+            // The demo as an audiobook, made overnight on the charger like any other.
+            body.addView(Kit.section(this, getString(R.string.beta_audiobook)));
+            LinearLayout night = Kit.plate(this);
+            night.addView(Kit.rowNav(this, getString(R.string.beta_female), "\u203a", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    audiobook(Cast.BETA_F);
+                }
+            }));
+            night.addView(Kit.rowNav(this, getString(R.string.beta_male), "\u203a", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    audiobook(Cast.BETA_M);
+                }
+            }));
+            body.addView(night, Kit.wide());
         }
         body.addView(Kit.link(this, getString(R.string.dev_close), new View.OnClickListener() {
             @Override
@@ -120,6 +137,36 @@ public final class BetaActivity extends Activity {
                 finish();
             }
         }), Kit.below(this, 16));
+    }
+
+    /** Offers the demo book to the audiobook queue, read by a trial voice, in a folder of its own. */
+    private void audiobook(final int voice) {
+        final android.content.Context app = getApplicationContext();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final String title;
+                try {
+                    Demo.book(app);
+                    Book b = Export.load(app, Demo.uri(app), "book.txt");
+                    title = (b.title == null || b.title.isEmpty() ? getString(R.string.demo_title) : b.title)
+                            + " \u00b7 " + Cast.name(app, voice);
+                } catch (Exception e) {
+                    Diag.log(app, "demo: the book could not be prepared", e);
+                    return;
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        startActivity(new Intent(BetaActivity.this, ExportActivity.class)
+                                .putExtra(ExportActivity.EXTRA_URI, Demo.uri(app))
+                                .putExtra(ExportActivity.EXTRA_NAME, "book.txt")
+                                .putExtra(ExportActivity.EXTRA_TITLE, title)
+                                .putExtra(ExportActivity.EXTRA_READER, voice));
+                    }
+                });
+            }
+        }, "demo-audiobook").start();
     }
 
     /** Reads the demo with a trial voice, or with the narrator when the voice is 0, and shows the book. */

@@ -853,6 +853,7 @@
     <string name="beta_samples_half">One of the two samples found</string>
     <string name="beta_samples_none">Put beta-f.wav and beta-m.wav into Hora\'s folder → Samples</string>
     <string name="beta_where">Where they sound</string>
+    <string name="beta_audiobook">Audiobook overnight</string>
     <string name="beta_for_books">Books</string>
     <string name="beta_for_herald">Notifications</string>
     <string name="beta_for_talk">Talk</string>
