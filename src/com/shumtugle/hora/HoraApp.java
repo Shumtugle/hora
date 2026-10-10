@@ -131,11 +131,15 @@ public final class HoraApp extends Application {
                     continue;
                 }
                 newest = Math.max(newest, x.getTimestamp());
+                if (ordinary(x)) {
+                    continue;
+                }
                 String name = x.getProcessName();
                 int colon = name.indexOf(':');
                 String desc = x.getDescription();
-                Diag.mark(this, "ended: " + (colon < 0 ? "main" : name.substring(colon)) + " [" + x.getPid() + "] at "
-                        + new SimpleDateFormat("HH:mm:ss", Locale.ROOT).format(new Date(x.getTimestamp())) + ", "
+                String who = "ended: " + (colon < 0 ? "main" : name.substring(colon)) + " [" + x.getPid() + "] at "
+                        + new SimpleDateFormat("HH:mm:ss", Locale.ROOT).format(new Date(x.getTimestamp()));
+                Diag.markOnce(this, who, who + ", "
                         + reason(x.getReason()) + (desc == null || desc.isEmpty() ? "" : " (" + desc + ")")
                         + ", " + x.getPss() / 1024 + " MB");
             }
@@ -143,6 +147,16 @@ public final class HoraApp extends Application {
         } catch (RuntimeException e) {
             Diag.log(this, "ended: not readable", e);
         }
+    }
+
+    /**
+     * The system clearing a process nobody was using: a cached or empty process
+     * taken back for memory. Android does this all day; it says nothing about Hora.
+     */
+    private static boolean ordinary(ApplicationExitInfo x) {
+        int r = x.getReason();
+        return x.getImportance() >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED
+                && (r == ApplicationExitInfo.REASON_LOW_MEMORY || r == ApplicationExitInfo.REASON_OTHER);
     }
 
     private static String reason(int r) {

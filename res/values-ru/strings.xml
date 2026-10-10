@@ -942,7 +942,7 @@
     <string name="role_talk">Разговор</string>
     <string name="journal_copy">Копировать</string>
     <string name="journal_copied">Журнал скопирован</string>
-    <string name="journal_note">События хранятся сутки, подробности — 15 минут. Удержи строку, чтобы скопировать её.</string>
+    <string name="journal_note">События хранятся 12 часов, подробности — 15 минут. Удержи строку, чтобы скопировать её.</string>
     <string name="journal_clear_sure">Точно очистить?</string>
     <string name="journal_all">Всё · %1$d</string>
     <string name="journal_events">События · %1$d</string>

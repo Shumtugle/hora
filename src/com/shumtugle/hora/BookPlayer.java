@@ -75,6 +75,12 @@ public final class BookPlayer extends Service {
     /** A paragraph is being made; the end of the book is not reached while it is. */
     private volatile boolean busy;
     private volatile int generation;
+    /** Each request to open a book takes a ticket; only the newest one may install its book. */
+    private int openTicket;
+    /** A book being read from its file right now, or null; reopening the last book waits for it. */
+    private String opening;
+    /** Play was asked for while a book was still opening. */
+    private boolean playWhenOpened;
     private float queuedSeconds;
     private int nextIndex;
     private volatile int playIndex;
@@ -264,6 +270,14 @@ public final class BookPlayer extends Service {
 
     /** Reopens the last book after the process was gone, then plays if asked. */
     private void ensureLoaded(final boolean play) {
+        synchronized (lock) {
+            // A book asked for a moment ago is still being read: it is the one to load, not the last
+            // one remembered, which the new book has not yet replaced.
+            if (opening != null) {
+                playWhenOpened |= play;
+                return;
+            }
+        }
         if (paragraphs != null) {
             if (play) {
                 play("asked");
@@ -282,18 +296,23 @@ public final class BookPlayer extends Service {
         if (u == null || u.isEmpty()) {
             return;
         }
+        final int ticket;
         synchronized (lock) {
             generation++;
             queue.clear();
             queuedSeconds = 0;
             playing = false;
+            ticket = ++openTicket;
+            opening = u;
+            playWhenOpened = play;
             lock.notifyAll();
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
                 List<String> p;
-                Book book;
+                Book book = null;
+                String failed = null;
                 try {
                     InputStream in = getContentResolver().openInputStream(Uri.parse(u));
                     try {
@@ -308,27 +327,41 @@ public final class BookPlayer extends Service {
                     }
                 } catch (Exception e) {
                     Diag.log(BookPlayer.this, "book: cannot open", e);
-                    return;
+                    p = null;
+                    failed = "error";
                 }
-                if (p.isEmpty()) {
+                if (p != null && p.isEmpty()) {
                     Diag.mark(BookPlayer.this, "book: no text found");
-                    return;
+                    failed = "empty";
                 }
-                int at = Math.min(p.size() - 1, Reading.savedIndex(BookPlayer.this, u));
+                int at = failed == null ? Math.min(p.size() - 1, Reading.savedIndex(BookPlayer.this, u)) : 0;
+                boolean playNow;
                 synchronized (lock) {
+                    if (ticket != openTicket) {
+                        // Another book was asked for while this one was being read: that one wins.
+                        Diag.mark(BookPlayer.this, "book: an older request dropped, " + (p == null ? 0 : p.size())
+                                + " paragraphs");
+                        return;
+                    }
+                    opening = null;
+                    playNow = playWhenOpened;
+                    playWhenOpened = false;
+                    if (failed != null) {
+                        return;
+                    }
                     paragraphs = p;
                     uri = u;
                     title = book.title;
                     nextIndex = at;
                     playIndex = at;
                     generation++;
+                    Reading.setBook(BookPlayer.this, u, name);
                 }
-                Reading.setBook(BookPlayer.this, u, name);
                 Library.opened(BookPlayer.this, u, name, book, at, Prefs.roleShared(BookPlayer.this, Cast.NARRATOR));
                 publish();
                 Diag.mark(BookPlayer.this, "book: opened, " + p.size() + " paragraphs, "
                         + book.chapters.size() + " chapters, at " + at);
-                if (play) {
+                if (playNow) {
                     play("opened");
                 }
             }

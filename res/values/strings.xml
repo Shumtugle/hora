@@ -529,7 +529,7 @@
     <string name="role_talk">Talk</string>
     <string name="journal_copy">Copy</string>
     <string name="journal_copied">Journal copied</string>
-    <string name="journal_note">Events are kept for a day, details for 15 minutes. Hold a line to copy it.</string>
+    <string name="journal_note">Events are kept for 12 hours, details for 15 minutes. Hold a line to copy it.</string>
     <string name="journal_clear_sure">Clear for good?</string>
     <string name="journal_all">All · %1$d</string>
     <string name="journal_events">Events · %1$d</string>

@@ -24,7 +24,7 @@ import java.util.Locale;
  * A small on-device journal, readable from settings, so problems can be
  * diagnosed without a computer. Two kinds of lines: details, written freely
  * and gone after a quarter of an hour, and events (marked with a star),
- * kept for a day. Both processes write to the same file under a shared lock.
+ * kept for half a day: a tool for what is going on now, not an archive. Both processes write to the same file under a shared lock.
  */
 final class Diag {
     private static final String FILE = "journal.txt";
@@ -32,9 +32,9 @@ final class Diag {
     private static final String TAG = "hora";
     private static final String EVENT = "* ";
     private static final long DETAIL_LIFE_MS = 15 * 60 * 1000L;
-    private static final long EVENT_LIFE_MS = 24 * 60 * 60 * 1000L;
+    private static final long EVENT_LIFE_MS = 12 * 60 * 60 * 1000L;
     private static final long PRUNE_EVERY_MS = 60 * 1000L;
-    private static final int LIMIT = 512 * 1024;
+    private static final int LIMIT = 128 * 1024;
     private static final String STAMP = "MM-dd HH:mm:ss.SSS";
     private static long pruned;
 
@@ -47,12 +47,21 @@ final class Diag {
 
     /** A detail: kept for fifteen minutes. */
     static void log(Context c, String msg) {
-        write(c, msg, false);
+        write(c, msg, false, null);
     }
 
-    /** An event: kept for a day. */
+    /** An event: kept for half a day. */
     static void mark(Context c, String msg) {
-        write(c, msg, true);
+        write(c, msg, true, null);
+    }
+
+    /**
+     * An event written only if no line in the journal carries the key yet. Both
+     * processes report the same past events when they start; the check runs
+     * under the shared lock, so one of them writes and the other stays silent.
+     */
+    static void markOnce(Context c, String key, String msg) {
+        write(c, msg, true, key);
     }
 
     /** A failure is always an event, with the start of its trace. */
@@ -66,7 +75,7 @@ final class Diag {
         mark(c, msg + ": " + trace);
     }
 
-    private static synchronized void write(Context c, String msg, boolean event) {
+    private static synchronized void write(Context c, String msg, boolean event, String once) {
         long now = System.currentTimeMillis();
         String line = new SimpleDateFormat(STAMP, Locale.ROOT).format(new Date(now))
                 + " [" + android.os.Process.myPid() + "] " + (event ? EVENT : "") + msg + "\n";
@@ -81,6 +90,9 @@ final class Diag {
                     if (now - pruned > PRUNE_EVERY_MS || f.length() > LIMIT) {
                         prune(f, now);
                         pruned = now;
+                    }
+                    if (once != null && f.exists() && Lexicon.readText(f).contains(once)) {
+                        return;
                     }
                     FileOutputStream out = new FileOutputStream(f, true);
                     try {
