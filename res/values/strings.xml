@@ -840,6 +840,7 @@
     <string-array name="bot_self_words"/>
     <string name="folder_recordings">Recordings</string>
     <string name="folder_dictionaries">Dictionaries</string>
+    <string name="demo_title">Demo</string>
     <string name="beta_title">Beta</string>
     <string name="beta_female">Beta female</string>
     <string name="beta_male">Beta male</string>

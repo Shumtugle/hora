@@ -1838,6 +1838,7 @@
     </string-array>
     <string name="folder_recordings">Записи</string>
     <string name="folder_dictionaries">Словари</string>
+    <string name="demo_title">Демо</string>
     <string name="beta_title">Бета</string>
     <string name="beta_female">Бета-женский</string>
     <string name="beta_male">Бета-мужской</string>

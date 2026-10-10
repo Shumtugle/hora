@@ -63,20 +63,6 @@ public final class SettingsActivity extends Activity {
         });
         list.addView(langs);
         list.addView(rule());
-        // Shown only when the trial samples were put into Hora's folder by hand.
-        beta = new LinearLayout(this);
-        beta.setOrientation(LinearLayout.VERTICAL);
-        beta.setVisibility(View.GONE);
-        View trial = row(getString(R.string.beta_title), "\u203a");
-        trial.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(SettingsActivity.this, BetaActivity.class));
-            }
-        });
-        beta.addView(trial);
-        beta.addView(rule());
-        list.addView(beta);
         String where = Weather.placeName(this);
         View place = row(getString(R.string.place_title), where.isEmpty()
                 ? (Weather.hasPlace(this) ? getString(R.string.place_here_short) : "\u203a") : where);
@@ -238,6 +224,30 @@ public final class SettingsActivity extends Activity {
         });
         list.addView(intro);
         list.addView(rule());
+        // The demo book, read by the narrator; it never sits on the shelf.
+        View demo = row(getString(R.string.demo_title), "\u25b7");
+        demo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BetaActivity.read(SettingsActivity.this, 0);
+            }
+        });
+        list.addView(demo);
+        list.addView(rule());
+        // Shown only when the trial samples were put into Hora's folder by hand.
+        beta = new LinearLayout(this);
+        beta.setOrientation(LinearLayout.VERTICAL);
+        beta.setVisibility(View.GONE);
+        View trial = row(getString(R.string.beta_title), "\u203a");
+        trial.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(SettingsActivity.this, BetaActivity.class));
+            }
+        });
+        beta.addView(trial);
+        beta.addView(rule());
+        list.addView(beta);
         list.addView(row(getString(R.string.build), buildLabel()));
         list.addView(rule());
         View about = row(getString(R.string.about_title), "\u203a");

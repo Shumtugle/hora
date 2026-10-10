@@ -12,6 +12,7 @@ import java.io.IOException;
 /**
  * Two trial voices, nothing more: no faces, names or descriptions. A touch reads
  * the demo book with that voice, from where the demo was left, on the book screen.
+ * The plain demo, read by the narrator, starts the same way from the settings.
  */
 public final class BetaActivity extends Activity {
     private int built;
@@ -43,12 +44,17 @@ public final class BetaActivity extends Activity {
         Ui.stale(this, built);
     }
 
-    private void read(final int voice) {
-        if (!Voice.ready(this)) {
-            Toast.makeText(this, R.string.voice_pack_needed, Toast.LENGTH_LONG).show();
+    private void read(int voice) {
+        read(this, voice);
+    }
+
+    /** Reads the demo with a trial voice, or with the narrator when the voice is 0, and shows the book. */
+    static void read(Activity a, final int voice) {
+        if (!Voice.ready(a)) {
+            Toast.makeText(a, R.string.voice_pack_needed, Toast.LENGTH_LONG).show();
             return;
         }
-        final android.content.Context app = getApplicationContext();
+        final android.content.Context app = a.getApplicationContext();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -59,10 +65,11 @@ public final class BetaActivity extends Activity {
                     return;
                 }
                 Demo.setVoice(app, voice);
-                Diag.mark(app, "demo: read by trial voice " + (voice - Cast.COUNT));
+                Diag.mark(app, voice == 0 ? "demo: read by the narrator"
+                        : "demo: read by trial voice " + (voice - Cast.COUNT));
                 BookActivity.open(app, Demo.uri(app), "book.txt", true);
             }
         }, "demo").start();
-        startActivity(new Intent(this, BookActivity.class));
+        a.startActivity(new Intent(a, BookActivity.class));
     }
 }

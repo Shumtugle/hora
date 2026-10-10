@@ -90,12 +90,16 @@ final class Demo {
      * are there and differ from the copies already taken. Slow: not on the main thread.
      */
     static void take(Context c) {
-        Uri dir = HoraFolder.findSub(c, c.getString(R.string.folder_samples));
-        if (dir == null) {
+        if (HoraFolder.tree(c) == null) {
             return;
         }
+        Uri dir = HoraFolder.findSub(c, c.getString(R.string.folder_samples));
         for (int i = 0; i < NAMES.length; i++) {
-            Uri u = HoraFolder.find(c, dir, NAMES[i]);
+            // In the samples folder, or at the top of Hora's folder; a copy renamed by the phone counts too.
+            Uri u = dir == null ? null : like(c, dir, NAMES[i]);
+            if (u == null) {
+                u = like(c, null, NAMES[i]);
+            }
             if (u == null) {
                 continue;
             }
@@ -121,6 +125,21 @@ final class Demo {
                 Diag.log(c, "demo: trial sample not taken", e);
             }
         }
+    }
+
+    /** A file whose name starts like the given one and ends the same, in a subfolder or at the top. */
+    private static Uri like(Context c, Uri dir, String name) {
+        Uri exact = dir == null ? HoraFolder.findRoot(c, name) : HoraFolder.find(c, dir, name);
+        if (exact != null || dir == null) {
+            return exact;
+        }
+        String stem = name.substring(0, name.lastIndexOf('.'));
+        for (String[] f : HoraFolder.list(c, dir)) {
+            if (f[1] != null && f[1].startsWith(stem) && f[1].endsWith(".wav")) {
+                return Uri.parse(f[0]);
+            }
+        }
+        return null;
     }
 
     /** Clears what the app keeps of the trial voices. */

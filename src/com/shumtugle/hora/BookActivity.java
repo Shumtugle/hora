@@ -82,6 +82,7 @@ public final class BookActivity extends Activity {
     private boolean followOwed;
     /** The text of the book shown, read here once per book; null until it is read. */
     private static String loadedUri = "";
+    private View readerBox;
     private static List<String> text;
     private static List<Book.Chapter> chapters = new ArrayList<Book.Chapter>();
     private static boolean[] heading = new boolean[0];
@@ -303,6 +304,7 @@ public final class BookActivity extends Activity {
         readerFace.setPadding(dp(3), dp(3), dp(3), dp(3));
         readerName = Ui.text(this, "", 11, Palette.MUTED);
         View reader = flank(readerFace, readerName);
+        readerBox = reader;
         reader.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -376,6 +378,9 @@ public final class BookActivity extends Activity {
         int total = Reading.total(this);
         where.setText(total <= 0 ? getString(R.string.book_opening) : place(total));
         int narrator = Prefs.role(this, Cast.NARRATOR);
+        // A trial voice reading the demo has no face and no name: the reader's corner stays empty.
+        boolean trial = Demo.is(this, Reading.uri(this)) && Demo.voice(this) > Cast.COUNT;
+        readerBox.setVisibility(trial ? View.INVISIBLE : View.VISIBLE);
         if (narrator != shownReader) {
             shownReader = narrator;
             Ui.setFace(readerFace, narrator);
