@@ -2,7 +2,7 @@
 
 Usage: python3 make_voice_module.py <voice dir> <full decoder .onnx> <license dir> <out dir>
 The voice dir holds the speech model as the app reads it (widened graphs, tokenizer tables).
-Writes hora-voice-ru-1.zip and hora-decoder-full-1.zip, and prints size and checksum of each."""
+Writes the voice module and the full decoder module, and prints size and checksum of each."""
 import sys, os, json, zipfile, hashlib
 
 voice, full, lic, out = sys.argv[1:5]

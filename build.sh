@@ -1,6 +1,6 @@
 #!/bin/sh
 # Builds and signs the APK without an IDE. The five voice samples go to assets/voice, native libraries to lib/;
-# the speech model itself is a separate pack the app fetches (see tools/make_voice_module.py).
+# the speech model itself is a separate pack the app fetches, made by the voice module tool.
 set -e
 AJ=${ANDROID_JAR:?set ANDROID_JAR to a platform jar, API 34 or newer}
 KS=${KEYSTORE:?set KEYSTORE}; KA=${KEY_ALIAS:?set KEY_ALIAS}
