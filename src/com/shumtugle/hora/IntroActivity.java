@@ -110,7 +110,7 @@ public final class IntroActivity extends Activity {
             return;
         }
         String said = SpeechLanguage.resources(this).getString(R.string.intro_speech, Cast.name(this, voice));
-        VoiceService.speak(this, said, voice);
+        VoiceService.speak(this, said, Beta.voice(this, Cast.TALK, voice));
         showSpeaking(true);
     }
 

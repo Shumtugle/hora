@@ -122,7 +122,7 @@ public final class MainActivity extends Activity {
         spoken.setText(Ui.plain(phrase));
         shown = phrase;
         card = false;
-        VoiceService.speak(this, phrase, voice);
+        VoiceService.speak(this, phrase, Beta.voice(this, Cast.TALK, voice));
     }
 
     private void askTime() {
@@ -364,10 +364,10 @@ public final class MainActivity extends Activity {
         if (card || shown == null) {
             TapTalk.Reply r = TapTalk.next(this, voice);
             if (r != null) {
-                VoiceService.speak(this, r.text, voice, r.flat ? TapTalk.FLAT_PACE : 1f);
+                VoiceService.speak(this, r.text, Beta.voice(this, Cast.TALK, voice), r.flat ? TapTalk.FLAT_PACE : 1f);
             }
         } else {
-            VoiceService.speak(this, shown, voice);
+            VoiceService.speak(this, shown, Beta.voice(this, Cast.TALK, voice));
         }
     }
 

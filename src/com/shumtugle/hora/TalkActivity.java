@@ -713,7 +713,7 @@ public final class TalkActivity extends Activity {
                                 source == null ? "" : getString(R.string.wiki_source, source.title));
                         l.link = source == null ? null : source.link;
                         add(l);
-                        VoiceService.speak(TalkActivity.this, text, v);
+                        VoiceService.speak(TalkActivity.this, text, Beta.voice(TalkActivity.this, Cast.TALK, v));
                     }
                 });
             }
@@ -915,7 +915,7 @@ public final class TalkActivity extends Activity {
                         Line done = new Line(false, getString(R.string.talk_saved, shownTitle), name);
                         done.file = file.toString();
                         add(done);
-                        VoiceService.speak(TalkActivity.this, done.text, voice);
+                        VoiceService.speak(TalkActivity.this, done.text, Beta.voice(TalkActivity.this, Cast.TALK, voice));
                     }
                 });
             }
@@ -990,7 +990,7 @@ public final class TalkActivity extends Activity {
 
     private void answer(String text, String trace) {
         add(new Line(false, Ui.plain(text).toString(), trace));
-        VoiceService.speak(this, text, voice);
+        VoiceService.speak(this, text, Beta.voice(this, Cast.TALK, voice));
     }
 
     /** Says what is missing and offers to fetch it, on the line itself. */
@@ -998,7 +998,7 @@ public final class TalkActivity extends Activity {
         Line l = new Line(false, Ui.plain(text).toString(), "");
         l.needsModel = true;
         add(l);
-        VoiceService.speak(this, text, voice);
+        VoiceService.speak(this, text, Beta.voice(this, Cast.TALK, voice));
     }
 
     private void add(Line l) {
@@ -1083,7 +1083,7 @@ public final class TalkActivity extends Activity {
             t.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    VoiceService.speak(TalkActivity.this, said, voice);
+                    VoiceService.speak(TalkActivity.this, said, Beta.voice(TalkActivity.this, Cast.TALK, voice));
                 }
             });
         }

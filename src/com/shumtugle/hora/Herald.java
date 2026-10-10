@@ -477,7 +477,7 @@ public final class Herald extends NotificationListenerService {
         int rate = voice.sampleRate();
         float speed = Prefs.speedShared(this);
         int pauseMs = Prefs.pauseMsShared(this);
-        int reader = Prefs.roleShared(this, Cast.HERALD);
+        int reader = Beta.voice(this, Cast.HERALD, Prefs.roleShared(this, Cast.HERALD));
         AudioDeviceInfo ear = Earpiece.find(audio);
         if (ear == null) {
             return false;

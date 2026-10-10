@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /** Reading settings: pauses, pronunciation, the dictionary, and "About". Voices live in the workshop, roles in the book screen. */
 public final class SettingsActivity extends Activity {
@@ -234,21 +235,39 @@ public final class SettingsActivity extends Activity {
         });
         list.addView(demo);
         list.addView(rule());
-        // Shown only when the trial samples were put into Hora's folder by hand.
-        beta = new LinearLayout(this);
-        beta.setOrientation(LinearLayout.VERTICAL);
-        beta.setVisibility(View.GONE);
-        View trial = row(getString(R.string.beta_title), "\u203a");
-        trial.setOnClickListener(new View.OnClickListener() {
+        // Seven touches on the build number open the developer room, as on the phone itself.
+        View build = row(getString(R.string.build), buildLabel());
+        build.setOnClickListener(new View.OnClickListener() {
+            private int taps;
+            private long last;
+
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(SettingsActivity.this, BetaActivity.class));
+                long now = System.currentTimeMillis();
+                taps = now - last < 3000 ? taps + 1 : 1;
+                last = now;
+                if (Beta.open(SettingsActivity.this)) {
+                    if (taps >= 3) {
+                        Toast.makeText(SettingsActivity.this, R.string.dev_already, Toast.LENGTH_SHORT).show();
+                    }
+                    return;
+                }
+                if (taps >= 7) {
+                    Beta.setOpen(SettingsActivity.this, true);
+                    Diag.mark(SettingsActivity.this, "settings: developer room opened");
+                    Toast.makeText(SettingsActivity.this, R.string.dev_opened, Toast.LENGTH_SHORT).show();
+                    showDeveloper();
+                } else if (taps >= 4) {
+                    Toast.makeText(SettingsActivity.this, getString(R.string.dev_steps, 7 - taps),
+                            Toast.LENGTH_SHORT).show();
+                }
             }
         });
-        beta.addView(trial);
-        beta.addView(rule());
+        list.addView(build);
+        // The developer room: shown once opened, until closed from inside.
+        beta = new LinearLayout(this);
+        beta.setOrientation(LinearLayout.VERTICAL);
         list.addView(beta);
-        list.addView(row(getString(R.string.build), buildLabel()));
         list.addView(rule());
         View about = row(getString(R.string.about_title), "\u203a");
         about.setOnClickListener(new View.OnClickListener() {
@@ -565,21 +584,33 @@ public final class SettingsActivity extends Activity {
         if (Ui.stale(this, built)) {
             return;
         }
-        final android.content.Context app = getApplicationContext();
-        new Thread(new Runnable() {
+        showDeveloper();
+    }
+
+    private void showDeveloper() {
+        if (beta == null) {
+            return;
+        }
+        beta.removeAllViews();
+        if (!Beta.open(this)) {
+            return;
+        }
+        list.removeView(beta);
+        list.addView(beta);
+        TextView head = text(getString(R.string.dev_section), 13, 1f);
+        head.setTextColor(Palette.MUTED);
+        head.setTypeface(Palette.bodyStrong(this));
+        LinearLayout.LayoutParams hp = wrap();
+        hp.topMargin = dp(36);
+        hp.bottomMargin = dp(8);
+        beta.addView(head, hp);
+        View trial = row(getString(R.string.beta_title), "\u203a");
+        trial.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void run() {
-                Demo.take(app);
-                final boolean here = Demo.ready(app);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (beta != null) {
-                            beta.setVisibility(here ? View.VISIBLE : View.GONE);
-                        }
-                    }
-                });
+            public void onClick(View v) {
+                startActivity(new Intent(SettingsActivity.this, BetaActivity.class));
             }
-        }, "demo-look").start();
+        });
+        beta.addView(trial);
     }
 }
