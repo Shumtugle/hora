@@ -76,11 +76,11 @@ final class Voice {
     private float englishTempo = ENGLISH_TEMPO;
     /** Said before an English chunk, so the model does not swallow its first word. */
     private String englishLead = "\u2014 ";
-    private final float[] levelEn = new float[Cast.COUNT + 1];
+    private final float[] levelEn = new float[Cast.LAST + 1];
     /** Silence between a native and an English piece of one chunk. */
     private static final float LANGUAGE_GAP_S = 0.12f;
     private Breath breath;
-    private final Sample[] samples = new Sample[2 * (Cast.COUNT + 1)];
+    private final Sample[] samples = new Sample[2 * (Cast.LAST + 1)];
     /** The samples, from the app. */
     private File root;
     /** The speech model and its sound codec, from the native pack. */
@@ -438,7 +438,7 @@ final class Voice {
                 }
             }
             float before = rateOf(voice);
-            boolean known = rateCount[Math.max(1, Math.min(Cast.COUNT, voice))] >= MIN_HISTORY;
+            boolean known = rateCount[Math.max(1, Math.min(Cast.LAST, voice))] >= MIN_HISTORY;
             if (judge(best, letters, voice) == 0) {
                 learnRate(best, letters, voice);
             }
@@ -576,8 +576,8 @@ final class Voice {
     // Recent speaking rates per voice; their median is the voice's natural pace.
     private static final int HISTORY = 21;
     private static final int MIN_HISTORY = 5;
-    private final float[][] rateHistory = new float[Cast.COUNT + 1][HISTORY];
-    private final int[] rateCount = new int[Cast.COUNT + 1];
+    private final float[][] rateHistory = new float[Cast.LAST + 1][HISTORY];
+    private final int[] rateCount = new int[Cast.LAST + 1];
 
     // Tempo evening: each chunk is nudged toward the natural pace, never by
     // more than these bounds, so the correction stays inaudible.
@@ -596,7 +596,7 @@ final class Voice {
     }
 
     private float rateOf(int voice) {
-        int v = voice >= 1 && voice <= Cast.COUNT ? voice : 1;
+        int v = voice >= 1 && voice <= Cast.LAST ? voice : 1;
         int n = Math.min(rateCount[v], HISTORY);
         if (n == 0) {
             return START_RATE;
@@ -646,7 +646,7 @@ final class Voice {
         if (letters < 12 || seconds <= 0) {
             return;
         }
-        int v = voice >= 1 && voice <= Cast.COUNT ? voice : 1;
+        int v = voice >= 1 && voice <= Cast.LAST ? voice : 1;
         rateHistory[v][rateCount[v] % HISTORY] = letters / seconds;
         rateCount[v]++;
     }
@@ -892,7 +892,7 @@ final class Voice {
     /** Below this a sample counts as silence when measuring level. */
     private static final float LEVEL_FLOOR = 0.01f;
     /** Each voice's speech level, learned slowly over its chunks. */
-    private final float[] levelOf = new float[Cast.COUNT + 1];
+    private final float[] levelOf = new float[Cast.LAST + 1];
 
     /**
      * Brings a voice to the common level, so voices taking turns in a book
@@ -920,7 +920,7 @@ final class Voice {
             return audio;
         }
         float rms = (float) Math.sqrt(sum / n);
-        int v = Math.max(1, Math.min(Cast.COUNT, voice));
+        int v = Math.max(1, Math.min(Cast.LAST, voice));
         table[v] = table[v] == 0f ? rms : table[v] * 0.85f + rms * 0.15f;
         float gain = Math.max(LEVEL_MIN_GAIN, Math.min(LEVEL_MAX_GAIN, LEVEL_TARGET / table[v]));
         if (peak * gain > 0.97f) {
@@ -1102,11 +1102,20 @@ final class Voice {
 
     /** The bundled sample for a voice, with its makeup applied. */
     private Sample sample(int voice) throws IOException {
-        int v = voice >= 1 && voice <= Cast.COUNT ? voice : 1;
+        int v = voice >= 1 && voice <= Cast.LAST ? voice : 1;
         if (samples[v] == null) {
             samples[v] = new Sample();
         }
-        load(samples[v], new File(root, Cast.slot(v)),
+        // A trial voice whose sample is not on the phone reads with the first voice instead.
+        File f = v > Cast.COUNT ? Demo.sample(context, v) : new File(root, Cast.slot(v));
+        if (!f.isFile()) {
+            v = 1;
+            f = new File(root, Cast.slot(1));
+            if (samples[v] == null) {
+                samples[v] = new Sample();
+            }
+        }
+        load(samples[v], f,
                 Prefs.grimTimbreShared(context, v), Prefs.grimPitchShared(context, v), Prefs.grimAirShared(context, v));
         return samples[v];
     }

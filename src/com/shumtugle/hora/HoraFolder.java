@@ -110,6 +110,12 @@ final class HoraFolder {
         return null;
     }
 
+    /** A subfolder by name, or null when it is not there; nothing is made. */
+    static Uri findSub(Context c, String name) {
+        Uri tree = tree(c);
+        return tree == null ? null : child(c, tree, DocumentsContract.getTreeDocumentId(tree), name);
+    }
+
     /** A file by name at the top of Hora's folder, or null. */
     static Uri findRoot(Context c, String name) {
         Uri tree = tree(c);

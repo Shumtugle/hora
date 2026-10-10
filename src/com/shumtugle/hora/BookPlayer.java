@@ -357,7 +357,10 @@ public final class BookPlayer extends Service {
                     generation++;
                     Reading.setBook(BookPlayer.this, u, name);
                 }
-                Library.opened(BookPlayer.this, u, name, book, at, Prefs.roleShared(BookPlayer.this, Cast.NARRATOR));
+                // The demo is read like a book but not kept on the shelf.
+                if (!Demo.is(BookPlayer.this, u)) {
+                    Library.opened(BookPlayer.this, u, name, book, at, Prefs.roleShared(BookPlayer.this, Cast.NARRATOR));
+                }
                 publish();
                 Diag.mark(BookPlayer.this, "book: opened, " + p.size() + " paragraphs, "
                         + book.chapters.size() + " chapters, at " + at);
@@ -580,6 +583,8 @@ public final class BookPlayer extends Service {
                 final long[] firstAt = new long[] {-1};
                 // Each sentence goes to the player the moment it is made: the first one sounds
                 // while the rest of the paragraph is still being made.
+                // The demo may be read by a trial voice in place of the narrator; nothing else is.
+                final int reader = Demo.is(this, uri) ? Demo.voice(this) : 0;
                 voice.render(spoken, SpeechLanguage.locale(), Prefs.speedShared(this),
                         Prefs.pauseMsShared(this), new Voice.Cancel() {
                             @Override
@@ -602,7 +607,7 @@ public final class BookPlayer extends Service {
                                     }
                                 }
                             }
-                        }, quick);
+                        }, quick, reader);
                 long spent = SystemClock.elapsedRealtime() - t0;
                 Diag.log(this, String.format(Locale.ROOT,
                         "book: paragraph %d, %.1f s of speech in %.1f s (%.2fx), first sound after %.1f s, %.0f s ahead, %s",
@@ -763,7 +768,9 @@ public final class BookPlayer extends Service {
         }
         int i = Math.max(0, Math.min(p.size() - 1, playIndex));
         Reading.set(this, uri, title, i, p.size(), p.get(i), playing);
-        Library.progress(this, uri, i, Prefs.roleShared(this, Cast.NARRATOR));
+        if (!Demo.is(this, uri)) {
+            Library.progress(this, uri, i, Prefs.roleShared(this, Cast.NARRATOR));
+        }
         NotificationManager nm = getSystemService(NotificationManager.class);
         nm.notify(NOTE, note());
         if (!playing && !bedOnly) {

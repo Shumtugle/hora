@@ -63,6 +63,20 @@ public final class SettingsActivity extends Activity {
         });
         list.addView(langs);
         list.addView(rule());
+        // Shown only when the trial samples were put into Hora's folder by hand.
+        beta = new LinearLayout(this);
+        beta.setOrientation(LinearLayout.VERTICAL);
+        beta.setVisibility(View.GONE);
+        View trial = row(getString(R.string.beta_title), "\u203a");
+        trial.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(SettingsActivity.this, BetaActivity.class));
+            }
+        });
+        beta.addView(trial);
+        beta.addView(rule());
+        list.addView(beta);
         String where = Weather.placeName(this);
         View place = row(getString(R.string.place_title), where.isEmpty()
                 ? (Weather.hasPlace(this) ? getString(R.string.place_here_short) : "\u203a") : where);
@@ -533,9 +547,29 @@ public final class SettingsActivity extends Activity {
         }
     }
 
+    private LinearLayout beta;
+
     @Override
     protected void onResume() {
         super.onResume();
-        Ui.stale(this, built);
+        if (Ui.stale(this, built)) {
+            return;
+        }
+        final android.content.Context app = getApplicationContext();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Demo.take(app);
+                final boolean here = Demo.ready(app);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (beta != null) {
+                            beta.setVisibility(here ? View.VISIBLE : View.GONE);
+                        }
+                    }
+                });
+            }
+        }, "demo-look").start();
     }
 }

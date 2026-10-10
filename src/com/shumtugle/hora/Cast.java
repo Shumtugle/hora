@@ -11,6 +11,14 @@ import java.io.File;
  */
 final class Cast {
     static final int COUNT = 5;
+    /**
+     * Two trial voices outside the cast: no face, no name, no roles. They read only
+     * the built-in demo, and only when their samples were put on the phone by hand.
+     */
+    static final int BETA_F = COUNT + 1;
+    static final int BETA_M = COUNT + 2;
+    /** The highest voice number, trial voices included. */
+    static final int LAST = BETA_M;
     /** Roles: who reads outside dialogue, and the two sides of a dialogue. */
     static final int NARRATOR = 0;
     static final int SPEAKER_A = 1;
