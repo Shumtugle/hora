@@ -15,7 +15,7 @@ sp = spm.SentencePieceProcessor(model_file=M + "tokenizer.model"); n = sp.get_pi
 json.dump({sp.id_to_piece(i): i for i in range(n)}, open(t + "/vocab.json", "w"), ensure_ascii=False)
 json.dump({sp.id_to_piece(i): sp.get_score(i) for i in range(n)}, open(t + "/token_scores.json", "w"), ensure_ascii=False)
 # Reading settings travel with the pack: tempo heard as the same person, a lead-in that keeps the first word.
-json.dump({"language": "en", "version": 1, "tempo": 0.85, "lead": "\u2014 "}, open(t + "/pack.json", "w"))
+json.dump({"language": "en", "version": 1, "tempo": 0.75, "lead": "\u2014 "}, open(t + "/pack.json", "w"))
 lic = open(t + "/MODEL_LICENSE.txt").read()
 lic += "\n\nChanges for this pack: weights quantized to int8, state inputs and outputs widened to float32.\n"
 open(t + "/LICENSE.txt", "w").write(lic)

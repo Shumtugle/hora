@@ -67,8 +67,12 @@ final class Voice {
     /** The English model, made when English is first heard; null while there is none. */
     private OfflineTts english;
     private boolean englishTried;
-    /** The pack's own tempo for English: the same person, a little slower than in the native language. */
-    private float englishTempo = 0.85f;
+    /**
+     * Tempo for English: the same person, clearly slower than in the native language,
+     * chosen by ear over the pack's own suggestion, which installed packs still carry.
+     */
+    private static final float ENGLISH_TEMPO = 0.75f;
+    private float englishTempo = ENGLISH_TEMPO;
     /** Said before an English chunk, so the model does not swallow its first word. */
     private String englishLead = "\u2014 ";
     private final float[] levelEn = new float[Cast.COUNT + 1];
@@ -217,7 +221,6 @@ final class Voice {
         try {
             File en = LanguagePack.dir(context, LanguagePack.ENGLISH);
             org.json.JSONObject set = LanguagePack.settings(context, LanguagePack.ENGLISH);
-            englishTempo = (float) set.optDouble("tempo", englishTempo);
             englishLead = set.optString("lead", englishLead);
             OfflineTtsConfig config = new OfflineTtsConfig();
             config.model.numThreads = THREADS;
@@ -460,7 +463,7 @@ final class Voice {
     /**
      * English read by the English model with this voice's own sample: a light
      * accent is expected and accepted. Slower than the native pace by the
-     * pack's tempo, and brought to its own level, since this model speaks louder.
+     * English tempo, and brought to its own level, since this model speaks louder.
      */
     private float[] englishPiece(String text, float speed, int voice) {
         Sample use;
