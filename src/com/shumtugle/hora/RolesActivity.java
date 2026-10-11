@@ -33,7 +33,7 @@ public final class RolesActivity extends Activity {
 
     private TextView sample;
     private final TextView[] chosen = new TextView[ROLES.length];
-    private final ImageView[][] faces = new ImageView[ROLES.length][Cast.COUNT + 1];
+    private final ImageView[][] faces = new ImageView[ROLES.length][Cast.LAST + 1];
 
     @Override
     protected void onCreate(Bundle state) {
@@ -128,7 +128,7 @@ public final class RolesActivity extends Activity {
         line.addView(chosen[i]);
         box.addView(line, Ui.lp(Ui.MATCH, Ui.WRAP));
         LinearLayout faceRow = Ui.row(this);
-        for (int place = 0; place < Cast.COUNT; place++) {
+        for (int place = 0; place < Cast.size(this); place++) {
             final int v = Cast.at(place);
             final int voice = v;
             ImageView f = Ui.portrait(this, v);
@@ -143,9 +143,11 @@ public final class RolesActivity extends Activity {
                 }
             });
             faces[i][v] = f;
-            LinearLayout.LayoutParams fp = Ui.lp(dp(54), dp(54));
-            if (v > 1) {
-                fp.leftMargin = dp(8);
+            // Seven faces fit a row only a little smaller than five.
+            int side = Cast.size(this) > Cast.COUNT ? 44 : 54;
+            LinearLayout.LayoutParams fp = Ui.lp(dp(side), dp(side));
+            if (place > 0) {
+                fp.leftMargin = dp(side == 54 ? 8 : 6);
             }
             faceRow.addView(f, fp);
         }
@@ -165,8 +167,12 @@ public final class RolesActivity extends Activity {
             // The dialogue switch governs only the two speakers.
             boolean active = ROLES[i] == Cast.NARRATOR || ROLES[i] == Cast.HERALD || ROLES[i] == Cast.TALK || dialogue;
             chosen[i].setAlpha(active ? 1f : 0.4f);
-            for (int w = 1; w <= Cast.COUNT; w++) {
+            for (int w = 1; w < faces[i].length; w++) {
                 ImageView f = faces[i][w];
+                if (f == null) {
+                    // Built before the trial voices arrived: those faces appear on the next visit.
+                    continue;
+                }
                 boolean on = w == v;
                 f.setBackground(Ui.oval(Palette.BG, on ? Palette.voice(w) : Color.TRANSPARENT, 3, this));
                 f.setAlpha(on ? (active ? 1f : 0.5f) : DIMMED * (active ? 1f : 0.6f));

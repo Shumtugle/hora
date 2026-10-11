@@ -148,7 +148,7 @@ final class Demo {
         return c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).getInt("samples", SAMPLES_NONE);
     }
 
-    static int take(Context c) {
+    static synchronized int take(Context c) {
         if (HoraFolder.tree(c) == null) {
             return samples(c);
         }

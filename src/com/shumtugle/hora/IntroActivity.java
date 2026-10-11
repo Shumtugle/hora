@@ -36,7 +36,7 @@ public final class IntroActivity extends Activity {
     private TextView name;
     private TextView lead;
     private TextView listen;
-    private final ImageView[] dots = new ImageView[Cast.COUNT];
+    private ImageView[] dots = new ImageView[0];
     private View heraldWay;
     private View bookWay;
     private View workshopWay;
@@ -110,7 +110,7 @@ public final class IntroActivity extends Activity {
             return;
         }
         String said = SpeechLanguage.resources(this).getString(R.string.intro_speech, Cast.name(this, voice));
-        VoiceService.speak(this, said, Beta.voice(this, Cast.TALK, voice));
+        VoiceService.speak(this, said, voice);
         showSpeaking(true);
     }
 
@@ -137,12 +137,12 @@ public final class IntroActivity extends Activity {
         ring.setBackground(Ui.oval(Color.TRANSPARENT, Palette.voice(v), 2, this));
         for (int i = 0; i < dots.length; i++) {
             boolean on = i + 1 == v;
-            int size = dp(on ? 36 : 26);
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(size, size);
+            // Every face keeps the same slot, so choosing one never moves the others.
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(36), dp(36));
             p.leftMargin = dp(7);
             p.rightMargin = dp(7);
             dots[i].setLayoutParams(p);
-            int pad = on ? dp(3) : 0;
+            int pad = on ? dp(3) : dp(5);
             dots[i].setPadding(pad, pad, pad, pad);
             dots[i].setBackground(on ? Ui.oval(Palette.BG, Palette.voice(i + 1), 2, this) : null);
             dots[i].setAlpha(on ? 1f : 0.55f);
@@ -230,6 +230,7 @@ public final class IntroActivity extends Activity {
 
         LinearLayout troupe = Ui.row(this);
         troupe.setGravity(Gravity.CENTER);
+        dots = new ImageView[Cast.size(this)];
         for (int i = 0; i < dots.length; i++) {
             final int v = i + 1;
             dots[i] = Ui.portrait(this, v);

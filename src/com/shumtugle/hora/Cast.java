@@ -12,8 +12,8 @@ import java.io.File;
 final class Cast {
     static final int COUNT = 5;
     /**
-     * Two trial voices outside the cast: no face, no name, no roles. They read only
-     * the built-in demo, and only when their samples were put on the phone by hand.
+     * Two trial voices: faces, scenes and names like the cast's, and the same roles.
+     * They stand in the row only when their samples were put on the phone by hand.
      */
     static final int BETA_F = COUNT + 1;
     static final int BETA_M = COUNT + 2;
@@ -37,9 +37,6 @@ final class Cast {
     }
 
     static String name(Context c, int voice) {
-        if (voice == BETA_F || voice == BETA_M) {
-            return c.getString(voice == BETA_F ? R.string.beta_female : R.string.beta_male);
-        }
         String own = Prefs.voiceName(c, voice);
         if (!own.isEmpty()) {
             return own;
@@ -69,7 +66,7 @@ final class Cast {
     static final int HOST = 1;
 
     static boolean renamable(int voice) {
-        return voice == RENAMABLE || voice == HOST;
+        return voice == RENAMABLE || voice == HOST || voice == BETA_F || voice == BETA_M;
     }
 
     /**
@@ -77,11 +74,24 @@ final class Cast {
      * female voice, the main male one, then the rest. Numbers stay what they
      * were, so samples, portraits and saved choices keep their places.
      */
-    private static final int[] ORDER = {1, 5, 2, 4, 3};
+    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_M};
 
     /** The voice standing at a place in the row, counted from 0. */
     static int at(int place) {
-        return ORDER[Math.max(0, Math.min(COUNT - 1, place))];
+        return ORDER[Math.max(0, Math.min(LAST - 1, place))];
+    }
+
+    /**
+     * How many voices stand in the row now: the cast, and the two trial voices
+     * when their samples are on the phone. They then have every right the cast has.
+     */
+    static int size(Context c) {
+        return Demo.ready(c) ? LAST : COUNT;
+    }
+
+    /** Whether a voice can be chosen now. */
+    static boolean available(Context c, int voice) {
+        return voice >= 1 && voice <= size(c);
     }
 
     /** Where a voice stands in the row, counted from 0. */
@@ -96,11 +106,11 @@ final class Cast {
 
     private static final int[] PORTRAITS = {
         R.drawable.portrait_1, R.drawable.portrait_2, R.drawable.portrait_3,
-        R.drawable.portrait_4, R.drawable.portrait_5,
+        R.drawable.portrait_4, R.drawable.portrait_5, R.drawable.portrait_6, R.drawable.portrait_7,
     };
 
     static int portrait(int voice) {
-        return PORTRAITS[Math.max(1, Math.min(COUNT, voice)) - 1];
+        return PORTRAITS[Math.max(1, Math.min(LAST, voice)) - 1];
     }
 
     /** What a voice is, as a noun: the word that follows its name when it introduces itself. */

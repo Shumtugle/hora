@@ -51,7 +51,7 @@ public final class HoraTtsService extends TextToSpeechService {
         java.util.List<String> names = new java.util.ArrayList<String>();
         names.add(VOICE_MAIN);
         names.add(VOICE_ALT);
-        for (int v = 1; v <= Cast.COUNT; v++) {
+        for (int v = 1; v <= Cast.size(this); v++) {
             names.add(NUMBERED + v);
         }
         for (String name : names) {
@@ -64,7 +64,7 @@ public final class HoraTtsService extends TextToSpeechService {
             java.util.List<String> enNames = new java.util.ArrayList<String>();
             enNames.add(EN_MAIN);
             enNames.add(EN_ALT);
-            for (int v = 1; v <= Cast.COUNT; v++) {
+            for (int v = 1; v <= Cast.size(this); v++) {
                 enNames.add(EN_NUMBERED + v);
             }
             for (String name : enNames) {
@@ -79,12 +79,12 @@ public final class HoraTtsService extends TextToSpeechService {
     @Override
     public int onIsValidVoiceName(String name) {
         if (englishVoice(name)) {
-            return englishReady() && (EN_MAIN.equals(name) || EN_ALT.equals(name) || numbered(name) > 0)
+            return englishReady() && (EN_MAIN.equals(name) || EN_ALT.equals(name) || Cast.available(this, numbered(name)))
                     ? TextToSpeech.SUCCESS : TextToSpeech.ERROR;
         }
         return VOICE_MAIN.equals(name) || VOICE_ALT.equals(name)
                 || LEGACY_FIRST.equals(name) || LEGACY_SECOND.equals(name)
-                || numbered(name) > 0 ? TextToSpeech.SUCCESS : TextToSpeech.ERROR;
+                || Cast.available(this, numbered(name)) ? TextToSpeech.SUCCESS : TextToSpeech.ERROR;
     }
 
     @Override
@@ -215,6 +215,9 @@ public final class HoraTtsService extends TextToSpeechService {
         // Settings decide; "alt" lends the narrator part to the first dialogue voice,
         // and a numbered name pins that voice as the narrator.
         int narrator = numbered(asked);
+        if (!Cast.available(this, narrator)) {
+            narrator = 0;
+        }
         if (VOICE_ALT.equals(asked) || EN_ALT.equals(asked) || LEGACY_SECOND.equals(asked)) {
             narrator = Prefs.roleShared(this, Cast.SPEAKER_A);
         }
@@ -289,7 +292,7 @@ public final class HoraTtsService extends TextToSpeechService {
         }
         try {
             int v = Integer.parseInt(name.substring(prefix.length()));
-            return v >= 1 && v <= Cast.COUNT ? v : 0;
+            return v >= 1 && v <= Cast.LAST ? v : 0;
         } catch (NumberFormatException e) {
             return 0;
         }

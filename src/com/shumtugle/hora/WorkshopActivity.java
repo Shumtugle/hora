@@ -42,7 +42,7 @@ public final class WorkshopActivity extends Activity {
     private TextView summary;
     private FrameLayout page;
     private final TextView[] tabs = new TextView[TAB_LABELS.length];
-    private final View[] cards = new View[Cast.COUNT + 1];
+    private final View[] cards = new View[Cast.LAST + 1];
     private AnimatorSet breath;
     private TextView listen;
     private boolean speaking;
@@ -67,7 +67,7 @@ public final class WorkshopActivity extends Activity {
         super.onCreate(state);
         built = Ui.prepare(this);
         int asked = getIntent().getIntExtra(EXTRA_VOICE, 0);
-        cabinet = asked >= 1 && asked <= Cast.COUNT;
+        cabinet = asked >= 1 && Cast.available(this, asked);
         voice = cabinet ? asked : Prefs.homeVoice(this);
         int first = cabinet ? TAB_TIMBRE : TAB_VOICE;
         tab = state == null ? first : state.getInt(STATE_TAB, first);
@@ -249,7 +249,7 @@ public final class WorkshopActivity extends Activity {
         photo.setContentDescription(Cast.name(this, voice));
         name.setText(Cast.name(this, voice));
         ring.setBackground(Ui.oval(Color.TRANSPARENT, Palette.voice(voice), 2, this));
-        for (int v = 1; v <= Cast.COUNT; v++) {
+        for (int v = 1; v <= Cast.size(this); v++) {
             if (cards[v] != null) {
                 paintCard(v);
             }
@@ -310,7 +310,7 @@ public final class WorkshopActivity extends Activity {
     private View voicesPage() {
         LinearLayout grid = Ui.column(this);
         LinearLayout line = null;
-        for (int place = 0; place < Cast.COUNT; place++) {
+        for (int place = 0; place < Cast.size(this); place++) {
             if (place % 2 == 0) {
                 line = Ui.row(this);
                 line.setGravity(Gravity.TOP);
@@ -326,7 +326,7 @@ public final class WorkshopActivity extends Activity {
             }
             line.addView(card(Cast.at(place)), cp);
         }
-        if (Cast.COUNT % 2 == 1) {
+        if (Cast.size(this) % 2 == 1) {
             // Keeps the last card half wide, like the others.
             line.addView(new View(this), leftGap());
         }

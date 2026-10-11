@@ -339,7 +339,7 @@ final class Voice {
             return Prefs.roleShared(context, role);
         }
         return narratorOverride > 0 ? narratorOverride
-                : Beta.voice(context, Cast.NARRATOR, Prefs.roleShared(context, Cast.NARRATOR));
+                : Prefs.roleShared(context, Cast.NARRATOR);
     }
 
     /**

@@ -360,14 +360,14 @@ final class Export {
             if (at < 0) {
                 return NOTHING_LEFT;
             }
-            JSONObject job = q.optJSONObject(at);
-            String uri = job.optString("uri");
-            int reader = job.optInt("reader", 1);
-            if (reader > Cast.COUNT && !Demo.sample(c, reader).isFile()) {
-                // A trial voice whose sample is gone: wait for it rather than read with someone else.
-                Diag.mark(c, "export: the trial sample is not here, later");
+            at = ready(c, q, at);
+            if (at < 0) {
+                // Only books for a trial voice whose sample is gone are left: they wait for it.
+                Diag.markOnce(c, "export-trial", "export: the trial sample is not here, later");
                 return LATER_MS;
             }
+            JSONObject job = q.optJSONObject(at);
+            String uri = job.optString("uri");
             Diag.mark(c, "export: working, chapter " + (job.optInt("chapter") + 1) + " of " + job.optInt("chapters")
                     + ", paragraph " + Math.max(0, job.optInt("paragraph")));
             try {
@@ -413,6 +413,25 @@ final class Export {
     private static int next(JSONArray q) {
         for (int i = 0; i < q.length(); i++) {
             if (!q.optJSONObject(i).optBoolean("failed")) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * The first job from the given one on whose reader is here. A book for a trial
+     * voice whose sample is gone waits for it rather than being read by someone
+     * else, and does not hold up the books behind it.
+     */
+    private static int ready(Context c, JSONArray q, int from) {
+        for (int i = from; i < q.length(); i++) {
+            JSONObject j = q.optJSONObject(i);
+            if (j.optBoolean("failed")) {
+                continue;
+            }
+            int reader = j.optInt("reader", 1);
+            if (reader <= Cast.COUNT || Demo.sample(c, reader).isFile()) {
                 return i;
             }
         }

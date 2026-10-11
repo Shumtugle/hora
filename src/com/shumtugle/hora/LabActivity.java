@@ -32,8 +32,8 @@ public final class LabActivity extends Activity {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private int built;
     private int voice;
-    private final ImageView[] faces = new ImageView[Cast.COUNT];
-    private final TextView[] names = new TextView[Cast.COUNT];
+    private final ImageView[] faces = new ImageView[Cast.LAST];
+    private final TextView[] names = new TextView[Cast.LAST];
     private EditText text;
     private TextView info;
     private TextView ownTitle;
@@ -48,7 +48,7 @@ public final class LabActivity extends Activity {
         super.onCreate(state);
         built = Ui.prepare(this);
         voice = getIntent().getIntExtra(EXTRA_VOICE, Prefs.role(this, Cast.NARRATOR));
-        if (voice < 1 || voice > Cast.COUNT) {
+        if (!Cast.available(this, voice)) {
             voice = 1;
         }
         build();
@@ -80,7 +80,7 @@ public final class LabActivity extends Activity {
 
         LinearLayout row = Ui.row(this);
         row.setGravity(Gravity.BOTTOM);
-        for (int i = 0; i < Cast.COUNT; i++) {
+        for (int i = 0; i < Cast.size(this); i++) {
             final int v = Cast.at(i);
             LinearLayout cell = Ui.column(this);
             cell.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -451,7 +451,7 @@ public final class LabActivity extends Activity {
 
     private void choose(final int v) {
         voice = v;
-        for (int i = 0; i < Cast.COUNT; i++) {
+        for (int i = 0; i < faces.length && faces[i] != null; i++) {
             boolean on = Cast.at(i) == v;
             int size = dp(on ? 52 : 44);
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(size, size);

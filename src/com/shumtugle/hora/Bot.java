@@ -266,7 +266,7 @@ final class Bot {
             }
             case "voice":
             case "other_voice": {
-                int v = hit.intent.equals("other_voice") ? voice % Cast.COUNT + 1 : voiceByName(c, hit.slot("q"));
+                int v = hit.intent.equals("other_voice") ? voice % Cast.size(c) + 1 : voiceByName(c, hit.slot("q"));
                 if (v <= 0) {
                     return new Answer(SAY, line(r, "no_voice", "names", troupe(c, r)), voice);
                 }
@@ -282,7 +282,7 @@ final class Bot {
 
     private static java.util.List<String> ownNames(Context c) {
         java.util.List<String> out = new java.util.ArrayList<String>();
-        for (int v = 1; v <= Cast.COUNT; v++) {
+        for (int v = 1; v <= Cast.size(c); v++) {
             String own = Prefs.voiceName(c, v);
             if (!own.isEmpty()) {
                 out.add(own);
@@ -295,9 +295,9 @@ final class Bot {
     /** The five names as they stand now, in the troupe's order: "A, B, C, D and E". */
     private static String troupe(Context c, Resources r) {
         StringBuilder out = new StringBuilder();
-        for (int i = 0; i < Cast.COUNT; i++) {
+        for (int i = 0; i < Cast.size(c); i++) {
             if (i > 0) {
-                out.append(i == Cast.COUNT - 1 ? " " + r.getString(R.string.bot_and) + " " : ", ");
+                out.append(i == Cast.size(c) - 1 ? " " + r.getString(R.string.bot_and) + " " : ", ");
             }
             out.append(Cast.name(c, Cast.at(i)));
         }
@@ -358,7 +358,7 @@ final class Bot {
         if (s.length() < 3) {
             return 0;
         }
-        for (int v = 1; v <= Cast.COUNT; v++) {
+        for (int v = 1; v <= Cast.size(c); v++) {
             String name = Intents.fold(Cast.name(c, v));
             int k = Math.min(4, Math.min(name.length(), s.length()));
             if (s.regionMatches(0, name, 0, k)) {

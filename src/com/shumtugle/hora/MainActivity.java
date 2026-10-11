@@ -37,7 +37,7 @@ public final class MainActivity extends Activity {
     private boolean card = true;
 
     private int voice;
-    private final ImageView[] dots = new ImageView[Cast.COUNT];
+    private ImageView[] dots = new ImageView[0];
     private TextView hint;
     private View glow;
     private View ring;
@@ -90,6 +90,11 @@ public final class MainActivity extends Activity {
         if (Ui.stale(this, built)) {
             return;
         }
+        if (dots.length > 0 && dots.length != Cast.size(this)) {
+            // The trial voices came or went while the screen was away: the row is laid out anew.
+            recreate();
+            return;
+        }
         // After a restore from another phone: what this phone still has to give.
         RestoreActivity.checkIfPending(this);
         // The workshop, or the title page, may have changed the voice.
@@ -122,7 +127,7 @@ public final class MainActivity extends Activity {
         spoken.setText(Ui.plain(phrase));
         shown = phrase;
         card = false;
-        VoiceService.speak(this, phrase, Beta.voice(this, Cast.TALK, voice));
+        VoiceService.speak(this, phrase, voice);
     }
 
     private void askTime() {
@@ -360,10 +365,10 @@ public final class MainActivity extends Activity {
         if (card || shown == null) {
             TapTalk.Reply r = TapTalk.next(this, voice);
             if (r != null) {
-                VoiceService.speak(this, r.text, Beta.voice(this, Cast.TALK, voice), r.flat ? TapTalk.FLAT_PACE : 1f);
+                VoiceService.speak(this, r.text, voice, r.flat ? TapTalk.FLAT_PACE : 1f);
             }
         } else {
-            VoiceService.speak(this, shown, Beta.voice(this, Cast.TALK, voice));
+            VoiceService.speak(this, shown, voice);
         }
     }
 
@@ -455,8 +460,9 @@ public final class MainActivity extends Activity {
                         if (a == null || Math.abs(vx) < Math.abs(vy) || Math.abs(b.getX() - a.getX()) < dp(40)) {
                             return false;
                         }
-                        int step = vx < 0 ? 1 : Cast.COUNT - 1;
-                        choose(Cast.at((Cast.place(voice) + step) % Cast.COUNT));
+                        int n = dots.length;
+                        int step = vx < 0 ? 1 : n - 1;
+                        choose(Cast.at((Cast.place(voice) + step) % n));
                         return true;
                     }
                 });
@@ -498,6 +504,7 @@ public final class MainActivity extends Activity {
         // The whole troupe as a row of small faces: the one speaking larger, in its ring.
         LinearLayout troupe = Ui.row(this);
         troupe.setGravity(Gravity.CENTER);
+        dots = new ImageView[Cast.size(this)];
         for (int i = 0; i < dots.length; i++) {
             final int v = Cast.at(i);
             dots[i] = Ui.portrait(this, v);

@@ -44,6 +44,14 @@ public final class HoraApp extends Application {
         if (getPackageName().equals(processName())) {
             Export.schedule(this);
             watchForeground();
+            // Trial samples put in the folder by hand join the cast at the next start.
+            final android.content.Context app = this;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Demo.take(app);
+                }
+            }, "trial-samples").start();
         }
         for (String name : new String[] {"settings", "hora", "weather"}) {
             getSharedPreferences(name, MODE_PRIVATE).registerOnSharedPreferenceChangeListener(changed);

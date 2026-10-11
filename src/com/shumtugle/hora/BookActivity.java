@@ -378,9 +378,10 @@ public final class BookActivity extends Activity {
         int total = Reading.total(this);
         where.setText(total <= 0 ? getString(R.string.book_opening) : place(total));
         int narrator = Prefs.role(this, Cast.NARRATOR);
-        // A trial voice reading the demo has no face and no name: the reader's corner stays empty.
-        boolean trial = Demo.is(this, Reading.uri(this)) && Demo.voice(this) > Cast.COUNT;
-        readerBox.setVisibility(trial ? View.INVISIBLE : View.VISIBLE);
+        // The demo may be read by a voice of its own choosing: its face is shown, not the narrator's.
+        if (Demo.is(this, Reading.uri(this)) && Demo.voice(this) > 0) {
+            narrator = Demo.voice(this);
+        }
         if (narrator != shownReader) {
             shownReader = narrator;
             Ui.setFace(readerFace, narrator);

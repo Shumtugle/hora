@@ -197,21 +197,22 @@ final class Prefs {
 
     /** Voice number for a role: the book, the two sides of a dialogue, notifications, the talk. */
     static int role(Context c, int role) {
-        return readRole(sp(c), role);
+        return readRole(c, sp(c), role);
     }
 
     @SuppressWarnings("deprecation")
     static int roleShared(Context c, int role) {
-        return readRole(c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS), role);
+        return readRole(c, c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS), role);
     }
 
-    private static int readRole(SharedPreferences p, int role) {
+    private static int readRole(Context c, SharedPreferences p, int role) {
         int def = ROLE_DEFAULT[role];
         if (role == Cast.NARRATOR && p.getBoolean(MAIN_SECOND, false)) {
             def = 5;
         }
         int v = p.getInt(ROLE_PREFIX + role, def);
-        return v >= 1 && v <= Cast.COUNT ? v : ROLE_DEFAULT[role];
+        // A trial voice whose samples are gone gives the role back to its usual voice.
+        return Cast.available(c, v) ? v : def;
     }
 
     static void setRole(Context c, int role, int voice) {
@@ -274,7 +275,7 @@ final class Prefs {
     /** The voice on the main screen and in the workshop. */
     static int homeVoice(Context c) {
         int v = sp(c).getInt(HOME_VOICE, 1);
-        return v >= 1 && v <= Cast.COUNT ? v : 1;
+        return Cast.available(c, v) ? v : 1;
     }
 
     static void setHomeVoice(Context c, int v) {
@@ -305,8 +306,8 @@ final class Prefs {
     // Starting makeup per voice, measured on the bench against good human readers (breathiness
     // and top band): the smooth, dark samples get a little brightness and air; the voices whose
     // samples are already breathy or rough are left as they are.
-    private static final int[] TIMBRE_DEFAULT = {0, 5, 5, 0, 5, 0};
-    private static final int[] AIR_DEFAULT = {0, 3, 3, 0, 3, 0};
+    private static final int[] TIMBRE_DEFAULT = {0, 5, 5, 0, 5, 0, 0, 0};
+    private static final int[] AIR_DEFAULT = {0, 3, 3, 0, 3, 0, 0, 0};
 
     static int defaultTimbre(int voice) {
         return voice >= 1 && voice < TIMBRE_DEFAULT.length ? TIMBRE_DEFAULT[voice] : 0;
@@ -520,15 +521,15 @@ final class Prefs {
     // Every voice reads whole sentences by default, as it does for other apps: cut into breath
     // groups, each piece lost the sentence's melody and ended as if the sentence had.
     private static final int[] BREATH_DEFAULT = {Breath.NONE, Breath.NONE, Breath.NONE,
-        Breath.NONE, Breath.NONE, Breath.NONE};
+        Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE};
 
     static int breathShared(Context c, int voice) {
-        int v = Math.max(1, Math.min(Cast.COUNT, voice));
+        int v = Math.max(1, Math.min(Cast.LAST, voice));
         int m = c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getInt(BREATH + v, BREATH_DEFAULT[v]);
         return Breath.known(m) ? m : BREATH_DEFAULT[v];
     }
 
     static void setBreath(Context c, int voice, int manner) {
-        sp(c).edit().putInt(BREATH + Math.max(1, Math.min(Cast.COUNT, voice)), manner).commit();
+        sp(c).edit().putInt(BREATH + Math.max(1, Math.min(Cast.LAST, voice)), manner).commit();
     }
 }

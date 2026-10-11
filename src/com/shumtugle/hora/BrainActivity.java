@@ -662,7 +662,7 @@ public final class BrainActivity extends Activity {
         draftLine.setVisibility(accel ? View.VISIBLE : View.GONE);
         prompts.removeAllViews();
         prompts.addView(promptRow(getString(R.string.brain_rules_title), Brain.rules(this), 0));
-        for (int place = 0; place < Cast.COUNT; place++) {
+        for (int place = 0; place < Cast.size(this); place++) {
             int v = Cast.at(place);
             prompts.addView(line());
             prompts.addView(promptRow(Cast.name(this, v), Brain.manner(this, v), v));
@@ -954,7 +954,7 @@ public final class BrainActivity extends Activity {
                             refresh();
                             stateLine.setText(getString(R.string.lab_brain_result, reply.text, woke, reply.seconds,
                                     reply.tokensPerSecond));
-                            VoiceService.speak(BrainActivity.this, reply.text, Beta.voice(BrainActivity.this, Cast.TALK, v));
+                            VoiceService.speak(BrainActivity.this, reply.text, v);
                         }
                     });
                 } catch (final Exception e) {

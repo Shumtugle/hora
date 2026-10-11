@@ -359,6 +359,8 @@
         <item>Дима</item>
         <item>Порфирий</item>
         <item>Садко</item>
+        <item>Бета-женский</item>
+        <item>Бета-мужской</item>
     </string-array>
     <string name="slow_by_pauses">Замедлять паузами, а не растяжкой</string>
     <string name="journal">Журнал</string>
@@ -842,6 +844,8 @@
         <item>помощник</item>
         <item>помощник</item>
         <item>помощник</item>
+        <item>помощница</item>
+        <item>помощник</item>
     </string-array>
     <string-array name="voice_kinds">
         <item>женский · главный</item>
@@ -849,6 +853,8 @@
         <item>мужской</item>
         <item>мужской · глубокий</item>
         <item>мужской · главный</item>
+        <item>женский · бета</item>
+        <item>мужской · бета</item>
     </string-array>
     <string name="tools">Инструменты</string>
     <string-array name="respell_untouched">
@@ -1668,6 +1674,8 @@
         <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты неторопливый, ласковый, говоришь убаюкивающе.</item>
         <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты повидал много, говоришь образно и неспешно.</item>
         <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты молодой, лёгкий и весёлый.</item>
+        <item>Ты женщина (она): глаголы о себе в прошедшем времени у тебя кончаются на -ла. Ты собранная, точная и прямая.</item>
+        <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты спокойный, внимательный и доброжелательный.</item>
     </string-array>
     <string name="brain_trial_question">Я сегодня устал.</string>
     <string name="lab_brain">Модель ИИ · проверка</string>
@@ -1843,15 +1851,8 @@
     <string name="beta_samples_wrong">Это не те записи: Hora берёт только два своих образца</string>
     <string name="beta_samples_half">Нашёлся один образец из двух</string>
     <string name="beta_samples_none">Положи beta-f.wav и beta-m.wav в папку Hora → «Образцы»</string>
-    <string name="beta_where">Где звучат</string>
+    <string name="beta_in_cast">Оба голоса стоят в ряду лиц на главном экране и берут роли, как остальные: книги, уведомления, разговор. Имя меняется карандашом.</string>
     <string name="beta_audiobook">Аудиокнига на ночь</string>
-    <string name="beta_for_books">Книги</string>
-    <string name="beta_for_herald">Уведомления</string>
-    <string name="beta_for_talk">Разговор</string>
-    <string name="beta_own">свой</string>
-    <string name="beta_female_short">бета-ж</string>
-    <string name="beta_male_short">бета-м</string>
-    <string name="beta_where_note">«Книги» — это и чтение за другие приложения. Аудиокниги всегда читают свои голоса.</string>
     <string name="beta_female">Бета-женский</string>
     <string name="beta_male">Бета-мужской</string>
     <string name="folder_samples">Образцы</string>
@@ -1950,12 +1951,16 @@
         <item>Время, погода, книга — кнопки внизу. Можно и словами.</item>
         <item>Кнопки внизу. Или пиши.</item>
         <item>Внизу время, погода и книга. Можно написать.</item>
+        <item>Время, погода и книга — внизу. Остальное можно написать.</item>
+        <item>Внизу время, погода и книга. Или напиши.</item>
     </string-array>
     <string-array name="voice_step_forward">
         <item>%1$s. Теперь отвечаю я.</item>
         <item>%1$s. Теперь говорю я.</item>
         <item>%1$s. Теперь отвечаю я.</item>
         <item>%1$s. Отвечаю я.</item>
+        <item>%1$s. Теперь отвечаю я.</item>
+        <item>%1$s. Теперь отвечаю я.</item>
         <item>%1$s. Теперь отвечаю я.</item>
     </string-array>
     <string name="lang_title">Языки</string>
@@ -2037,6 +2042,8 @@
         <item>Ты готова к работе?</item>
         <item>Ты готов к работе?</item>
         <item>Ты готов к работе?</item>
+        <item>Ты готов к работе?</item>
+        <item>Ты готова к работе?</item>
         <item>Ты готов к работе?</item>
     </string-array>
     <string name="brain_look_rules">Сейчас тебе показали картинку, и для ответа о ней правила выше меняются. Говори о том, что на ней видно сейчас, в настоящем времени, начиная со слов «На фото» или «На картинке», а не о себе. Назови главное и обстановку; если на картинке есть крупные надписи, прочитай их как есть. Если узнаёшь место или вещь точно, назови; если нет, не гадай. Два-три предложения.</string>

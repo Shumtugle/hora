@@ -53,7 +53,9 @@ final class Palette {
     private static int generation;
 
     /** One color per voice, in voice order. */
-    private static final int[] VOICE = {0xFFE0A84B, 0xFFD98A6E, 0xFF7FB0C4, 0xFFA8C08F, 0xFFB3A5E0};
+    // Ring colours, by voice number. Warm and distinct; the fourth was sage green and is caramel now.
+    private static final int[] VOICE = {0xFFE0A84B, 0xFFD98A6E, 0xFF7FB0C4, 0xFFCF9A72, 0xFFB3A5E0,
+        0xFFE58FA0, 0xFFE2C46B};
 
     private static Typeface display;
     private static Typeface body;
