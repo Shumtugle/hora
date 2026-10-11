@@ -321,7 +321,7 @@
         <item>Beta female</item>
         <item>Beta male</item>
         <item>Beta male 2</item>
-        <item>Beta neutral</item>
+        <item>Beta female 2</item>
     </string-array>
     <string name="slow_by_pauses">Slow down with pauses, not stretching</string>
     <string name="journal">Journal</string>
@@ -445,7 +445,7 @@
         <item>female · beta</item>
         <item>male · beta</item>
         <item>male · beta</item>
-        <item>neutral · beta</item>
+        <item>female · beta</item>
     </string-array>
     <string name="fonts_license">Cormorant, Manrope · OFL 1.1</string>
     <string name="tools">Tools</string>
@@ -858,12 +858,12 @@
     <string name="dev_already">Already open</string>
     <string name="dev_steps">%1$d more to open the developer section</string>
     <string name="dev_close">Close the section</string>
-    <string name="beta_in_cast">While this room is open, the four trial voices stand in the row of faces on the main screen and take roles like the others: books, notifications, talk. The name changes with the pen. Close the room, and the five voices stay.</string>
+    <string name="beta_in_cast">While this room is open, the four trial voices, two female and two male, stand in the row of faces on the main screen and take roles like the others: books, notifications, talk. The name changes with the pen. Close the room, and the five voices stay.</string>
     <string name="beta_audiobook">Audiobook overnight</string>
     <string name="beta_female">Beta female</string>
     <string name="beta_male">Beta male</string>
     <string name="beta_male2">Beta male 2</string>
-    <string name="beta_neutral">Beta neutral</string>
+    <string name="beta_female2">Beta female 2</string>
     <string name="folder_samples">Samples</string>
     <string name="record_reading_name">Reading</string>
     <string name="record_probe_name">Voice sample</string>
@@ -1057,7 +1057,7 @@
         <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>
-        <item>Ready to start?</item>
+        <item>Are you ready to work?</item>
     </string-array>
     <string name="brain_look_rules">You have just been shown a picture, and for the answer about it the rules above change. Talk about what is visible in it now, in the present tense, starting with “In the photo” or “In the picture”, not about yourself. Name the main thing and the setting; if the picture has large lettering, read it as it is. Name a place or thing only if you recognise it for sure; otherwise do not guess. Two or three sentences.</string>
     <string name="brain_wiki_rules">You have been asked about the world, and the rules above change: below is the text of the encyclopedia article “%1$s”. Answer the question from this text only, in one to three sentences, in your own words. Take dates, numbers and names from the text only. If the text has no answer, say so: “The article does not say.”</string>

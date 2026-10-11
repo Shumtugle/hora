@@ -17,9 +17,9 @@ final class Cast {
     static final int BETA_F = COUNT + 1;
     static final int BETA_M = COUNT + 2;
     static final int BETA_M2 = COUNT + 3;
-    static final int BETA_N = COUNT + 4;
+    static final int BETA_F2 = COUNT + 4;
     /** The highest voice number, trial voices included. */
-    static final int LAST = BETA_N;
+    static final int LAST = BETA_F2;
     /** Roles: who reads outside dialogue, and the two sides of a dialogue. */
     static final int NARRATOR = 0;
     static final int SPEAKER_A = 1;
@@ -75,7 +75,7 @@ final class Cast {
      * female voice, the main male one, then the rest. Numbers stay what they
      * were, so samples, portraits and saved choices keep their places.
      */
-    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_M, BETA_M2, BETA_N};
+    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_F2, BETA_M, BETA_M2};
 
     /** The voice standing at a place in the row, counted from 0. */
     static int at(int place) {

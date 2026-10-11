@@ -289,7 +289,7 @@ final class Prefs {
 
     /** Sample makeup of a voice: pitch shift in semitones. */
     static int grimPitch(Context c, int voice) {
-        return sp(c).getInt(GRIM_PITCH + voice, 0);
+        return sp(c).getInt(GRIM_PITCH + voice, defaultPitch(voice));
     }
 
     @SuppressWarnings("deprecation")
@@ -299,7 +299,7 @@ final class Prefs {
 
     @SuppressWarnings("deprecation")
     static int grimPitchShared(Context c, int voice) {
-        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getInt(GRIM_PITCH + voice, 0);
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getInt(GRIM_PITCH + voice, defaultPitch(voice));
     }
 
     /** The voice process picks it up with the next sample it reads. */
@@ -307,10 +307,16 @@ final class Prefs {
     // and top band): the smooth, dark samples get a little brightness and air; the voices whose
     // samples are already breathy or rough are left as they are.
     private static final int[] TIMBRE_DEFAULT = {0, 5, 5, 0, 5, 0, 0, 0, 0, 0};
-    private static final int[] AIR_DEFAULT = {0, 3, 3, 0, 3, 0, 0, 0, 0, 0};
+    private static final int[] AIR_DEFAULT = {0, 3, 3, 0, 3, 0, 1, 0, 0, 0};
+    /** Pitch makeup by voice: the trial voices were set by ear on the phone. */
+    private static final int[] PITCH_DEFAULT = {0, 0, 0, 0, 0, 0, 4, -1, 0, 1};
 
     static int defaultTimbre(int voice) {
         return voice >= 1 && voice < TIMBRE_DEFAULT.length ? TIMBRE_DEFAULT[voice] : 0;
+    }
+
+    static int defaultPitch(int voice) {
+        return voice >= 1 && voice < PITCH_DEFAULT.length ? PITCH_DEFAULT[voice] : 0;
     }
 
     static int defaultAir(int voice) {

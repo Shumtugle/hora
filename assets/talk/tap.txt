@@ -38,7 +38,7 @@ ru.flat.5|{name}. Помощник.
 ru.flat.6|{name}. Помощница.
 ru.flat.7|{name}. Помощник.
 ru.flat.8|{name}. Помощник.
-ru.flat.9|{name}. Голос.
+ru.flat.9|{name}. Помощница.
 
 en.time|It's {time}.
 en.date|Today is {weekday}, {month} {day}.
@@ -73,4 +73,4 @@ en.flat.5|{name}. Assistant.
 en.flat.6|{name}. Assistant.
 en.flat.7|{name}. Assistant.
 en.flat.8|{name}. Assistant.
-en.flat.9|{name}. Voice.
+en.flat.9|{name}. Assistant.

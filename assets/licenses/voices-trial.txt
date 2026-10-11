@@ -1,6 +1,6 @@
 Trial voice samples 6 to 9
 
-Four short samples, one per trial voice (6 female, 7 male, 8 male, 9 neutral),
+Four short samples, one per trial voice (6 female, 7 male, 8 male, 9 female),
 used as voice reference samples. They are trial voices: they appear only while
 the developer room of the app is open.
 
