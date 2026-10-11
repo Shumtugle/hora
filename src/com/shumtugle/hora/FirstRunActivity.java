@@ -183,7 +183,8 @@ public final class FirstRunActivity extends Activity {
         LinearLayout.LayoutParams tp = Ui.lp(Ui.MATCH, Ui.WRAP);
         tp.topMargin = dp(6);
         page.addView(title, tp);
-        TextView text = Ui.text(this, getString(TEXTS[s]), 17, Palette.INK);
+        // The notifications page names the voice that will read them, whatever it is called now.
+        TextView text = Ui.text(this, getString(TEXTS[s], Cast.name(this, Prefs.role(this, Cast.HERALD))), 17, Palette.INK);
         text.setLineSpacing(0, 1.3f);
         LinearLayout.LayoutParams xp = Ui.lp(Ui.MATCH, Ui.WRAP);
         xp.topMargin = dp(14);

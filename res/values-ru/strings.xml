@@ -357,14 +357,14 @@
     <!-- Voice names: singers and storytellers of folklore; the first two female, the rest male. -->
     <string-array name="voice_names">
         <item>Хора</item>
-        <item>Сирин</item>
+        <item>Тея</item>
         <item>Дима</item>
         <item>Порфирий</item>
-        <item>Садко</item>
-        <item>Бета-женский</item>
-        <item>Бета-мужской</item>
-        <item>Бета-мужской 2</item>
-        <item>Бета-женский 2</item>
+        <item>Касс</item>
+        <item>Никс</item>
+        <item>Марк</item>
+        <item>Северин</item>
+        <item>Клер</item>
     </string-array>
     <string name="slow_by_pauses">Замедлять паузами, а не растяжкой</string>
     <string name="journal">Журнал</string>
@@ -1507,7 +1507,7 @@
         <item>100=сто|сотн</item>
     </string-array>
     <string-array name="bot_say_help">
-        <item>Могу читать книгу: «читай», «стоп», «дальше», «назад», «где мы», «глава пять», «найди сад». Могу почитать тебе перед сном: «почитай ещё двадцать минут». Скажу время, число и погоду. И можно попросить другой голос: «пусть читает Сирин».</item>
+        <item>Могу читать книгу: «читай», «стоп», «дальше», «назад», «где мы», «глава пять», «найди сад». Могу почитать тебе перед сном: «почитай ещё двадцать минут». Скажу время, число и погоду. И можно попросить другой голос: «пусть читает Тея».</item>
     </string-array>
     <string-array name="bot_say_hello">
         <item>Здравствуй.</item>
@@ -1875,10 +1875,6 @@
     <string name="dev_close">Закрыть раздел</string>
     <string name="beta_in_cast">Пока этот раздел открыт, четыре пробных голоса — два женских и два мужских — стоят в ряду лиц на главном экране и берут роли, как остальные: книги, уведомления, разговор. Имя меняется карандашом. Закроешь раздел — останутся пятеро.</string>
     <string name="beta_audiobook">Аудиокнига на ночь</string>
-    <string name="beta_female">Бета-женский</string>
-    <string name="beta_male">Бета-мужской</string>
-    <string name="beta_male2">Бета-мужской 2</string>
-    <string name="beta_female2">Бета-женский 2</string>
     <string name="folder_samples">Образцы</string>
     <string name="record_reading_name">Чтение</string>
     <string name="record_probe_name">Проба голоса</string>
@@ -2432,7 +2428,7 @@
     <string name="first_notify_text">Чтобы останавливать чтение одним касанием и знать, когда готова аудиокнига.</string>
     <string name="first_notify_action">Разрешить</string>
     <string name="first_herald_title">Уведомления вслух</string>
-    <string name="first_herald_text">Сирин будет читать сообщения в наушники. Для этого нужен доступ к уведомлениям — он даётся в настройках телефона.</string>
+    <string name="first_herald_text">%1$s будет читать сообщения в наушники. Для этого нужен доступ к уведомлениям — он даётся в настройках телефона.</string>
     <string name="first_folder_title">Папка Hora</string>
     <string name="first_folder_text">Книги, аудиокниги и всё для переезда на другой телефон живут в одной папке. Покажи её Hora — выбор откроется на нужном месте.</string>
     <string name="first_folder_action">Показать папку</string>

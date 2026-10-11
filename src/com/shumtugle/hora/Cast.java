@@ -66,8 +66,9 @@ final class Cast {
     /** The first voice, named after the app; the person may give her another name too, unasked. */
     static final int HOST = 1;
 
+    /** Every voice may be given a name of the person's own. */
     static boolean renamable(int voice) {
-        return voice == RENAMABLE || voice == HOST || voice > COUNT;
+        return voice >= 1 && voice <= LAST;
     }
 
     /**

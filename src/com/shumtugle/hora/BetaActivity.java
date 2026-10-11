@@ -38,10 +38,8 @@ public final class BetaActivity extends Activity {
         show();
     }
 
-    /** The trial voices in the order they stand, two female and two male, with their row names. */
+    /** The trial voices in the order they stand, two female and two male; rows carry their names. */
     private static final int[] VOICES = {Cast.BETA_F, Cast.BETA_F2, Cast.BETA_M, Cast.BETA_M2};
-    private static final int[] LABELS = {R.string.beta_female, R.string.beta_female2,
-        R.string.beta_male, R.string.beta_male2};
 
     private void show() {
         body.removeAllViews();
@@ -53,9 +51,9 @@ public final class BetaActivity extends Activity {
 
         body.addView(Kit.section(this, getString(R.string.demo_title)));
         LinearLayout demo = Kit.plate(this);
-        for (int i = 0; i < LABELS.length; i++) {
+        for (int i = 0; i < VOICES.length; i++) {
             final int voice = VOICES[i];
-            demo.addView(Kit.rowNav(this, getString(LABELS[i]), "\u25b7", new View.OnClickListener() {
+            demo.addView(Kit.rowNav(this, Cast.name(this, VOICES[i]), "\u25b7", new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     read(BetaActivity.this, voice);
@@ -67,9 +65,9 @@ public final class BetaActivity extends Activity {
         // The demo as an audiobook, made overnight on the charger like any other.
         body.addView(Kit.section(this, getString(R.string.beta_audiobook)));
         LinearLayout night = Kit.plate(this);
-        for (int i = 0; i < LABELS.length; i++) {
+        for (int i = 0; i < VOICES.length; i++) {
             final int voice = VOICES[i];
-            night.addView(Kit.rowNav(this, getString(LABELS[i]), "\u203a", new View.OnClickListener() {
+            night.addView(Kit.rowNav(this, Cast.name(this, VOICES[i]), "\u203a", new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     audiobook(voice);

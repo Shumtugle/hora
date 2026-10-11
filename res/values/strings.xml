@@ -314,14 +314,14 @@
     <string name="role_speaker_b">Speaker 2</string>
     <string-array name="voice_names">
         <item>Hora</item>
-        <item>Sirin</item>
+        <item>Teya</item>
         <item>Dima</item>
         <item>Porfiry</item>
-        <item>Sadko</item>
-        <item>Beta female</item>
-        <item>Beta male</item>
-        <item>Beta male 2</item>
-        <item>Beta female 2</item>
+        <item>Kass</item>
+        <item>Nyx</item>
+        <item>Mark</item>
+        <item>Severin</item>
+        <item>Claire</item>
     </string-array>
     <string name="slow_by_pauses">Slow down with pauses, not stretching</string>
     <string name="journal">Journal</string>
@@ -877,10 +877,6 @@
     <string name="dev_close">Close the section</string>
     <string name="beta_in_cast">While this room is open, the four trial voices, two female and two male, stand in the row of faces on the main screen and take roles like the others: books, notifications, talk. The name changes with the pen. Close the room, and the five voices stay.</string>
     <string name="beta_audiobook">Audiobook overnight</string>
-    <string name="beta_female">Beta female</string>
-    <string name="beta_male">Beta male</string>
-    <string name="beta_male2">Beta male 2</string>
-    <string name="beta_female2">Beta female 2</string>
     <string name="folder_samples">Samples</string>
     <string name="record_reading_name">Reading</string>
     <string name="record_probe_name">Voice sample</string>
@@ -1346,7 +1342,7 @@
     <string name="first_notify_text">To stop reading with one touch and to know when an audiobook is ready.</string>
     <string name="first_notify_action">Allow</string>
     <string name="first_herald_title">Notifications aloud</string>
-    <string name="first_herald_text">Sirin will read messages into your headphones. This needs access to notifications, given in the phone\'s settings.</string>
+    <string name="first_herald_text">%1$s will read messages into your headphones. This needs access to notifications, given in the phone\'s settings.</string>
     <string name="first_folder_title">Hora folder</string>
     <string name="first_folder_text">Books, audiobooks and everything for moving to another phone live in one folder. Show it to Hora; the picker opens in the right place.</string>
     <string name="first_folder_action">Show the folder</string>
