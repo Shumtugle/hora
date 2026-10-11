@@ -87,6 +87,29 @@ final class Demo {
         return android.graphics.BitmapFactory.decodeByteArray(b, 0, b.length, o);
     }
 
+    private static String title;
+
+    /** The demo's title, its first line without the closing full stop. */
+    static synchronized String title(Context c) {
+        if (title == null) {
+            title = "";
+            try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.InputStreamReader(
+                    c.getAssets().open(ASSET), java.nio.charset.StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = r.readLine()) != null) {
+                    line = line.trim();
+                    if (!line.isEmpty()) {
+                        title = line.endsWith(".") ? line.substring(0, line.length() - 1) : line;
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                title = "";
+            }
+        }
+        return title;
+    }
+
     static String uri(Context c) {
         return Uri.fromFile(new File(new File(c.getFilesDir(), "demo"), "book.txt")).toString();
     }
@@ -96,10 +119,12 @@ final class Demo {
         return uri != null && uri.equals(uri(c));
     }
 
-    /** The trial voice the demo is read with; 0 when none was chosen. */
+    /** The voice the demo is read with, in place of the narrator; 0 when none was chosen. */
     @SuppressWarnings("deprecation")
     static int voice(Context c) {
-        return c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).getInt(VOICE, 0);
+        int v = c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).getInt(VOICE, 0);
+        // A voice that left the row (the ninth, when the developer section closes) gives the book back.
+        return v > 0 && Cast.available(c, v) ? v : 0;
     }
 
     @SuppressWarnings("deprecation")

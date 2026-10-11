@@ -606,7 +606,7 @@ public final class BookPlayer extends Service {
                 final long[] firstAt = new long[] {-1};
                 // Each sentence goes to the player the moment it is made: the first one sounds
                 // while the rest of the paragraph is still being made.
-                // The demo may be read by a trial voice in place of the narrator; nothing else is.
+                // The demo may be read by a voice of its own in place of the narrator; nothing else is.
                 final int reader = Demo.is(this, uri) ? Demo.voice(this) : 0;
                 voice.render(spoken, SpeechLanguage.locale(), Prefs.speedShared(this),
                         Prefs.pauseMsShared(this), new Voice.Cancel() {

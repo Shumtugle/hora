@@ -39,6 +39,8 @@ public final class ExportActivity extends Activity {
     private byte[] chosenCover;
     /** The author written into the chapters; empty means none. */
     private String author;
+    private LinearLayout when;
+    private LinearLayout offerAction;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Runnable tick = new Runnable() {
         @Override
@@ -56,6 +58,12 @@ public final class ExportActivity extends Activity {
         list.addView(Kit.lead(this, getString(R.string.export_lead)));
         offer = Ui.column(this);
         list.addView(offer, Kit.wide());
+        // When the work is done: at once, or in a window of the night. One setting for the whole queue.
+        when = Ui.column(this);
+        list.addView(when, Kit.wide());
+        offerAction = Ui.column(this);
+        list.addView(offerAction, Kit.wide());
+        showWhen();
         list.addView(Kit.section(this, getString(R.string.export_where)));
         LinearLayout where = Kit.plate(this);
         whereRow = Ui.text(this, "", 15, Palette.INK);
@@ -139,8 +147,72 @@ public final class ExportActivity extends Activity {
         }, "export-book").start();
     }
 
+    /** The "when" section: at once or on a schedule, and the window's two ends when scheduled. */
+    private void showWhen() {
+        when.removeAllViews();
+        when.addView(Kit.section(this, getString(R.string.export_when)));
+        LinearLayout plate = Kit.plate(this);
+        final boolean scheduled = Export.scheduled(this);
+        LinearLayout seg = Kit.segments(this, new String[] {getString(R.string.export_when_now),
+                getString(R.string.export_when_scheduled)}, scheduled ? 1 : 0, new Kit.Chosen() {
+                    @Override
+                    public void chose(int which) {
+                        Export.setSchedule(ExportActivity.this, which == 1, Export.startMinutes(ExportActivity.this),
+                                Export.endMinutes(ExportActivity.this));
+                        showWhen();
+                        showQueue();
+                    }
+                });
+        LinearLayout.LayoutParams sp = Ui.lp(Ui.MATCH, Ui.WRAP);
+        sp.setMargins(Ui.dp(this, 12), Ui.dp(this, 12), Ui.dp(this, 12), Ui.dp(this, scheduled ? 4 : 12));
+        plate.addView(seg, sp);
+        if (scheduled) {
+            plate.addView(Kit.rowNav(this, getString(R.string.export_when_start),
+                    Export.clock(Export.startMinutes(this)), new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Kit.timeSheet(ExportActivity.this, getString(R.string.export_when_start),
+                                    Export.startMinutes(ExportActivity.this), new Kit.TimeSet() {
+                                        @Override
+                                        public void set(int minutes) {
+                                            Export.setSchedule(ExportActivity.this, true, minutes,
+                                                    Export.endMinutes(ExportActivity.this));
+                                            showWhen();
+                                            showQueue();
+                                        }
+                                    });
+                        }
+                    }));
+            plate.addView(Kit.divider(this));
+            plate.addView(Kit.rowNav(this, getString(R.string.export_when_end),
+                    Export.clock(Export.endMinutes(this)), new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Kit.timeSheet(ExportActivity.this, getString(R.string.export_when_end),
+                                    Export.endMinutes(ExportActivity.this), new Kit.TimeSet() {
+                                        @Override
+                                        public void set(int minutes) {
+                                            Export.setSchedule(ExportActivity.this, true,
+                                                    Export.startMinutes(ExportActivity.this), minutes);
+                                            showWhen();
+                                            showQueue();
+                                        }
+                                    });
+                        }
+                    }));
+        }
+        when.addView(plate, Kit.wide());
+        TextView note = Ui.text(this, scheduled
+                ? getString(R.string.export_when_note_night) + "\n" + getString(R.string.export_when_note_battery, Export.BATTERY_FLOOR)
+                : getString(R.string.export_when_note_battery, Export.BATTERY_FLOOR), 13, Palette.MUTED);
+        note.setLineSpacing(0, 1.3f);
+        note.setPadding(Ui.dp(this, 4), Ui.dp(this, 8), Ui.dp(this, 4), 0);
+        when.addView(note, Kit.wide());
+    }
+
     private void showOffer(final String uri, final String name) {
         offer.removeAllViews();
+        offerAction.removeAllViews();
         if (book == null || Export.queued(this, uri)) {
             return;
         }
@@ -180,7 +252,8 @@ public final class ExportActivity extends Activity {
         note.setPadding(Ui.dp(this, 4), Ui.dp(this, 8), Ui.dp(this, 4), 0);
         offer.addView(note, Kit.wide());
 
-        offer.addView(Kit.primary(this, getString(R.string.export_start), new View.OnClickListener() {
+        offerAction.removeAllViews();
+        offerAction.addView(Kit.primary(this, getString(R.string.export_start), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (Export.ownTree(ExportActivity.this) == null && HoraFolder.tree(ExportActivity.this) == null) {
@@ -189,6 +262,7 @@ public final class ExportActivity extends Activity {
                 }
                 Export.add(ExportActivity.this, uri, name, title, reader, chapters, author, coverMode);
                 offer.removeAllViews();
+                offerAction.removeAllViews();
                 showQueue();
             }
         }), Kit.below(this, 16));
@@ -298,7 +372,7 @@ public final class ExportActivity extends Activity {
         if (q.length() == 0) {
             plate.addView(Kit.status(this, getString(R.string.export_queue_empty), Kit.Mood.UNKNOWN));
         }
-        boolean charging = ((android.os.BatteryManager) getSystemService(BATTERY_SERVICE)).isCharging();
+        int gate = Export.gate(this);
         boolean first = true;
         for (int i = 0; i < q.length(); i++) {
             final JSONObject j = q.optJSONObject(i);
@@ -308,8 +382,10 @@ public final class ExportActivity extends Activity {
                 state = getString(R.string.export_failed);
             } else if (!first) {
                 state = getString(R.string.export_waiting_turn);
-            } else if (!charging) {
-                state = getString(R.string.export_waiting_charger);
+            } else if (gate == Export.WAIT_TIME) {
+                state = getString(R.string.export_waiting_time, Export.clock(Export.startMinutes(this)));
+            } else if (gate == Export.WAIT_POWER) {
+                state = getString(R.string.export_waiting_charger_at, Export.battery(this));
             } else if (Reading.playing(this)) {
                 state = getString(R.string.export_yielding);
             } else if (System.currentTimeMillis() - j.optLong("at") < Export.FRESH_MS) {

@@ -28,7 +28,9 @@ import java.io.InputStream;
  * and down. The carousel stands still until it is swiped. Inside each card the
  * voice's scenes live as a small album: a slow drift over one scene, then a
  * fade into the next. The main button makes the voice the one that answers,
- * quietly; it speaks only when "Listen" is touched.
+ * quietly. "Listen" reads the demo novel from where it stopped; a swipe hands
+ * the book to the next voice, so voices are compared on prose. The voice's own
+ * makeup (pitch, timbre, air) is a sheet over its card, heard while it reads.
  */
 public final class VoicesActivity extends Activity {
     static final String EXTRA_VOICE = "voice";
@@ -49,9 +51,31 @@ public final class VoicesActivity extends Activity {
     private GestureDetector swipe;
     /** Set by a fling, so the touch that made it does not also press a button under the finger. */
     private boolean flung;
+    /** Whether the demo is being read here; a swipe hands it to the next voice. */
+    private boolean listening;
+    /** The book that was open before the demo was started here, put back when the voices are left. */
+    private String beforeUri;
+    private String beforeName;
+    /** The demo's own reader before this visit, put back with the book. */
+    private int beforeDemoVoice = -1;
+    /** Whether the demo was started on this visit; one found already reading is not paused on leaving. */
+    private boolean startedHere;
+    /** Counts starts, so a start that comes back from its thread after a stop does nothing. */
+    private int ticket;
+    /** Set when the person follows the demo into the book: then it keeps reading there. */
+    private boolean toBook;
+    private TextView listenButton;
+    private TextView demoLine;
+
+    static final String EXTRA_MAKEUP = "makeup";
 
     static void open(Activity a, int voice) {
         a.startActivity(new Intent(a, VoicesActivity.class).putExtra(EXTRA_VOICE, voice));
+    }
+
+    /** Opens the voice's card with its makeup sheet already over it. */
+    static void openMakeup(Activity a, int voice) {
+        a.startActivity(new Intent(a, VoicesActivity.class).putExtra(EXTRA_VOICE, voice).putExtra(EXTRA_MAKEUP, true));
     }
 
     @Override
@@ -60,6 +84,19 @@ public final class VoicesActivity extends Activity {
         built = Ui.prepare(this);
         int voice = getIntent().getIntExtra(EXTRA_VOICE, Prefs.role(this, Cast.TALK));
         place = Math.max(0, Math.min(Cast.size(this) - 1, state != null ? state.getInt("place", 0) : Cast.place(voice)));
+        if (state != null) {
+            beforeUri = state.getString("beforeUri");
+            beforeName = state.getString("beforeName");
+            beforeDemoVoice = state.getInt("beforeDemoVoice", -1);
+        }
+        // The demo may already be reading when the voices open: the button says so, and a swipe hands it on.
+        listening = Demo.is(this, Reading.uri(this)) && Reading.playing(this);
+        if (state != null) {
+            startedHere = state.getBoolean("startedHere");
+        } else if (listening) {
+            // Found reading: on leaving it reads on, with the reader it had.
+            beforeDemoVoice = Demo.voice(this);
+        }
         frame = new FrameLayout(this);
         frame.setBackgroundColor(Palette.BG);
         setContentView(frame);
@@ -77,6 +114,16 @@ public final class VoicesActivity extends Activity {
         page = build(Cast.at(place));
         frame.addView(page, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT));
+        if (state == null && getIntent().getBooleanExtra(EXTRA_MAKEUP, false)) {
+            frame.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!isFinishing()) {
+                        makeup(Cast.at(place));
+                    }
+                }
+            });
+        }
     }
 
     /** Every touch passes the swipe detector first, so a swipe works over the buttons too. */
@@ -100,6 +147,11 @@ public final class VoicesActivity extends Activity {
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         out.putInt("place", place);
+        out.putBoolean("listening", listening);
+        out.putString("beforeUri", beforeUri);
+        out.putString("beforeName", beforeName);
+        out.putInt("beforeDemoVoice", beforeDemoVoice);
+        out.putBoolean("startedHere", startedHere);
     }
 
     @Override
@@ -124,6 +176,31 @@ public final class VoicesActivity extends Activity {
     }
 
     @Override
+    protected void onStop() {
+        // The screen going dark or turning is not leaving: the demo reads on.
+        boolean dark = !((android.os.PowerManager) getSystemService(POWER_SERVICE)).isInteractive();
+        if (!toBook && !dark && !isChangingConfigurations()) {
+            if (startedHere && (listening || beforeUri != null)) {
+                stopDemo(true);
+            } else if (beforeDemoVoice >= 0 && beforeDemoVoice != Demo.voice(this)) {
+                // A demo found reading goes on, handed back to the reader it had.
+                Demo.setVoice(this, beforeDemoVoice);
+                beforeDemoVoice = -1;
+            }
+        }
+        super.onStop();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        // Back from the book the demo was followed into: the button tells the truth again.
+        toBook = false;
+        listening = Demo.is(this, Reading.uri(this)) && Reading.playing(this);
+        showListen();
+    }
+
+    @Override
     protected void onDestroy() {
         if (album != null) {
             album.release();
@@ -140,6 +217,11 @@ public final class VoicesActivity extends Activity {
         }
         moving = true;
         place = next;
+        if (listening) {
+            // The book goes round the table: the next voice reads on from the same place.
+            Demo.setVoice(this, Cast.at(place));
+            Diag.mark(this, "voices: demo handed to " + Cast.at(place));
+        }
         final Album gone = album;
         if (gone != null) {
             gone.stop();
@@ -271,16 +353,44 @@ public final class VoicesActivity extends Activity {
             pp.topMargin = dp(20);
             below.addView(choose, pp);
         }
-        TextView listen = Kit.secondary(this, "▷  " + getString(R.string.lab_listen), new View.OnClickListener() {
+        listenButton = Kit.secondary(this, "", new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                VoiceService.speak(VoicesActivity.this, getString(Cast.female(v) ? R.string.intro_lead_f
-                        : R.string.intro_lead, Cast.spokenName(VoicesActivity.this, v)), v);
+                if (listening) {
+                    stopDemo(false);
+                } else {
+                    startDemo(v);
+                }
             }
         });
         LinearLayout.LayoutParams lp = Ui.lp(dp(180), dp(48));
         lp.topMargin = dp(12);
-        below.addView(listen, lp);
+        below.addView(listenButton, lp);
+        // What is being read, while it is: a touch follows it into the book. Invisible, not gone,
+        // so the card does not jump when reading starts.
+        demoLine = Ui.text(this, "\u00ab" + Demo.title(this) + "\u00bb \u203a", 14, Palette.MUTED);
+        demoLine.setGravity(Gravity.CENTER);
+        demoLine.setPadding(0, dp(10), 0, dp(2));
+        demoLine.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (listening) {
+                    toBook = true;
+                    startActivity(new Intent(VoicesActivity.this, BookActivity.class));
+                }
+            }
+        });
+        below.addView(demoLine, Ui.lp(Ui.MATCH, Ui.WRAP));
+        showListen();
+        // The voice's own makeup, in a sheet over the card.
+        TextView makeup = Kit.link(this, getString(R.string.voices_makeup), new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                makeup(v);
+            }
+        });
+        makeup.setGravity(Gravity.CENTER);
+        below.addView(makeup, Ui.lp(Ui.MATCH, Ui.WRAP));
         // Where the swipe leads, said in words: the next voice by name, a touch goes there too.
         if (place + 1 < Cast.size(this)) {
             TextView onward = Ui.text(this, getString(R.string.voices_next, Cast.name(this, Cast.at(place + 1))),
@@ -302,6 +412,149 @@ public final class VoicesActivity extends Activity {
 
         album = new Album(v, count, back, front, marks);
         return card;
+    }
+
+    /** The listen button and the line under it, as things stand. */
+    private void showListen() {
+        if (listenButton == null) {
+            return;
+        }
+        listenButton.setText(listening ? "\u275a\u275a  " + getString(R.string.voices_pause)
+                : "\u25b7  " + getString(R.string.lab_listen));
+        demoLine.setVisibility(listening ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    /** Starts the demo with this voice, from where the demo stopped; the open book is remembered. */
+    private void startDemo(final int v) {
+        if (!Voice.ready(this)) {
+            android.widget.Toast.makeText(this, R.string.voice_pack_needed, android.widget.Toast.LENGTH_LONG).show();
+            return;
+        }
+        final String now = Reading.uri(this);
+        if (!Demo.is(this, now) && beforeUri == null) {
+            beforeUri = now;
+            beforeName = Reading.name(this);
+        }
+        if (beforeDemoVoice < 0) {
+            beforeDemoVoice = Demo.voice(this);
+        }
+        listening = true;
+        startedHere = true;
+        showListen();
+        final int mine = ++ticket;
+        final android.content.Context app = getApplicationContext();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Demo.book(app);
+                } catch (java.io.IOException e) {
+                    Diag.log(app, "voices: the demo could not be prepared", e);
+                    return;
+                }
+                // Back on the screen's thread: a stop that came meanwhile wins.
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mine != ticket || !listening || isFinishing()) {
+                            return;
+                        }
+                        Demo.setVoice(app, v);
+                        Diag.mark(app, "voices: demo read by " + v);
+                        if (Demo.is(app, Reading.uri(app))) {
+                            startForegroundService(BookPlayer.intent(app, BookPlayer.ACTION_PLAY));
+                        } else {
+                            BookActivity.open(app, Demo.uri(app), "book.txt", true);
+                        }
+                    }
+                });
+            }
+        }, "voices-demo").start();
+    }
+
+    /**
+     * Stops the demo. On leaving the voices, the book that was open before comes back,
+     * quietly, at its own place, with the demo's own reader as it was: listening here
+     * never takes anything away. With no book open before, the demo stays, paused.
+     */
+    private void stopDemo(boolean leaving) {
+        ticket++;
+        listening = false;
+        showListen();
+        startForegroundService(BookPlayer.intent(this, BookPlayer.ACTION_PAUSE));
+        if (leaving) {
+            if (beforeDemoVoice >= 0) {
+                Demo.setVoice(this, beforeDemoVoice);
+            }
+            if (beforeUri != null && !beforeUri.isEmpty()) {
+                BookActivity.open(getApplicationContext(), beforeUri, beforeName, false);
+            }
+            beforeUri = null;
+            beforeDemoVoice = -1;
+            startedHere = false;
+        }
+    }
+
+    /** Pitch, timbre and air of one voice, in a sheet; each move is heard at once. */
+    private void makeup(final int v) {
+        final LinearLayout box = Ui.column(this);
+        fillMakeup(box, v);
+        Kit.liveSheet(this, Cast.name(this, v), box);
+    }
+
+    private void fillMakeup(final LinearLayout box, final int v) {
+        box.removeAllViews();
+        box.addView(Kit.slider(this, getString(R.string.ws_pitch), getString(R.string.lab_lower),
+                getString(R.string.lab_higher), Grim.PITCH_MAX - Grim.PITCH_MIN, Prefs.grimPitch(this, v) - Grim.PITCH_MIN,
+                new Kit.Value() {
+                    @Override
+                    public String show(int p) {
+                        return signed(p + Grim.PITCH_MIN);
+                    }
+
+                    @Override
+                    public void set(int p) {
+                        Prefs.setGrim(VoicesActivity.this, v, Prefs.grimTimbre(VoicesActivity.this, v), p + Grim.PITCH_MIN);
+                    }
+                }));
+        box.addView(Kit.slider(this, getString(R.string.ws_timbre), getString(R.string.lab_warmer),
+                getString(R.string.lab_brighter), Grim.TIMBRE_MAX - Grim.TIMBRE_MIN,
+                Prefs.grimTimbre(this, v) - Grim.TIMBRE_MIN, new Kit.Value() {
+                    @Override
+                    public String show(int p) {
+                        return signed(p + Grim.TIMBRE_MIN);
+                    }
+
+                    @Override
+                    public void set(int p) {
+                        Prefs.setGrim(VoicesActivity.this, v, p + Grim.TIMBRE_MIN, Prefs.grimPitch(VoicesActivity.this, v));
+                    }
+                }));
+        box.addView(Kit.slider(this, getString(R.string.lab_air), getString(R.string.lab_none),
+                getString(R.string.lab_much), Grim.AIR_MAX, Prefs.grimAir(this, v), new Kit.Value() {
+                    @Override
+                    public String show(int p) {
+                        return String.valueOf(p);
+                    }
+
+                    @Override
+                    public void set(int p) {
+                        Prefs.setGrimAir(VoicesActivity.this, v, p);
+                    }
+                }));
+        TextView reset = Kit.link(this, getString(R.string.lab_reset), new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Prefs.setGrim(VoicesActivity.this, v, Prefs.defaultTimbre(v), Prefs.defaultPitch(v));
+                Prefs.setGrimAir(VoicesActivity.this, v, Prefs.defaultAir(v));
+                fillMakeup(box, v);
+            }
+        });
+        box.addView(reset, Kit.below(this, 8));
+    }
+
+    private static String signed(int n) {
+        return n > 0 ? "+" + n : String.valueOf(n);
     }
 
     /** Makes the voice the one that answers, as the main screen does: quietly. */

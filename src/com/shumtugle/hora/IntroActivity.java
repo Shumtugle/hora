@@ -39,7 +39,6 @@ public final class IntroActivity extends Activity {
     private ImageView[] dots = new ImageView[0];
     private View heraldWay;
     private View bookWay;
-    private View workshopWay;
     private View folderWay;
     private AnimatorSet breathGlow;
     private AnimatorSet breathRing;
@@ -138,16 +137,7 @@ public final class IntroActivity extends Activity {
         for (int i = 0; i < dots.length; i++) {
             boolean on = Cast.at(i) == v;
             // Every face keeps the same slot, so choosing one never moves the others.
-            int[] cell = Ui.troupeCell(this, Math.min(dots.length, Cast.COUNT));
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(cell[0]), dp(cell[0]));
-            p.leftMargin = dp(cell[1]);
-            p.rightMargin = dp(cell[1]);
-            dots[i].setLayoutParams(p);
-            // The same inset for every face: the ring marks the chosen one, the face does not grow.
-            int pad = dp(3);
-            dots[i].setPadding(pad, pad, pad, pad);
-            dots[i].setBackground(on ? Ui.oval(Palette.BG, Palette.voice(Cast.at(i)), 2, this) : null);
-            dots[i].setAlpha(on ? 1f : 0.55f);
+            Ui.troupeFace(this, dots[i], Cast.at(i), on);
         }
         Kit.backdrop(this, backdrop, v);
         Kit.setEntry(heraldWay, getString(R.string.intro_herald),
@@ -161,8 +151,6 @@ public final class IntroActivity extends Activity {
             sub = ch < 0 ? title : title + " \u00b7 " + Bot.chapterName(this, e.chapters.get(ch).label);
         }
         Kit.setEntry(bookWay, getString(R.string.intro_book), sub);
-        Kit.setEntry(workshopWay, getString(R.string.home_workshop, Cast.name(this, v)),
-                getString(R.string.home_workshop_sub));
     }
 
     private View build() {
@@ -230,14 +218,15 @@ public final class IntroActivity extends Activity {
         bp.topMargin = dp(18);
         root.addView(listen, bp);
 
-        // Five faces to a line: the cast on the first, the trial voices on a second when shown.
+        // Rows of equal length, as on the main screen.
         LinearLayout troupe = Ui.column(this);
         troupe.setGravity(Gravity.CENTER_HORIZONTAL);
         LinearLayout line = null;
         dots = new ImageView[Cast.size(this)];
+        int perRow = Ui.perRow(dots.length);
         for (int i = 0; i < dots.length; i++) {
             final int v = Cast.at(i);
-            if (i % Cast.COUNT == 0) {
+            if (i % perRow == 0) {
                 line = Ui.row(this);
                 line.setGravity(Gravity.CENTER);
                 LinearLayout.LayoutParams linep = Ui.lp(Ui.WRAP, Ui.WRAP);
@@ -295,13 +284,14 @@ public final class IntroActivity extends Activity {
         ways.addView(bookWay, Ui.lp(Ui.MATCH, Ui.WRAP));
         ways.addView(Kit.rowEntry(this, R.drawable.ic_talk, getString(R.string.talk_title),
                 getString(R.string.intro_talk_sub), open(TalkActivity.class)), Ui.lp(Ui.MATCH, Ui.WRAP));
-        workshopWay = Kit.rowEntry(this, R.drawable.ic_sliders, "", "", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LabActivity.open(IntroActivity.this, voice);
-            }
-        });
-        ways.addView(workshopWay, Ui.lp(Ui.MATCH, Ui.WRAP));
+        // The voices: who they are, who answers, how each one sounds.
+        ways.addView(Kit.rowEntry(this, R.drawable.ic_voices, getString(R.string.voices_title),
+                getString(R.string.voices_sub), new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        VoicesActivity.open(IntroActivity.this, voice);
+                    }
+                }), Ui.lp(Ui.MATCH, Ui.WRAP));
         LinearLayout.LayoutParams wp = Ui.lp(Ui.MATCH, Ui.WRAP);
         wp.topMargin = dp(28);
         root.addView(ways, wp);

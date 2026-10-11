@@ -635,8 +635,8 @@ public final class TalkActivity extends Activity {
         // A picture changes the task: say what is in it now, plainly, with what is written on it.
         // The book-talk rules (one or two sentences, no facts about the world) would leave the
         // answer vague, so the look rules are added after them and take precedence.
-        final String system = jpeg == null ? LabActivity.persona(this, v)
-                : LabActivity.persona(this, v) + " " + SpeechLanguage.resources(this).getString(R.string.brain_look_rules);
+        final String system = jpeg == null ? Brain.persona(this, v)
+                : Brain.persona(this, v) + " " + SpeechLanguage.resources(this).getString(R.string.brain_look_rules);
         final int tokens = jpeg == null ? Brain.replyTokens(this) : Math.max(Brain.replyTokens(this), 160);
         final java.util.List<String[]> turns = new java.util.ArrayList<String[]>();
         int from = Math.max(0, talk.size() - Brain.remembered(this));
@@ -699,7 +699,7 @@ public final class TalkActivity extends Activity {
                     if (art == null) {
                         said = speech.getString(R.string.wiki_nothing);
                     } else if (model) {
-                        String system = LabActivity.persona(TalkActivity.this, v) + " "
+                        String system = Brain.persona(TalkActivity.this, v) + " "
                                 + speech.getString(R.string.brain_wiki_rules, art.title) + "\n\n" + art.body;
                         java.util.List<String[]> turns = new java.util.ArrayList<String[]>();
                         turns.add(new String[] {"user", question});

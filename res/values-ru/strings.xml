@@ -323,14 +323,7 @@
         <item>y=и</item>
         <item>z=з</item>
     </string-array>
-    <string name="probe">Записать пробу голоса</string>
-    <string name="probe_hint"></string>
-    <string name="probe_text">Серое небо висело над городом. Сейчас восемнадцать часов со́рок две минуты.</string>
-    <string name="probe_done">Сохранено: %1$s. %2$.1f с речи за %3$.1f с</string>
-    <string name="probe_failed">Проба не удалась: %1$s</string>
     <string name="expression">Выразительность</string>
-    <string name="reference">Образец голоса</string>
-    <string name="reference_user">свой, %1$.0f с</string>
     <string name="lexicon_import">Импорт словаря…</string>
     <string name="lexicon_clear">Убрать импорт</string>
     <string name="lexicon_imported">Подключено: %1$s</string>
@@ -341,7 +334,6 @@
     <string name="stress_vowels">аеёиоуыэюя</string>
     <!-- Letters that are always stressed; words containing them need no mark. -->
     <string name="always_stressed">ё</string>
-    <string name="reference_export">Сохранить в «Загрузки»</string>
     <string name="reference_exported">Образец сохранён: %1$s</string>
     <string name="dialogue_voice">Голос диалогов</string>
     <string name="dialogue_same">как у рассказчика</string>
@@ -759,12 +751,6 @@
         <item>король Генрих III, B противоположной двери.=&gt;король Генрих третий, В противоположной двери.</item>
         <item>кoрoль скaзaл.=&gt;король сказал.</item>
     </string-array>
-    <string name="text_check">Проверка текста</string>
-    <string name="text_check_hint">Вставь текст из книги</string>
-    <string name="text_check_show">Что услышит голос</string>
-    <string name="text_check_selftest">Самопроверка</string>
-    <string name="text_check_working">Считаю…</string>
-    <string name="text_check_summary">Прошло %1$d из %2$d</string>
     <!-- Latin letters that look like native ones, for scanned books that mix them. -->
     <string-array name="latin_lookalikes">
         <item>A=А</item>
@@ -800,7 +786,6 @@
     </string-array>
     <!-- Letter folded into its plain twin when matching context rules: from=to. -->
     <string name="letter_folding">ё=е</string>
-    <string name="workshop">Настройки голоса</string>
     <string name="home_time">Который час</string>
     <string name="home_weather">Погода</string>
     <string name="home_next_voice">Другой голос</string>
@@ -811,34 +796,15 @@
     <string name="home_no_weather">Погоду я пока не знаю. Скоро научусь.</string>
     <string name="nav_voice">Голос</string>
     <string name="nav_book">Книга</string>
-    <string name="nav_workshop">Голос</string>
     <string name="ws_back">Назад</string>
     <string name="ws_listen">Послушать</string>
-    <string name="ws_listen_text">Венская зима последних лет старого императора начиналась по Рингштрассе: лакированные экипажи на снегу, дамы в шляпах с эгретками и муфтах, лоснящаяся прислуга у дверей дворцов Хенкеля-Доннерсмарка и Вюртемберга. В Бургтеатре давали Грильпарцера, в Хофопере Вагнера. На углу Картнерштрассе и Грабена газетчик выкрикивал лондонский курс серебра, и по нему в городе верней начинали день, чем по утреннему благовесту.</string>
     <string name="ws_stop">Стоп</string>
-    <string name="ws_done">Готово</string>
     <string name="ws_timbre">Тембр</string>
     <string name="ws_pitch">Высота</string>
-    <string name="ws_tempo">Темп</string>
-    <string name="ws_mood">Характер</string>
-    <string name="ws_timbre_value">Тембр · %1$s</string>
-    <string name="ws_pitch_value">Высота · %1$s</string>
-    <string name="ws_tempo_value">Темп · %1$s</string>
-    <string name="ws_mood_value">Характер · %1$s</string>
-    <string name="ws_as_sample">как в образце</string>
-    <string name="ws_semitones">%1$s пт</string>
-    <string name="ws_warmer">теплее</string>
-    <string name="ws_brighter">ярче</string>
-    <string name="ws_deeper">глубже</string>
-    <string name="ws_higher">выше</string>
     <string name="ws_slow">неспешно</string>
     <string name="ws_fast">быстро</string>
     <string name="ws_calm">спокойно</string>
     <string name="ws_lively">живо</string>
-    <string name="ws_timbre_note">Образец голоса проходит через эквалайзер до того, как его услышит модель. Модель переносит этот тембр на всю речь.</string>
-    <string name="ws_pitch_note">Сдвиг в полутонах. Темп речи не меняется.</string>
-    <string name="ws_tempo_note">Для всех голосов. Замедление паузами и ровный темп — в «Книге».</string>
-    <string name="ws_mood_note">Для всех голосов. Живее — больше интонации, но и больше случайных срывов.</string>
     <string name="portraits">Портреты</string>
     <string name="portraits_note">ChatGPT</string>
     <string name="fonts">Шрифты</string>
@@ -874,7 +840,6 @@
         <item>таки</item>
     </string-array>
     <string name="roles_title">Голоса и роли</string>
-    <string name="ws_troupe">Голоса</string>
     <string name="roles_more">Настройки чтения</string>
     <string name="roles_listen">Прочитать пример</string>
     <string name="roles_listen_hint">Нажми на пример, чтобы услышать</string>
@@ -910,7 +875,9 @@
     <string name="book_unreadable">Этот формат Hora пока не читает: %1$s</string>
     <string name="book_reader">Читает: %1$s</string>
     <string name="book_change_reader">Сменить</string>
-    <string name="nav_roles">Роли</string>
+    <string name="book_who_reads">Кто читает книгу</string>
+    <string name="book_tune_reader">Настроить голос</string>
+    <string name="book_roles">Чтение по ролям</string>
     <string name="voices_section">Голоса</string>
     <string name="home_make_main">Сделать главным голосом: %1$s</string>
     <string name="home_troupe_hint">смахни портрет или коснись лица</string>
@@ -1024,14 +991,6 @@
     <string name="look_lamp">Лампа</string>
     <string name="look_ink">Чернила</string>
     <string name="look_sample">Аа</string>
-    <string name="text_check_record">Прочитать в файл</string>
-    <string name="text_check_lead">Увидишь, что услышит голос, или получишь запись прочитанного.</string>
-    <string name="recording">Запись</string>
-    <string name="text_check_starting">Готовлю голос…</string>
-    <string name="text_check_progress">Абзац %1$d из %2$d · %3$d %%</string>
-    <string name="text_check_saved">Готово: %1$s, %2$s мин</string>
-    <string name="text_check_not_saved">Прочитано, но не сохранено</string>
-    <string name="text_check_failed">Не получилось: %1$s</string>
     <string name="breath_vowels">аеёиоуыэюя</string>
     <string name="breath_joiners">в во на с со к ко по о об обо от до из у за над под при про для без через и а но да или либо что чем как когда где если чтобы хотя пока</string>
     <string name="chapter_words">Глава|Часть|Книга|Том|Пролог|Эпилог|Предисловие|Послесловие|Вступление|Заключение</string>
@@ -1639,14 +1598,11 @@
     <string name="talk_sub">Спроси, попроси, поболтай</string>
     <string name="talk_hint">Спроси или напиши, что сказать…</string>
     <string name="talk_send">Отправить</string>
-    <string name="home_workshop">Настройки голоса</string>
-    <string name="home_workshop_sub">Тембр, высота, темп, характер</string>
     <string name="home_book_none">Книга не выбрана</string>
     <string name="home_on_duty">на дежурстве · %1$s</string>
     <string name="talk_where">Где мы</string>
     <string name="bot_help_chip">Что ты умеешь</string>
     <string name="chapter_numbered">глава %1$s</string>
-    <string name="lab_title">Настройки голосов</string>
     <string name="voices_title">Голоса</string>
     <string name="voices_sub">знакомство, кто отвечает</string>
     <string name="voices_choose_f">Пусть отвечает она</string>
@@ -1664,21 +1620,15 @@
     <string name="settings_voices_roles">Голоса и роли</string>
     <string name="settings_rest">Остальное</string>
     <string name="settings_more">Журнал, словарь</string>
-    <string name="lab_hint">Вставь сюда текст — он останется, пока не сменишь</string>
     <string name="lab_listen">Послушать</string>
-    <string name="lab_save">Записать в файл</string>
-    <string name="lab_saving">Записываю…</string>
-    <string name="lab_clear">Очистить</string>
-    <string name="lab_kept">Текст остаётся здесь, пока его не сменишь.</string>
-    <string name="lab_ratio">Текст остаётся здесь. Последний прогон: голос работал в %1$s раза быстрее речи.</string>
-    <string name="lab_all">Для всех голосов</string>
+    <string name="voices_pause">Пауза</string>
+    <string name="voices_makeup">Высота, тембр, воздух</string>
     <string name="lab_character">Характер</string>
     <string name="lab_tempo">Темп</string>
     <string name="lab_pause">Пауза между предложениями</string>
     <string name="lab_shorter">короче</string>
     <string name="lab_longer">длиннее</string>
     <string name="lab_ms">%1$d мс</string>
-    <string name="lab_engine">Движок · опыт</string>
     <string name="lab_decoder">Декодер звука</string>
     <string name="decoder_where">Скачать полный декодер — в «Языках»</string>
     <string name="lab_decoder_small">сжатый</string>
@@ -1691,7 +1641,6 @@
     <string name="lab_air">Воздух</string>
     <string name="lab_none">нет</string>
     <string name="lab_much">много</string>
-    <string name="lab_sample">Образец голоса</string>
     <!-- The small model's instruction: the rules every voice keeps, then each voice's own manner. -->
     <string name="brain_rules">%3$s Ты — %1$s, %2$s в книжном приложении. Говоришь по-русски и обращаешься на «ты». Отвечаешь одним-двумя короткими предложениями, от себя, своими словами, не повторяя ни вопрос, ни свои прежние ответы. Без списков и восклицаний. Только если прямо просят перевести («как по-английски», «переведи»), отвечаешь самим переводом: «По-английски — …»; вопрос на другом языке — не просьба о переводе, на него отвечаешь по-русски по сути. Не называешь дат, чисел, времени, погоды и фактов о мире и не даёшь советов о здоровье: об этом говорит приложение, а не ты. Не обещаешь действий.</string>
     <string-array name="brain_manner">
@@ -1706,15 +1655,11 @@
         <item>Ты женщина (она): глаголы о себе в прошедшем времени у тебя кончаются на -ла. Ты ровная, ясная и неспешная.</item>
     </string-array>
     <string name="brain_trial_question">Я сегодня устал.</string>
-    <string name="lab_brain">Модель ИИ · проверка</string>
-    <string name="lab_brain_model">Модель</string>
     <string name="lab_brain_none">не выбрана</string>
     <string name="lab_brain_copying">копирую… %1$d МБ</string>
-    <string name="lab_brain_try">Проверить: готова ли к работе</string>
     <string name="lab_brain_waking">Загружаю модель…</string>
     <string name="lab_brain_result">%1$s\n\nЗагружалась %2$.1f с, ответила за %3$.1f с, %4$.1f токена в секунду.</string>
     <string name="lab_brain_failed">Не вышло: %1$s</string>
-    <string name="lab_brain_note">Файл модели GGUF из «Загрузок» копируется в Hora. Модель загружается в память при вопросе и выгружается через 5 минут без вопросов.</string>
     <string name="lab_brain_user">Обращаться ко мне</string>
     <string name="lab_brain_user_he">как к нему</string>
     <string name="lab_brain_user_she">как к ней</string>
@@ -1867,18 +1812,13 @@
     </string-array>
     <string name="folder_recordings">Записи</string>
     <string name="folder_dictionaries">Словари</string>
-    <string name="demo_title">Демо</string>
-    <string name="beta_title">Бета</string>
     <string name="dev_section">Для разработчиков</string>
     <string name="dev_opened">Раздел для разработчиков открыт</string>
     <string name="dev_already">Раздел уже открыт</string>
     <string name="dev_steps">Ещё %1$d — и откроется раздел для разработчиков</string>
     <string name="dev_close">Закрыть раздел</string>
-    <string name="beta_in_cast">Никс, Клер и Марк стоят в ряду лиц всегда. Северин — только пока открыт этот раздел: он близок к Марку. Здесь демо и аудиокнигу на ночь можно поставить любым из четырёх.</string>
-    <string name="beta_audiobook">Аудиокнига на ночь</string>
+    <string name="dev_note">Пока раздел открыт, %1$s стоит в ряду лиц девятым и берёт роли, как все.</string>
     <string name="folder_samples">Образцы</string>
-    <string name="record_reading_name">Чтение</string>
-    <string name="record_probe_name">Проба голоса</string>
     <string name="folder_talks">Разговоры</string>
     <string name="talk_folder_ask">Покажи папку Hora — один раз, и разговоры будут ложиться туда.</string>
     <string name="talk_saved">Сохранено: «%1$s».</string>
@@ -2365,8 +2305,8 @@
     <string name="share_label">Слушать</string>
     <string name="export_title">Аудиокниги</string>
     <string name="export_make">Сделать аудиокнигу</string>
-    <string name="export_lead">Hora озвучит книгу целиком и сложит главы файлами 1.m4a, 2.m4a… в папку книги. Это долго, поэтому Hora работает только пока телефон на зарядке — лучше поставить его на ночь. Сняли с зарядки — пауза без потерь, продолжит с того же места.</string>
-    <string name="export_about">«%1$s»: %2$s, читает %3$s. Звука выйдет примерно %4$s, работы — около %5$s на зарядке.</string>
+    <string name="export_lead">Hora озвучит книгу целиком и сложит главы файлами 1.m4a, 2.m4a… в папку книги. Это небыстро; остановилась — продолжит с того же места без потерь.</string>
+    <string name="export_about">«%1$s»: %2$s, читает %3$s. Звука выйдет примерно %4$s, работы — около %5$s.</string>
     <string name="export_files_section">В файлах глав</string>
     <string name="export_cover">Обложка</string>
     <string name="export_cover_book">из книги</string>
@@ -2389,11 +2329,27 @@
     <string name="export_queue">Очередь</string>
     <string name="export_queue_empty">Пусто</string>
     <string name="export_waiting_turn">ждёт очереди</string>
-    <string name="export_waiting_charger">ждёт зарядки</string>
+    <string name="export_waiting_charger_at">ждёт зарядки · %1$d&#160;%%</string>
+    <string name="export_waiting_time">начнёт в %1$s</string>
+    <string name="export_when">Когда</string>
+    <string name="export_when_now">Сразу</string>
+    <string name="export_when_scheduled">По расписанию</string>
+    <string name="export_when_start">Начинать</string>
+    <string name="export_when_end">Заканчивать</string>
+    <string name="export_when_note_night">Не успела за ночь — продолжит следующей.</string>
+    <string name="export_when_note_battery">Без зарядки остановится на %1$d&#160;%% заряда.</string>
+    <string name="export_channel_work">Работа над аудиокнигами</string>
+    <string name="export_note_looking">Смотрю очередь</string>
+    <string name="export_note_working">Делаю аудиокнигу</string>
+    <string name="export_note_waits_time">Начну в %1$s</string>
+    <string name="export_note_waits_power">Заряд %1$d&#160;%%: жду зарядки</string>
+    <string name="export_note_yields">Жду, пока играет книга</string>
+    <string name="export_note_later">Попробую снова через несколько минут</string>
+    <string name="export_start_now">Начать сейчас</string>
     <string name="export_working">глава %1$d из %2$d</string>
     <string name="export_working_pct">глава %1$d из %2$d · %3$d&#160;%%</string>
     <string name="export_yielding">уступает книге</string>
-    <string name="export_waiting_phone">на зарядке, ждёт телефона</string>
+    <string name="export_waiting_phone">ждёт телефона</string>
     <string name="export_failed">не вышло</string>
     <string name="export_failed_about">Три раза подряд не вышло. Место в книге сохранено, причина — в журнале.</string>
     <string name="export_retry">Попробовать снова</string>

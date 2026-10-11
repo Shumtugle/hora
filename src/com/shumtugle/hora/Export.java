@@ -33,16 +33,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Books made into audiobooks while the phone charges. A book waits in a queue;
- * the system wakes Hora when the phone is on the charger, Hora works for a
- * few minutes, keeps what it made and asks to be woken again. Each chapter's
- * sound is gathered paragraph by paragraph into a raw file, so stopping loses
- * at most one paragraph; a finished chapter is packed into a small file and
- * put in the book's folder as 1, 2, 3..., with the chapter names in a list
- * beside them. Nothing runs off the charger, and nothing while a book plays.
+ * Books made into audiobooks, at once or within a nightly window. A book waits in
+ * a queue; a foreground service works on it in slices of a few minutes, keeps
+ * what it made, and looks again at the window and the battery between slices.
+ * Each chapter's sound is gathered paragraph by paragraph into a raw file, so
+ * stopping loses at most one paragraph; a finished chapter is packed into a
+ * small file and put in the book's folder as 1, 2, 3..., with the chapter names
+ * in a list beside them. Nothing runs while a book plays, and off the charger the
+ * work stops at a fifth of the battery.
  */
 final class Export {
-    private static final int JOB = 7301;
+    static final int JOB = 7301;
+    /** Held by whoever works on the queue, the service or the fallback job: never both at once. */
+    static final java.util.concurrent.atomic.AtomicBoolean BUSY = new java.util.concurrent.atomic.AtomicBoolean();
     private static final String CHANNEL = "export";
     private static final long SLICE_MS = 8 * 60 * 1000L;
     /** How long to wait before looking again when a book is playing or a slice failed. */
@@ -99,7 +102,7 @@ final class Export {
         return false;
     }
 
-    /** Puts a book in the queue, read by the given voice, and asks to be woken on the charger. */
+    /** Puts a book in the queue, read by the given voice, and sees that the work will be done. */
     static void add(Context c, String uri, String name, String title, int reader, int chapters,
             String author, String cover) {
         JSONArray q = queue(c);
@@ -130,14 +133,20 @@ final class Export {
             }
         }
         keep(c, rest);
+        // A service working on or waiting for this book hears of it at once.
+        ExportService.tell(c);
+    }
+
+    /** Sees that the queue will be worked on, now or when its window opens. */
+    static void schedule(Context c) {
+        ExportService.kick(c);
     }
 
     /**
-     * Asks the system to wake Hora for this work when the phone is charging, unless that is
-     * already asked for or running: asking again would stop the running work and start a
-     * second worker beside the first.
+     * The system's job, for when the service may not start from the background: asked once,
+     * after the given delay. Asking again while one waits would stop a running worker.
      */
-    static void schedule(Context c) {
+    static void scheduleJob(Context c, long delayMs) {
         if (queue(c).length() == 0) {
             return;
         }
@@ -145,20 +154,123 @@ final class Export {
         if (js.getPendingJob(JOB) != null) {
             return;
         }
-        schedule(c, 0);
+        rescheduleJob(c, delayMs);
     }
 
-    /** Asks for the next wake-up from the job itself, after the given delay. */
-    static void schedule(Context c, long delayMs) {
+    /** Asks for the job's next wake-up from the job itself; off the charger only when the battery allows. */
+    static void rescheduleJob(Context c, long delayMs) {
         if (queue(c).length() == 0) {
             return;
         }
         JobScheduler js = (JobScheduler) c.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        JobInfo.Builder b = new JobInfo.Builder(JOB, new ComponentName(c, ExportJob.class)).setRequiresCharging(true);
+        JobInfo.Builder b = new JobInfo.Builder(JOB, new ComponentName(c, ExportJob.class))
+                .setRequiresCharging(gate(c) == WAIT_POWER);
         if (delayMs > 0) {
             b.setMinimumLatency(delayMs);
         }
         js.schedule(b.build());
+    }
+
+    // When the work may go on.
+
+    static final int GO = 0;
+    static final int WAIT_TIME = 1;
+    static final int WAIT_POWER = 2;
+    /** Off the charger the work stops here, so the morning does not find the phone dead. */
+    static final int BATTERY_FLOOR = 20;
+    private static final String PREFS = "export";
+    private static final String SCHEDULED = "scheduled";
+    private static final String START = "start";
+    private static final String END = "end";
+    private static final String NOW_ONCE = "now_once";
+    static final int START_DEFAULT = 60;
+    static final int END_DEFAULT = 7 * 60;
+
+    @SuppressWarnings("deprecation")
+    private static android.content.SharedPreferences sp(Context c) {
+        // Read by the worker in the voice process, written by the screen: across processes.
+        return c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS);
+    }
+
+    static boolean scheduled(Context c) {
+        return sp(c).getBoolean(SCHEDULED, false);
+    }
+
+    static int startMinutes(Context c) {
+        return sp(c).getInt(START, START_DEFAULT);
+    }
+
+    static int endMinutes(Context c) {
+        return sp(c).getInt(END, END_DEFAULT);
+    }
+
+    static void setSchedule(Context c, boolean on, int start, int end) {
+        sp(c).edit().putBoolean(SCHEDULED, on).putInt(START, start).putInt(END, end).putBoolean(NOW_ONCE, false).commit();
+        Diag.mark(c, "export: " + (on ? "scheduled " + clock(start) + "-" + clock(end) : "at once"));
+        schedule(c);
+    }
+
+    /** "Start now" from the notification: the window is set aside until the queue is empty. */
+    static void setNowOnce(Context c, boolean on) {
+        sp(c).edit().putBoolean(NOW_ONCE, on).commit();
+    }
+
+    /** Whether the work may go on now, or what it waits for. */
+    static int gate(Context c) {
+        if (scheduled(c) && !sp(c).getBoolean(NOW_ONCE, false) && !inWindow(c)) {
+            return WAIT_TIME;
+        }
+        android.os.BatteryManager bm = (android.os.BatteryManager) c.getSystemService(Context.BATTERY_SERVICE);
+        if (!bm.isCharging() && battery(c) <= BATTERY_FLOOR) {
+            return WAIT_POWER;
+        }
+        return GO;
+    }
+
+    static int battery(Context c) {
+        android.os.BatteryManager bm = (android.os.BatteryManager) c.getSystemService(Context.BATTERY_SERVICE);
+        int level = bm.getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_CAPACITY);
+        // A phone that does not tell is taken as full: the floor is a courtesy, not a lock.
+        return level <= 0 ? 100 : level;
+    }
+
+    private static boolean inWindow(Context c) {
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        int m = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE);
+        int a = startMinutes(c);
+        int b = endMinutes(c);
+        if (a == b) {
+            return true;
+        }
+        return a < b ? m >= a && m < b : m >= a || m < b;
+    }
+
+    /** The next moment the window opens, as wall-clock milliseconds. */
+    static long nextStart(Context c) {
+        java.util.Calendar at = java.util.Calendar.getInstance();
+        int start = startMinutes(c);
+        at.set(java.util.Calendar.HOUR_OF_DAY, start / 60);
+        at.set(java.util.Calendar.MINUTE, start % 60);
+        at.set(java.util.Calendar.SECOND, 0);
+        at.set(java.util.Calendar.MILLISECOND, 0);
+        if (at.getTimeInMillis() <= System.currentTimeMillis()) {
+            at.add(java.util.Calendar.DAY_OF_MONTH, 1);
+        }
+        return at.getTimeInMillis();
+    }
+
+    /** How long until the work may begin, for the system's job; zero when it may now. */
+    static long untilAllowed(Context c) {
+        return gate(c) == WAIT_TIME ? Math.max(0, nextStart(c) - System.currentTimeMillis()) : 0;
+    }
+
+    static String clock(int minutes) {
+        return String.format(java.util.Locale.ROOT, "%02d:%02d", minutes / 60, minutes % 60);
+    }
+
+    /** Whether any book in the queue is still to be tried. */
+    static boolean anyLeft(Context c) {
+        return next(queue(c)) >= 0;
     }
 
     /** Gives a book that stopped trying another chance. */
@@ -370,8 +482,18 @@ final class Export {
             String uri = job.optString("uri");
             Diag.mark(c, "export: working, chapter " + (job.optInt("chapter") + 1) + " of " + job.optInt("chapters")
                     + ", paragraph " + Math.max(0, job.optInt("paragraph")));
+            final String working = uri;
+            final Context ctx = c;
+            final Voice.Cancel parent = stop;
+            // A book taken out of the queue stops being read at the next paragraph.
+            Voice.Cancel bookStop = new Voice.Cancel() {
+                @Override
+                public boolean cancelled() {
+                    return parent.cancelled() || !queued(ctx, working);
+                }
+            };
             try {
-                boolean done = step(c, job, until, stop);
+                boolean done = step(c, job, until, bookStop);
                 // The job object carries its own progress; keep it whatever happened.
                 q = queue(c);
                 int now = find(q, uri);

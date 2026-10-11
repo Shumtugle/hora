@@ -51,7 +51,7 @@ public final class RolesActivity extends Activity {
         root.setBackgroundColor(Palette.BG);
         root.setPadding(dp(20), dp(20), dp(20), dp(16));
 
-        LinearLayout head = Ui.header(this, getString(R.string.roles_title), true);
+        LinearLayout head = Ui.header(this, getString(R.string.roles_title), false);
         root.addView(head, Ui.lp(Ui.MATCH, dp(48)));
 
         ScrollView scroll = new ScrollView(this);
@@ -108,7 +108,6 @@ public final class RolesActivity extends Activity {
         LinearLayout.LayoutParams tgp = Ui.lp(Ui.MATCH, Ui.WRAP);
         tgp.topMargin = dp(12);
         root.addView(toggle, tgp);
-        root.addView(Ui.navBar(this, Ui.NAV_ROLES), Ui.lp(Ui.MATCH, Ui.WRAP));
         return root;
     }
 
@@ -120,12 +119,12 @@ public final class RolesActivity extends Activity {
         t.setTypeface(Palette.bodyStrong(this));
         line.addView(t, Ui.weight(1));
         chosen[i] = Ui.title(this, "", 20);
-        // The chosen voice's name opens its own room, where it is tuned.
+        // The chosen voice's name opens its card among the voices.
         chosen[i].setClickable(true);
         chosen[i].setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LabActivity.open(RolesActivity.this, Prefs.role(RolesActivity.this, ROLES[i]));
+                VoicesActivity.open(RolesActivity.this, Prefs.role(RolesActivity.this, ROLES[i]));
             }
         });
         line.addView(chosen[i]);

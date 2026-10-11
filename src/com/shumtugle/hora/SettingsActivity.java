@@ -74,13 +74,6 @@ public final class SettingsActivity extends Activity {
         LinearLayout voices = Kit.plate(this);
         voices.addView(Kit.rowNav(this, getString(R.string.settings_voices_roles), null, open(RolesActivity.class)));
         voices.addView(Kit.divider(this));
-        voices.addView(Kit.rowNav(this, getString(R.string.lab_title), null, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LabActivity.open(SettingsActivity.this, Prefs.role(SettingsActivity.this, Cast.TALK));
-            }
-        }));
-        voices.addView(Kit.divider(this));
         voices.addView(Kit.rowNav(this, getString(R.string.intro_herald), null, open(HeraldActivity.class)));
         list.addView(voices);
 
@@ -241,14 +234,6 @@ public final class SettingsActivity extends Activity {
             @Override
             public void onClick(View v) {
                 IntroActivity.open(SettingsActivity.this);
-            }
-        }));
-        about.addView(Kit.divider(this));
-        // The demo book, read by the narrator; it never sits on the shelf.
-        about.addView(Kit.rowNav(this, getString(R.string.demo_title), "\u25b7", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                BetaActivity.read(SettingsActivity.this, 0);
             }
         }));
         about.addView(Kit.divider(this));
@@ -520,18 +505,20 @@ public final class SettingsActivity extends Activity {
         if (!Beta.open(this)) {
             return;
         }
+        // Nothing to tune here: while the room is open, the ninth voice stands in the row like the others.
         beta.addView(Kit.section(this, getString(R.string.dev_section)));
-        LinearLayout room = Kit.plate(this);
-        room.addView(Kit.rowNav(this, getString(R.string.beta_title), null, open(BetaActivity.class)));
-        room.addView(Kit.divider(this));
-        // A short spoken sample of every voice, written to a file, for comparing builds by ear.
-        room.addView(Kit.rowNav(this, getString(R.string.probe), null, new View.OnClickListener() {
+        TextView note = Ui.text(this, getString(R.string.dev_note, Cast.name(this, Cast.BETA_M2)), 13, Palette.MUTED);
+        note.setLineSpacing(0, 1.3f);
+        note.setPadding(dp(4), 0, dp(4), 0);
+        beta.addView(note, Kit.wide());
+        beta.addView(Kit.link(this, getString(R.string.dev_close), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                VoiceService.probe(SettingsActivity.this);
+                Beta.setOpen(SettingsActivity.this, false);
+                Diag.mark(SettingsActivity.this, "settings: developer room closed");
+                showDeveloper();
             }
-        }));
-        beta.addView(room);
+        }), Kit.below(this, 8));
     }
 
     private int dp(float v) {

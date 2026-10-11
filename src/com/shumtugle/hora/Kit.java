@@ -327,6 +327,19 @@ final class Kit {
      */
     static Dialog sheet(Activity a, CharSequence title, View content, CharSequence action, final Runnable onAction,
             View lesser) {
+        return sheet(a, title, content, action, onAction, lesser, R.string.kit_cancel);
+    }
+
+    /**
+     * A sheet whose changes take effect as they are made, so there is nothing to cancel:
+     * it closes with "Done".
+     */
+    static Dialog liveSheet(Activity a, CharSequence title, View content) {
+        return sheet(a, title, content, null, null, null, R.string.kit_done);
+    }
+
+    private static Dialog sheet(Activity a, CharSequence title, View content, CharSequence action,
+            final Runnable onAction, View lesser, int closeLabel) {
         final Dialog d = new Dialog(a, Palette.sheetTheme());
         d.requestWindowFeature(Window.FEATURE_NO_TITLE);
         LinearLayout card = Ui.column(a);
@@ -353,7 +366,7 @@ final class Kit {
         if (lesser != null) {
             card.addView(lesser, below(a, 12));
         }
-        TextView cancel = link(a, a.getString(R.string.kit_cancel), new View.OnClickListener() {
+        TextView cancel = link(a, a.getString(closeLabel), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 d.dismiss();

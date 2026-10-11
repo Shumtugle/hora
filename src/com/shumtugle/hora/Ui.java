@@ -159,6 +159,30 @@ final class Ui {
         return new int[] {side, margin};
     }
 
+    /** Faces to a line so that the lines come out even: eight as four and four, nine as five and four. */
+    static int perRow(int count) {
+        int rows = Math.max(1, (count + Cast.COUNT - 1) / Cast.COUNT);
+        return Math.max(1, (count + rows - 1) / rows);
+    }
+
+    /**
+     * Lays out one small face in its slot. The slot is the size of five to a line whatever the
+     * line holds, every face sits inside a hairline circle, and the chosen one has its own colour
+     * instead: the circle reads as the edge of the portrait, not as a shadow beside a face.
+     */
+    static void troupeFace(android.app.Activity a, ImageView face, int voice, boolean on) {
+        int[] cell = troupeCell(a, Cast.COUNT);
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(a, cell[0]), dp(a, cell[0]));
+        p.leftMargin = dp(a, cell[1]);
+        p.rightMargin = dp(a, cell[1]);
+        face.setLayoutParams(p);
+        int pad = dp(a, 3);
+        face.setPadding(pad, pad, pad, pad);
+        face.setBackground(on ? oval(Palette.BG, Palette.voice(voice), 2, a)
+                : oval(android.graphics.Color.TRANSPARENT, Palette.LINE, 1, a));
+        face.setAlpha(on ? 1f : 0.62f);
+    }
+
     static ImageView portrait(Context c, int voice) {
         ImageView p = new ImageView(c);
         // The face is a circle of its own inside the padding, so a ring around it
@@ -400,21 +424,14 @@ final class Ui {
     }
 
     /**
-     * The one header every screen shares: on the left the app's sign on a
-     * main screen or a way back on a nested one, then the title, and on the
-     * right of a main screen the settings, always in the same place.
+     * The one header every screen shares: a way back on a nested screen, then
+     * the title, and on the right of a main screen the settings, always in the
+     * same place. A main screen has nothing on the left: a sign that looked like
+     * a button and did nothing was worse than no sign.
      */
     static LinearLayout header(final android.app.Activity a, CharSequence title, boolean main) {
         LinearLayout head = row(a);
-        if (main) {
-            ImageView sign = new ImageView(a);
-            sign.setImageResource(R.drawable.hora_sign);
-            sign.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            sign.setBackground(round(0xFFA83428, 12, a));
-            // The sign only marks the app: the title page shows on the first start and from Settings.
-            sign.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-            head.addView(sign, lp(dp(a, 44), dp(a, 44)));
-        } else {
+        if (!main) {
             ImageView back = iconButton(a, R.drawable.ic_back, Palette.SURFACE, 44, a.getString(R.string.ws_back));
             back.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -446,13 +463,13 @@ final class Ui {
 
     static final int NAV_VOICE = 0;
     static final int NAV_BOOK = 1;
-    static final int NAV_ROLES = 2;
-    static final int NAV_SHELF = 3;
+    static final int NAV_SHELF = 2;
 
     /** The bottom bar shared by the main screens; the current one is lit and does nothing. */
     static LinearLayout navBar(final android.app.Activity a, int current) {
-        final Class<?>[] screens = {MainActivity.class, BookActivity.class, RolesActivity.class, ShelfActivity.class};
-        int[] labels = {R.string.nav_voice, R.string.nav_book, R.string.nav_roles, R.string.nav_shelf};
+        // Three places, one door each: roles live in the settings and in the book's reader sheet.
+        final Class<?>[] screens = {MainActivity.class, BookActivity.class, ShelfActivity.class};
+        int[] labels = {R.string.nav_voice, R.string.nav_book, R.string.nav_shelf};
         LinearLayout nav = row(a);
         nav.setPadding(0, dp(a, 14), 0, 0);
         for (int i = 0; i < screens.length; i++) {

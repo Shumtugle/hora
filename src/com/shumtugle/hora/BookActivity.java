@@ -305,17 +305,11 @@ public final class BookActivity extends Activity {
         readerName = Ui.text(this, "", 11, Palette.MUTED);
         View reader = flank(readerFace, readerName);
         readerBox = reader;
+        // The whole corner is one door: who reads this book, chosen right here.
         reader.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(BookActivity.this, RolesActivity.class));
-            }
-        });
-        reader.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                LabActivity.open(BookActivity.this, Prefs.role(BookActivity.this, Cast.NARRATOR));
-                return true;
+                whoReads();
             }
         });
         controls.addView(reader, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
@@ -356,6 +350,96 @@ public final class BookActivity extends Activity {
         root.addView(Ui.navBar(this, Ui.NAV_BOOK), Ui.lp(Ui.MATCH, Ui.WRAP));
         Kit.edgeToEdge(this, root, dp(20), dp(20), dp(20), dp(16));
         return whole;
+    }
+
+    /**
+     * The sheet "who reads the book": every voice as a face with its name, the reader in its
+     * ring. A touch makes that voice the reader at once; the paragraph under way is read anew.
+     * For the demo the choice is the demo's own and leaves the narrator of other books alone.
+     */
+    private void whoReads() {
+        final boolean demo = Demo.is(this, Reading.uri(this));
+        final int now = demo && Demo.voice(this) > 0 ? Demo.voice(this) : Prefs.role(this, Cast.NARRATOR);
+        final android.app.Dialog[] sheet = new android.app.Dialog[1];
+        LinearLayout grid = Ui.column(this);
+        grid.setGravity(Gravity.CENTER_HORIZONTAL);
+        int count = Cast.size(this);
+        int perRow = Ui.perRow(count);
+        // Cells share the sheet's inner width: the screen less the sheet's margins and padding.
+        float width = getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density;
+        int cellDp = Math.max(44, Math.min(84, (int) ((width - 24 - 2 * Kit.PAD) / perRow)));
+        LinearLayout line = null;
+        for (int i = 0; i < count; i++) {
+            final int v = Cast.at(i);
+            if (i % perRow == 0) {
+                line = Ui.row(this);
+                line.setGravity(Gravity.CENTER);
+                LinearLayout.LayoutParams lp = Ui.lp(Ui.WRAP, Ui.WRAP);
+                if (i > 0) {
+                    lp.topMargin = dp(10);
+                }
+                grid.addView(line, lp);
+            }
+            LinearLayout cell = Ui.column(this);
+            cell.setGravity(Gravity.CENTER_HORIZONTAL);
+            ImageView face = Ui.portrait(this, v);
+            boolean on = v == now;
+            face.setPadding(dp(3), dp(3), dp(3), dp(3));
+            face.setBackground(on ? Ui.oval(Palette.SURFACE, Palette.voice(v), 2, this)
+                    : Ui.oval(android.graphics.Color.TRANSPARENT, Palette.LINE, 1, this));
+            face.setAlpha(on ? 1f : 0.75f);
+            int side = Math.min(56, cellDp - 4);
+            cell.addView(face, Ui.lp(dp(side), dp(side)));
+            TextView name = Ui.text(this, Cast.name(this, v), 13, on ? Palette.INK : Palette.MUTED);
+            if (on) {
+                name.setTypeface(Palette.bodyStrong(this));
+            }
+            name.setGravity(Gravity.CENTER);
+            name.setMaxLines(1);
+            name.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            LinearLayout.LayoutParams np = Ui.lp(Ui.MATCH, Ui.WRAP);
+            np.topMargin = dp(4);
+            cell.addView(name, np);
+            cell.setContentDescription(Cast.name(this, v));
+            cell.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (v != now) {
+                        if (demo) {
+                            Demo.setVoice(BookActivity.this, v);
+                        } else {
+                            Prefs.setRole(BookActivity.this, Cast.NARRATOR, v);
+                        }
+                        Diag.mark(BookActivity.this, "book: reader chosen, " + v);
+                    }
+                    sheet[0].dismiss();
+                    show();
+                }
+            });
+            line.addView(cell, Ui.lp(dp(cellDp), Ui.WRAP));
+        }
+        LinearLayout links = Ui.row(this);
+        TextView tune = Kit.link(this, getString(R.string.book_tune_reader), new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sheet[0].dismiss();
+                VoicesActivity.openMakeup(BookActivity.this, now);
+            }
+        });
+        links.addView(tune, Ui.weight(1));
+        TextView roles = Kit.link(this, getString(R.string.book_roles), new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sheet[0].dismiss();
+                startActivity(new Intent(BookActivity.this, RolesActivity.class));
+            }
+        });
+        roles.setGravity(Gravity.END);
+        links.addView(roles, Ui.weight(1));
+        LinearLayout box = Ui.column(this);
+        box.addView(grid, Ui.lp(Ui.MATCH, Ui.WRAP));
+        box.addView(links, Kit.below(this, 18));
+        sheet[0] = Kit.liveSheet(this, getString(R.string.book_who_reads), box);
     }
 
     /** Brings the screen up to the reading state. */

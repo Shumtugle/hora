@@ -47,7 +47,6 @@ public final class MainActivity extends Activity {
     private TextView spoken;
     private ImageView backdrop;
     private View bookWay;
-    private View workshopWay;
     private AnimatorSet breathGlow;
     private AnimatorSet breathRing;
 
@@ -97,7 +96,7 @@ public final class MainActivity extends Activity {
         }
         // After a restore from another phone: what this phone still has to give.
         RestoreActivity.checkIfPending(this);
-        // The workshop, or the title page, may have changed the voice.
+        // The voices, or the title page, may have changed the voice.
         showVoice(Prefs.role(this, Cast.TALK));
         if (card) {
             showCard(voice);
@@ -392,21 +391,10 @@ public final class MainActivity extends Activity {
         for (int i = 0; i < dots.length; i++) {
             boolean on = Cast.at(i) == v;
             // Every face keeps the same slot, so choosing one never moves the others.
-            int[] cell = Ui.troupeCell(this, Math.min(dots.length, Cast.COUNT));
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(cell[0]), dp(cell[0]));
-            p.leftMargin = dp(cell[1]);
-            p.rightMargin = dp(cell[1]);
-            dots[i].setLayoutParams(p);
-            // The same inset for every face: the ring marks the chosen one, the face does not grow.
-            int pad = dp(3);
-            dots[i].setPadding(pad, pad, pad, pad);
-            dots[i].setBackground(on ? Ui.oval(Palette.BG, Palette.voice(Cast.at(i)), 2, this) : null);
-            dots[i].setAlpha(on ? 1f : 0.55f);
+            Ui.troupeFace(this, dots[i], Cast.at(i), on);
         }
         hint.setVisibility(Prefs.troupeHintsLeft(this) > 0 ? View.VISIBLE : View.GONE);
         Kit.backdrop(this, backdrop, v);
-        Kit.setEntry(workshopWay, getString(R.string.home_workshop, Cast.name(this, v)),
-                getString(R.string.home_workshop_sub));
         String uri = Reading.uri(this);
         Library.Entry e = uri.isEmpty() ? null : Library.get(this, uri);
         String sub = getString(R.string.home_book_none);
@@ -443,7 +431,7 @@ public final class MainActivity extends Activity {
         face.addView(ring, new FrameLayout.LayoutParams(dp(176), dp(176), Gravity.CENTER));
         photo = Ui.portrait(this, 1);
         photo.setClickable(true);
-        // A touch opens the voice's room; a sideways swipe brings the next voice forward.
+        // A touch opens the voices, at this one; a sideways swipe brings the next voice forward.
         final android.view.GestureDetector gestures = new android.view.GestureDetector(this,
                 new android.view.GestureDetector.SimpleOnGestureListener() {
                     @Override
@@ -453,7 +441,7 @@ public final class MainActivity extends Activity {
 
                     @Override
                     public boolean onSingleTapUp(android.view.MotionEvent e) {
-                        LabActivity.open(MainActivity.this, voice);
+                        VoicesActivity.open(MainActivity.this, voice);
                         return true;
                     }
 
@@ -503,15 +491,16 @@ public final class MainActivity extends Activity {
         epithet.setVisibility(View.GONE);
         stage.addView(epithet, ep);
 
-        // The whole troupe as a row of small faces: the one speaking larger, in its ring.
-        // Five faces to a line: the cast on the first, the trial voices on a second when shown.
+        // The whole troupe as rows of small faces of equal length: eight stand four and four,
+        // nine five and four. The chosen one is marked by its ring, not by its size.
         LinearLayout troupe = Ui.column(this);
         troupe.setGravity(Gravity.CENTER_HORIZONTAL);
         LinearLayout line = null;
         dots = new ImageView[Cast.size(this)];
+        int perRow = Ui.perRow(dots.length);
         for (int i = 0; i < dots.length; i++) {
             final int v = Cast.at(i);
-            if (i % Cast.COUNT == 0) {
+            if (i % perRow == 0) {
                 line = Ui.row(this);
                 line.setGravity(Gravity.CENTER);
                 LinearLayout.LayoutParams linep = Ui.lp(Ui.WRAP, Ui.WRAP);
@@ -529,13 +518,6 @@ public final class MainActivity extends Activity {
                     if (v != voice) {
                         choose(v);
                     }
-                }
-            });
-            dots[i].setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
-                    LabActivity.open(MainActivity.this, v);
-                    return true;
                 }
             });
             line.addView(dots[i]);
@@ -587,21 +569,13 @@ public final class MainActivity extends Activity {
         qp.bottomMargin = dp(14);
         root.addView(quick, qp);
 
-        // Three ways on from here: the talk, the book, and this voice's workshop.
+        // Two ways on from here: the talk and the book. The voices are behind the portrait.
         LinearLayout ways = Kit.plate(this);
         ways.setPadding(0, dp(4), 0, dp(4));
         ways.addView(Kit.rowEntry(this, R.drawable.ic_talk, getString(R.string.talk_title),
                 getString(R.string.talk_sub), open(TalkActivity.class)), Ui.lp(Ui.MATCH, Ui.WRAP));
         bookWay = Kit.rowEntry(this, R.drawable.ic_book, getString(R.string.nav_book), "", open(BookActivity.class));
         ways.addView(bookWay, Ui.lp(Ui.MATCH, Ui.WRAP));
-        workshopWay = Kit.rowEntry(this, R.drawable.ic_sliders, "", getString(R.string.home_workshop_sub),
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        LabActivity.open(MainActivity.this, voice);
-                    }
-                });
-        ways.addView(workshopWay, Ui.lp(Ui.MATCH, Ui.WRAP));
         root.addView(ways, Ui.lp(Ui.MATCH, Ui.WRAP));
         LinearLayout.LayoutParams navGap = Ui.lp(Ui.MATCH, Ui.WRAP);
         navGap.topMargin = dp(10);

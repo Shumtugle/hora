@@ -24,19 +24,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class VoiceService extends Service {
     private static final String ACTION_SPEAK = "com.shumtugle.hora.action.SPEAK";
     private static final String ACTION_STOP = "com.shumtugle.hora.action.STOP";
-    private static final String ACTION_PROBE = "com.shumtugle.hora.action.PROBE";
     /** Sent to this app's screens when nothing is left to say. */
     static final String ACTION_IDLE = "com.shumtugle.hora.action.IDLE";
     private static final String EXTRA_TEXT = "text";
-    private static final String ACTION_RECORD = "com.shumtugle.hora.RECORD";
-    /** Sent to this app only while a recording goes on: done and total paragraphs, then the outcome. */
-    static final String ACTION_RECORD_STATE = "com.shumtugle.hora.RECORD_STATE";
-    static final String EXTRA_DONE = "done";
-    static final String EXTRA_TOTAL = "total";
-    /** Present when finished: the saved file's name, or empty when it failed or was not saved. */
-    static final String EXTRA_FILE = "file";
-    static final String EXTRA_SECONDS = "seconds";
-    static final String EXTRA_ERROR = "error";
     private static final String EXTRA_SPEED = "speed";
     private static final String EXTRA_PAUSE = "pause";
     private static final String EXTRA_VOICE = "voice";
@@ -74,22 +64,6 @@ public final class VoiceService extends Service {
         c.startService(new Intent(c, VoiceService.class).setAction(ACTION_STOP));
     }
 
-    /** Synthesizes a fixed phrase at normal speed, saves it to Downloads and plays it. */
-    static void probe(Context c) {
-        c.startForegroundService(new Intent(c, VoiceService.class).setAction(ACTION_PROBE));
-    }
-
-    /** Reads the given text with the narrator, as the book would, and saves it to Downloads. */
-    static void record(Context c, String text) {
-        record(c, text, 0);
-    }
-
-    /** Records with a given voice (1..COUNT); 0 leaves it to the narrator role. */
-    static void record(Context c, String text, int voice) {
-        c.startForegroundService(new Intent(c, VoiceService.class).setAction(ACTION_RECORD)
-                .putExtra(EXTRA_TEXT, text).putExtra(EXTRA_VOICE, voice));
-    }
-
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -125,14 +99,6 @@ public final class VoiceService extends Service {
                         intent.getIntExtra(EXTRA_VOICE, 0));
                 return START_NOT_STICKY;
             }
-        } else if (intent != null && ACTION_PROBE.equals(intent.getAction())) {
-            startForeground(NOTE_ID, notification(getString(R.string.probe)));
-            runProbe(null);
-            return START_NOT_STICKY;
-        } else if (intent != null && ACTION_RECORD.equals(intent.getAction())) {
-            startForeground(NOTE_ID, notification(getString(R.string.recording)));
-            runRecord(intent.getStringExtra(EXTRA_TEXT), intent.getIntExtra(EXTRA_VOICE, 0));
-            return START_NOT_STICKY;
         } else {
             // Stop, or an unknown request: interrupt whatever is playing.
             generation.incrementAndGet();
@@ -235,136 +201,6 @@ public final class VoiceService extends Service {
                 }
             }
         });
-    }
-
-    /** Renders the probe phrase, or the given text at the book's pace, saves it and plays it. */
-    private void runProbe(final String given) {
-        final int gen = generation.incrementAndGet();
-        pending.incrementAndGet();
-        worker.execute(new Runnable() {
-            @Override
-            public void run() {
-                String message;
-                try {
-                    Voice voice = Voice.get(VoiceService.this);
-                    voice.prepare();
-                    boolean own = given != null && !given.trim().isEmpty();
-                    String text = own ? given : SpeechLanguage.resources(VoiceService.this)
-                            .getString(R.string.probe_text);
-                    long t0 = System.nanoTime();
-                    float[] audio = own
-                            ? voice.render(voice.normalize(Lexicon.get(VoiceService.this).applyRules(TextPrep.clean(text))),
-                                    Prefs.speedShared(VoiceService.this), Prefs.pauseMsShared(VoiceService.this))
-                            : voice.render(voice.normalize(text), 1.0f, 300);
-                    double spent = (System.nanoTime() - t0) / 1e9;
-                    int rate = voice.sampleRate();
-                    voice.takeRatio();
-                    String name = WavOut.saveRecording(VoiceService.this,
-                            getString(own ? R.string.record_reading_name : R.string.record_probe_name), audio, rate);
-                    message = getString(R.string.probe_done, name,
-                            audio.length / (double) rate, spent);
-                    voice.play(audio, new Voice.Cancel() {
-                        @Override
-                        public boolean cancelled() {
-                            return gen != generation.get();
-                        }
-                    });
-                } catch (Throwable t) {
-                    message = getString(R.string.probe_failed, String.valueOf(t.getMessage()));
-                }
-                final String shown = message;
-                main.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        android.widget.Toast.makeText(VoiceService.this, shown,
-                                android.widget.Toast.LENGTH_LONG).show();
-                    }
-                });
-                pending.decrementAndGet();
-                main.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        finishIfIdle();
-                    }
-                });
-            }
-        });
-    }
-
-    /**
-     * Reads a text paragraph by paragraph the way the book is read, telling
-     * the screen how far it got, then saves the whole and plays nothing:
-     * the file is the result.
-     */
-    private void runRecord(final String text, final int voiceNo) {
-        final int gen = generation.incrementAndGet();
-        pending.incrementAndGet();
-        worker.execute(new Runnable() {
-            @Override
-            public void run() {
-                Intent end = new Intent(ACTION_RECORD_STATE).setPackage(getPackageName());
-                try {
-                    Voice voice = Voice.get(VoiceService.this);
-                    voice.prepare();
-                    java.util.List<String> paras = new java.util.ArrayList<String>();
-                    for (String p : (text == null ? "" : text).split("\\n")) {
-                        if (!p.trim().isEmpty()) {
-                            paras.add(p.trim());
-                        }
-                    }
-                    int rate = voice.sampleRate();
-                    float speed = Prefs.speedShared(VoiceService.this);
-                    int pause = Prefs.pauseMsShared(VoiceService.this);
-                    java.util.List<float[]> parts = new java.util.ArrayList<float[]>();
-                    int total = 0;
-                    Voice.Cancel cancel = new Voice.Cancel() {
-                        @Override
-                        public boolean cancelled() {
-                            return gen != generation.get();
-                        }
-                    };
-                    for (int i = 0; i < paras.size() && !cancel.cancelled(); i++) {
-                        tell(i, paras.size());
-                        String spoken = voice.normalize(Lexicon.get(VoiceService.this)
-                                .applyRules(TextPrep.clean(paras.get(i))));
-                        float[] a = voice.render(spoken, SpeechLanguage.locale(), speed, pause, cancel, null, false,
-                                voiceNo);
-                        parts.add(a);
-                        total += a.length;
-                    }
-                    tell(paras.size(), paras.size());
-                    float[] all = new float[total];
-                    int at = 0;
-                    for (float[] a : parts) {
-                        System.arraycopy(a, 0, all, at, a.length);
-                        at += a.length;
-                    }
-                    Prefs.setLastRatio(VoiceService.this, voice.takeRatio());
-                    int narrator = voiceNo > 0 ? voiceNo : Prefs.roleShared(VoiceService.this, Cast.NARRATOR);
-                    end.putExtra(EXTRA_SECONDS, all.length / (float) rate);
-                    end.putExtra(EXTRA_FILE, cancel.cancelled() ? ""
-                            : WavOut.saveRecording(VoiceService.this, getString(R.string.record_reading_name), all, rate));
-                    Diag.mark(VoiceService.this, String.format(java.util.Locale.ROOT,
-                            "record: %d paragraphs, %.1f s", paras.size(), all.length / (float) rate));
-                } catch (Throwable t) {
-                    end.putExtra(EXTRA_FILE, "").putExtra(EXTRA_ERROR, String.valueOf(t.getMessage()));
-                    Diag.log(VoiceService.this, "record: failed", t);
-                }
-                sendBroadcast(end);
-                pending.decrementAndGet();
-                main.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        finishIfIdle();
-                    }
-                });
-            }
-        });
-    }
-
-    private void tell(int done, int total) {
-        sendBroadcast(new Intent(ACTION_RECORD_STATE).setPackage(getPackageName())
-                .putExtra(EXTRA_DONE, done).putExtra(EXTRA_TOTAL, total));
     }
 
     private void finishIfIdle() {
