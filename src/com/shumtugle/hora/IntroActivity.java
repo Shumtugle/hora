@@ -143,7 +143,8 @@ public final class IntroActivity extends Activity {
             p.leftMargin = dp(cell[1]);
             p.rightMargin = dp(cell[1]);
             dots[i].setLayoutParams(p);
-            int pad = on ? dp(3) : dp(5);
+            // The same inset for every face: the ring marks the chosen one, the face does not grow.
+            int pad = dp(3);
             dots[i].setPadding(pad, pad, pad, pad);
             dots[i].setBackground(on ? Ui.oval(Palette.BG, Palette.voice(i + 1), 2, this) : null);
             dots[i].setAlpha(on ? 1f : 0.55f);

@@ -148,13 +148,13 @@ final class Ui {
     /** A portrait cut into a circle. */
     /**
      * The row of small faces: face size and side margin in dp for a number of
-     * faces. Five keep 36 dp faces with 7 dp margins; more share the width of the
-     * screen, so the row never runs off its edges.
+     * faces on one line. Five to a line get 52 dp faces on a common phone; the
+     * line never runs off the edges of a narrower screen.
      */
     static int[] troupeCell(Context c, int count) {
         float width = c.getResources().getDisplayMetrics().widthPixels / c.getResources().getDisplayMetrics().density;
-        int cell = Math.min(50, (int) ((width - 48) / Math.max(1, count)));
-        int side = Math.max(24, Math.min(36, cell - 8));
+        int cell = Math.min(64, (int) ((width - 48) / Math.max(1, count)));
+        int side = Math.max(24, Math.min(52, cell - 10));
         int margin = Math.max(2, (cell - side) / 2);
         return new int[] {side, margin};
     }
