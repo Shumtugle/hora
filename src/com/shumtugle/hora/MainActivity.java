@@ -297,10 +297,6 @@ public final class MainActivity extends Activity {
         // Changing the voice is quiet: its card is shown, and a tap on it makes the voice speak.
         TapTalk.reset();
         showCard(v);
-        if (v == Cast.RENAMABLE && !Prefs.nameAsked(this, v)) {
-            Prefs.setNameAsked(this, v);
-            askName(v);
-        }
     }
 
 
@@ -347,10 +343,10 @@ public final class MainActivity extends Activity {
                 return true;
             }
         });
+        // The keyboard comes only when the field is touched.
         if (d.getWindow() != null) {
-            d.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+            d.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         }
-        field.requestFocus();
         d.show();
     }
 
@@ -376,22 +372,27 @@ public final class MainActivity extends Activity {
         Ui.setFace(photo, v);
         photo.setContentDescription(Cast.name(this, v));
         name.setText(Cast.name(this, v));
-        // A small pen beside the one name a person may change.
-        name.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, Cast.renamable(v) ? R.drawable.ic_edit : 0, 0);
+        // A small pen beside a name a person may change; an unseen twin on the other side keeps the name centred.
+        name.setCompoundDrawablesRelativeWithIntrinsicBounds(Cast.renamable(v) ? R.drawable.ic_edit : 0, 0,
+                Cast.renamable(v) ? R.drawable.ic_edit : 0, 0);
+        android.graphics.drawable.Drawable[] pens = name.getCompoundDrawablesRelative();
+        if (pens[0] != null) {
+            pens[0].mutate().setAlpha(0);
+        }
         name.setCompoundDrawablePadding(dp(6));
         name.setClickable(Cast.renamable(v));
         name.setContentDescription(Cast.renamable(v) ? getString(R.string.name_edit) + ": " + Cast.name(this, v) : null);
-        epithet.setText(Cast.epithet(this, v));
         glow.setBackground(Ui.oval(Palette.voice(v, 0x29), 0, 0, this));
         ring.setBackground(Ui.oval(Color.TRANSPARENT, Palette.voice(v), 2, this));
         for (int i = 0; i < dots.length; i++) {
             boolean on = Cast.at(i) == v;
-            int size = dp(on ? 36 : 26);
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(size, size);
+            // Every face keeps the same slot, so choosing one never moves the others.
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(36), dp(36));
             p.leftMargin = dp(7);
             p.rightMargin = dp(7);
             dots[i].setLayoutParams(p);
-            dots[i].setPadding(on ? dp(3) : 0, on ? dp(3) : 0, on ? dp(3) : 0, on ? dp(3) : 0);
+            int pad = on ? dp(3) : dp(5);
+            dots[i].setPadding(pad, pad, pad, pad);
             dots[i].setBackground(on ? Ui.oval(Palette.BG, Palette.voice(Cast.at(i)), 2, this) : null);
             dots[i].setAlpha(on ? 1f : 0.55f);
         }
@@ -490,6 +491,8 @@ public final class MainActivity extends Activity {
         epithet.setLetterSpacing(0.04f);
         LinearLayout.LayoutParams ep = Ui.lp(Ui.WRAP, Ui.WRAP);
         ep.topMargin = dp(4);
+        // No titles under the name: the name is enough.
+        epithet.setVisibility(View.GONE);
         stage.addView(epithet, ep);
 
         // The whole troupe as a row of small faces: the one speaking larger, in its ring.

@@ -207,7 +207,8 @@ public final class SearchActivity extends Activity {
             finish();
             return;
         }
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
+        // The keyboard comes only when the field is touched.
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
                 | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         LinearLayout root = Ui.column(this);
         root.setBackgroundColor(Palette.BG);
@@ -279,7 +280,6 @@ public final class SearchActivity extends Activity {
             field.setText(lastQuery);
             field.setSelection(lastQuery.length());
         }
-        field.requestFocus();
     }
 
     @Override

@@ -92,7 +92,6 @@ public final class PlaceActivity extends Activity {
         rp.topMargin = dp(8);
         root.addView(scroll, rp);
         setContentView(root);
-        query.requestFocus();
     }
 
     @Override
@@ -224,7 +223,6 @@ public final class PlaceActivity extends Activity {
         if (l == null) {
             // The phone kept silent: the search by name is the way on.
             status.setText(Weather.line(this, "nolocation"));
-            query.requestFocus();
             return;
         }
         new Thread(new Runnable() {

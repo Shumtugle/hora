@@ -103,11 +103,6 @@ final class Cast {
         return PORTRAITS[Math.max(1, Math.min(COUNT, voice)) - 1];
     }
 
-    /** One-word character of a voice, shown under its name. */
-    static String epithet(Context c, int voice) {
-        return item(c, R.array.voice_epithets, voice);
-    }
-
     /** What a voice is, as a noun: the word that follows its name when it introduces itself. */
     static String title(Context c, int voice) {
         return say(c, R.array.voice_titles, voice);

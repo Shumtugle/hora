@@ -31,10 +31,10 @@ ru.invite.3|Спрашивай.
 ru.invite.5|Слушаю.
 
 ru.flat.1|{name}. Помощница.
-ru.flat.2|{name}. Собеседница.
-ru.flat.3|{name}. Сказочник.
-ru.flat.4|{name}. Чтец.
-ru.flat.5|{name}. Гусляр.
+ru.flat.2|{name}. Помощница.
+ru.flat.3|{name}. Помощник.
+ru.flat.4|{name}. Помощник.
+ru.flat.5|{name}. Помощник.
 
 en.time|It's {time}.
 en.date|Today is {weekday}, {month} {day}.
@@ -62,7 +62,7 @@ en.invite.3|Ask.
 en.invite.5|Listening.
 
 en.flat.1|{name}. Assistant.
-en.flat.2|{name}. Companion.
-en.flat.3|{name}. Storyteller.
-en.flat.4|{name}. Reader.
-en.flat.5|{name}. Minstrel.
+en.flat.2|{name}. Assistant.
+en.flat.3|{name}. Assistant.
+en.flat.4|{name}. Assistant.
+en.flat.5|{name}. Assistant.

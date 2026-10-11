@@ -154,6 +154,7 @@ public final class TalkActivity extends Activity {
         name = Ui.title(this, "", 26);
         who.addView(name);
         epithet = Ui.text(this, "", 13, Palette.MUTED);
+        epithet.setVisibility(View.GONE);
         who.addView(epithet);
         LinearLayout.LayoutParams wp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
         wp.leftMargin = dp(12);
@@ -318,7 +319,6 @@ public final class TalkActivity extends Activity {
         Ui.setFace(face, v);
         face.setBackground(Ui.oval(Palette.BG, Palette.voice(v), 2, this));
         name.setText(Cast.name(this, v));
-        epithet.setText(Cast.epithet(this, v));
         Kit.backdrop(this, backdrop, v);
     }
 

@@ -280,6 +280,10 @@ final class Ui {
      */
     static void field(TextView e) {
         e.setHighlightColor((Palette.ACCENT_TEXT & 0x00FFFFFF) | 0x55000000);
+        // The underline in the app's own colours: quiet at rest, accent while typing, never the system's default.
+        e.setBackgroundTintList(new android.content.res.ColorStateList(
+                new int[][] {new int[] {android.R.attr.state_focused}, new int[] {}},
+                new int[] {Palette.ACCENT_TEXT, Palette.HINT}));
         if (android.os.Build.VERSION.SDK_INT >= 29) {
             GradientDrawable caret = new GradientDrawable();
             caret.setColor(Palette.ACCENT_TEXT);

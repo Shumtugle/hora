@@ -1,19 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- The app's own controls: no system default accent anywhere (fields, switches, sliders, edge glow). -->
+    <style name="Hora" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:colorAccent">#FFE8826C</item>
+        <item name="android:colorControlActivated">#FFE8826C</item>
+        <item name="android:colorControlNormal">#FF9A7F74</item>
+        <item name="android:colorControlHighlight">#33F3E7CF</item>
+        <item name="android:colorEdgeEffect">#FF4E262D</item>
+    </style>
     <!-- Sheets per look: the floating toolbar of selected text takes these colors instead of the system grey. -->
     <style name="Sheet" parent="@android:style/Theme.Material.Dialog.NoActionBar">
+        <item name="android:colorAccent">#FFE8826C</item>
+        <item name="android:colorControlActivated">#FFE8826C</item>
         <item name="android:colorBackgroundFloating">#FF3A1C22</item>
         <item name="android:textColorPrimary">#FFF3E7CF</item>
     </style>
     <style name="Sheet.Contrast">
+        <item name="android:colorAccent">#FFFFD600</item>
+        <item name="android:colorControlActivated">#FFFFD600</item>
         <item name="android:colorBackgroundFloating">#FF333333</item>
         <item name="android:textColorPrimary">#FFFFFFFF</item>
     </style>
     <style name="Sheet.Lamp">
+        <item name="android:colorAccent">#FFD9B160</item>
+        <item name="android:colorControlActivated">#FFD9B160</item>
         <item name="android:colorBackgroundFloating">#FF223129</item>
         <item name="android:textColorPrimary">#FFEFE6D2</item>
     </style>
     <style name="Sheet.Ink">
+        <item name="android:colorAccent">#FFEE8C74</item>
+        <item name="android:colorControlActivated">#FFEE8C74</item>
         <item name="android:colorBackgroundFloating">#FF232943</item>
         <item name="android:textColorPrimary">#FFECE7DC</item>
     </style>

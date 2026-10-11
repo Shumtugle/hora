@@ -836,19 +836,12 @@
     <string name="portraits">Портреты</string>
     <string name="portraits_note">ChatGPT</string>
     <string name="fonts">Шрифты</string>
-    <string-array name="voice_epithets">
-        <item>вещая</item>
-        <item>звонкая</item>
-        <item>сказочник</item>
-        <item>чтец</item>
-        <item>гусляр</item>
-    </string-array>
     <string-array name="voice_titles">
         <item>помощница</item>
-        <item>собеседница</item>
-        <item>сказочник</item>
-        <item>чтец</item>
-        <item>гусляр</item>
+        <item>помощница</item>
+        <item>помощник</item>
+        <item>помощник</item>
+        <item>помощник</item>
     </string-array>
     <string-array name="voice_kinds">
         <item>женский · главный</item>

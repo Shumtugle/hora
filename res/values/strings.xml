@@ -419,19 +419,12 @@
     <string name="portraits">Portraits</string>
     <string name="portraits_note">ChatGPT</string>
     <string name="fonts">Fonts</string>
-    <string-array name="voice_epithets">
-        <item>seer</item>
-        <item>clear-voiced</item>
-        <item>storyteller</item>
-        <item>reader</item>
-        <item>minstrel</item>
-    </string-array>
     <string-array name="voice_titles">
         <item>assistant</item>
-        <item>companion</item>
-        <item>storyteller</item>
-        <item>reader</item>
-        <item>minstrel</item>
+        <item>assistant</item>
+        <item>assistant</item>
+        <item>assistant</item>
+        <item>assistant</item>
     </string-array>
     <string-array name="voice_kinds">
         <item>female · main</item>
