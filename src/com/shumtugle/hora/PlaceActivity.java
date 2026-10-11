@@ -17,7 +17,8 @@ import java.util.List;
 /**
  * Finding the place whose sky to tell: a name typed, the places of that name
  * listed with their region and country, one chosen. Namesakes stand apart,
- * so a town abroad is not mistaken for a capital.
+ * so a town abroad is not mistaken for a capital. Or the phone is asked once,
+ * roughly, where it is.
  */
 public final class PlaceActivity extends Activity {
     private int built;
@@ -56,7 +57,7 @@ public final class PlaceActivity extends Activity {
             }
         });
         line.addView(query, new LinearLayout.LayoutParams(0, dp(44), 1f));
-        ImageView go = Ui.iconButton(this, R.drawable.ic_next, Palette.ACCENT, 44, getString(R.string.place_find));
+        ImageView go = Ui.iconButton(this, R.drawable.ic_search, Palette.ACCENT, 44, getString(R.string.place_find));
         go.setImageTintList(android.content.res.ColorStateList.valueOf(Palette.ON_ACCENT));
         go.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,6 +69,15 @@ public final class PlaceActivity extends Activity {
         LinearLayout.LayoutParams lp = Ui.lp(Ui.MATCH, Ui.WRAP);
         lp.topMargin = dp(16);
         root.addView(line, lp);
+        TextView byPhone = Kit.link(this, getString(R.string.place_by_phone), new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                locate();
+            }
+        });
+        LinearLayout.LayoutParams bp = Ui.lp(Ui.WRAP, Ui.WRAP);
+        bp.topMargin = dp(6);
+        root.addView(byPhone, bp);
 
         status = Ui.text(this, "", 13, Palette.MUTED);
         status.setLineSpacing(0, 1.3f);
@@ -152,6 +162,109 @@ public final class PlaceActivity extends Activity {
             LinearLayout.LayoutParams lp = Ui.lp(Ui.MATCH, Ui.WRAP);
             lp.topMargin = dp(8);
             results.addView(row, lp);
+        }
+    }
+
+    // The phone's own idea of where it is: rough, asked once, never kept watching.
+
+    private static final String LOCATION = "android.permission.ACCESS_COARSE_LOCATION";
+    private static final int ASK_LOCATION = 41;
+    private static final long LOCATE_MS = 8000;
+    private boolean locating;
+
+    private void locate() {
+        if (checkSelfPermission(LOCATION) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[] {LOCATION}, ASK_LOCATION);
+            return;
+        }
+        status.setText(R.string.place_searching);
+        android.location.LocationManager lm = (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
+        android.location.Location best = null;
+        try {
+            for (String provider : lm.getProviders(true)) {
+                android.location.Location l = lm.getLastKnownLocation(provider);
+                if (l != null && (best == null || l.getTime() > best.getTime())) {
+                    best = l;
+                }
+            }
+            if (best == null && lm.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER)
+                    && android.os.Build.VERSION.SDK_INT >= 30) {
+                // A fresh answer, but never waited for longer than a few seconds.
+                final android.os.CancellationSignal stop = new android.os.CancellationSignal();
+                locating = true;
+                lm.getCurrentLocation(android.location.LocationManager.NETWORK_PROVIDER, stop, getMainExecutor(),
+                        new java.util.function.Consumer<android.location.Location>() {
+                            @Override
+                            public void accept(android.location.Location l) {
+                                if (locating) {
+                                    locating = false;
+                                    placed(l);
+                                }
+                            }
+                        });
+                status.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (locating) {
+                            locating = false;
+                            stop.cancel();
+                            placed(null);
+                        }
+                    }
+                }, LOCATE_MS);
+                return;
+            }
+        } catch (SecurityException | IllegalArgumentException e) {
+            best = null;
+        }
+        placed(best);
+    }
+
+    private void placed(final android.location.Location l) {
+        if (l == null) {
+            // The phone kept silent: the search by name is the way on.
+            status.setText(Weather.line(this, "nolocation"));
+            query.requestFocus();
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String name = "";
+                try {
+                    if (android.location.Geocoder.isPresent()) {
+                        List<android.location.Address> a = new android.location.Geocoder(PlaceActivity.this,
+                                SpeechLanguage.locale()).getFromLocation(l.getLatitude(), l.getLongitude(), 1);
+                        if (a != null && !a.isEmpty() && a.get(0).getLocality() != null) {
+                            name = a.get(0).getLocality();
+                        }
+                    }
+                } catch (Exception ignored) {
+                    // Without a name the place is still known by where it lies.
+                }
+                Weather.setPlace(PlaceActivity.this, name, l.getLatitude(), l.getLongitude());
+                Diag.mark(PlaceActivity.this, "place: taken from the phone");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        setResult(RESULT_OK);
+                        finish();
+                    }
+                });
+            }
+        }, "place-phone").start();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int request, String[] names, int[] results) {
+        super.onRequestPermissionsResult(request, names, results);
+        if (request != ASK_LOCATION) {
+            return;
+        }
+        if (results.length > 0 && results[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            locate();
+        } else {
+            placed(null);
         }
     }
 

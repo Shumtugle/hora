@@ -1318,7 +1318,7 @@
     <string name="first_folder_text">Books, audiobooks and everything for moving to another phone live in one folder. Show it to Hora; the picker opens in the right place.</string>
     <string name="first_folder_action">Show the folder</string>
     <string name="first_weather_title">Weather</string>
-    <string name="first_weather_text">To talk about the weather, Hora needs a town. Find it by name, without access to your location.</string>
+    <string name="first_weather_text">To talk about the weather, Hora needs a town. Find it by name, or let the phone suggest it, roughly and once.</string>
     <string name="first_weather_action">Find a town</string>
     <string name="first_engine_title">The phone\'s voice</string>
     <string name="first_engine_text">Hora can also read for other apps: readers, navigation, translators. Choose it in the phone\'s speech settings.</string>

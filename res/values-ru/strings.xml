@@ -2404,7 +2404,7 @@
     <string name="first_folder_text">Книги, аудиокниги и всё для переезда на другой телефон живут в одной папке. Покажи её Hora — выбор откроется на нужном месте.</string>
     <string name="first_folder_action">Показать папку</string>
     <string name="first_weather_title">Погода</string>
-    <string name="first_weather_text">Чтобы говорить о погоде, нужен город. Найди его по названию — без доступа к местоположению.</string>
+    <string name="first_weather_text">Чтобы говорить о погоде, нужен город. Найди его по названию или дай телефону подсказать — приблизительно и один раз.</string>
     <string name="first_weather_action">Найти город</string>
     <string name="first_engine_title">Голос телефона</string>
     <string name="first_engine_text">Hora может читать и за другие приложения: читалки, навигаторы, переводчики. Для этого выбери её в настройках речи телефона.</string>
