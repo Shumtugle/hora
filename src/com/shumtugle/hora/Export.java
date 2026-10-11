@@ -276,6 +276,34 @@ final class Export {
                 out.write(buf, 0, r);
             }
         }
+        announce(c, file);
+    }
+
+    /**
+     * Tells the phone's media index about a file written through the folder
+     * grant, which the index does not notice by itself; players that list from
+     * the index then see the new chapter. Only files on the phone's own storage
+     * or a card have a path to give; others are left to the index's own pace.
+     */
+    private static void announce(Context c, Uri file) {
+        try {
+            if (!"com.android.externalstorage.documents".equals(file.getAuthority())) {
+                return;
+            }
+            String id = DocumentsContract.getDocumentId(file);
+            int colon = id.indexOf(':');
+            if (colon < 0) {
+                return;
+            }
+            String volume = id.substring(0, colon);
+            String rest = id.substring(colon + 1);
+            String root = "primary".equalsIgnoreCase(volume)
+                    ? android.os.Environment.getExternalStorageDirectory().getPath() : "/storage/" + volume;
+            android.media.MediaScannerConnection.scanFile(c.getApplicationContext(),
+                    new String[] {root + "/" + rest}, null, null);
+        } catch (RuntimeException e) {
+            Diag.log(c, "export: the media index was not told", e);
+        }
     }
 
     // The work.
