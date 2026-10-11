@@ -796,6 +796,7 @@ public final class BookPlayer extends Service {
                 .addAction(action(playing ? R.drawable.ic_pause : R.drawable.ic_play_small,
                         playing ? R.string.book_pause : R.string.book_play, ACTION_TOGGLE, 2))
                 .addAction(action(R.drawable.ic_next, R.string.book_next, ACTION_NEXT, 3))
+                .setLargeIcon(Demo.is(this, uri) ? Demo.coverBitmap(this, 200) : null)
                 .setStyle(new Notification.MediaStyle().setShowActionsInCompactView(0, 1, 2))
                 .setOngoing(playing)
                 .setShowWhen(false)

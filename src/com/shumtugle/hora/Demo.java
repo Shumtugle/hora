@@ -55,6 +55,42 @@ final class Demo {
         }
     }
 
+    private static final String COVER = "demo/cover.jpg";
+    /** The demo's author, as the person who made the app named it. */
+    static final String AUTHOR = "Hora";
+
+    /** The demo's cover as it ships, or null if it cannot be read. */
+    static byte[] cover(Context c) {
+        try (InputStream in = c.getAssets().open(COVER)) {
+            return LanguagePack.readAll(in);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /** The cover as a picture, scaled down to about the given width; null if unreadable. */
+    private static android.graphics.Bitmap shown;
+    private static int shownWidth;
+
+    static synchronized android.graphics.Bitmap coverBitmap(Context c, int width) {
+        if (shown != null && shownWidth == width) {
+            return shown;
+        }
+        shownWidth = width;
+        shown = decode(c, width);
+        return shown;
+    }
+
+    private static android.graphics.Bitmap decode(Context c, int width) {
+        byte[] b = cover(c);
+        if (b == null) {
+            return null;
+        }
+        android.graphics.BitmapFactory.Options o = new android.graphics.BitmapFactory.Options();
+        o.inSampleSize = Math.max(1, 800 / Math.max(1, width));
+        return android.graphics.BitmapFactory.decodeByteArray(b, 0, b.length, o);
+    }
+
     static String uri(Context c) {
         return Uri.fromFile(new File(new File(c.getFilesDir(), "demo"), "book.txt")).toString();
     }

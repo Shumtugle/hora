@@ -490,12 +490,21 @@ public final class BookActivity extends Activity {
 
     /** The reader's scene behind the screen, blurred; none in the contrast look. */
     private void setBackdrop(int voice) {
-        if (voice == backdropVoice) {
+        // The demo has its own cover: it stands behind the screen instead of the reader's scene.
+        boolean demo = Demo.is(this, Reading.uri(this));
+        int key = demo ? DEMO_BACKDROP : voice;
+        if (key == backdropVoice) {
             return;
         }
-        backdropVoice = voice;
-        Kit.backdrop(this, backdrop, voice);
+        backdropVoice = key;
+        if (demo) {
+            Kit.backdrop(this, backdrop, Demo.coverBitmap(this, 270));
+        } else {
+            Kit.backdrop(this, backdrop, voice);
+        }
     }
+
+    private static final int DEMO_BACKDROP = -100;
 
     /** Where a chosen place should take the voice: reading on from there if it reads, else only moving. */
     private void goTo(int index) {

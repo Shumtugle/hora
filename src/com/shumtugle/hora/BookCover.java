@@ -33,6 +33,12 @@ final class BookCover {
      */
     static byte[] jpeg(Context c, String uri, String name) {
         byte[] own = null;
+        if (Demo.is(c, uri)) {
+            // The demo book's cover ships with the app.
+            own = Demo.cover(c);
+            Bitmap d = own == null ? null : BitmapFactory.decodeByteArray(own, 0, own.length);
+            return d == null ? null : small(d);
+        }
         try (InputStream in = c.getContentResolver().openInputStream(Uri.parse(uri))) {
             if (in != null) {
                 own = fromBook(name, BookText.readAll(in, BookText.MAX_BYTES));

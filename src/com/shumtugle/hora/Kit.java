@@ -508,6 +508,25 @@ final class Kit {
         v.setScaleY(1.08f);
     }
 
+    /** The same soft backdrop made from a given picture, such as a book's own cover. */
+    static void backdrop(Context c, ImageView v, android.graphics.Bitmap picture) {
+        if (Palette.contrast() || picture == null) {
+            v.setImageDrawable(null);
+            return;
+        }
+        boolean soft = android.os.Build.VERSION.SDK_INT >= 31;
+        v.setImageBitmap(soft ? picture : android.graphics.Bitmap.createScaledBitmap(picture, 40,
+                Math.max(1, 40 * picture.getHeight() / Math.max(1, picture.getWidth())), true));
+        if (soft) {
+            float r = dp(c, 18);
+            v.setRenderEffect(android.graphics.RenderEffect.createBlurEffect(r, r,
+                    android.graphics.Shader.TileMode.CLAMP));
+        }
+        v.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        v.setScaleX(1.08f);
+        v.setScaleY(1.08f);
+    }
+
     /** Hears which segment was chosen. */
     interface Chosen {
         void chose(int which);
