@@ -2,7 +2,6 @@ package com.shumtugle.hora;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
@@ -10,12 +9,9 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.CompoundButton;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.Switch;
 import android.widget.TextView;
 
 /**
@@ -34,6 +30,8 @@ public final class RolesActivity extends Activity {
     private static final float DIMMED = 0.55f;
 
     private TextView sample;
+    /** The two speakers' rows: shown only while reading in roles is on. */
+    private final java.util.List<View> speakerRows = new java.util.ArrayList<View>();
     private final TextView[] chosen = new TextView[ROLES.length];
     private final ImageView[][] faces = new ImageView[ROLES.length][Cast.LAST + 1];
 
@@ -79,35 +77,37 @@ public final class RolesActivity extends Activity {
         hp.topMargin = dp(6);
         body.addView(hint, hp);
 
+        // Books first: the narrator, then reading in roles right under it, and the two speakers
+        // only while it is on. Then the rest: notifications and the talk.
+        body.addView(Kit.section(this, getString(R.string.roles_books)));
         for (int i = 0; i < ROLES.length; i++) {
+            if (ROLES[i] == Cast.HERALD) {
+                body.addView(Kit.section(this, getString(R.string.roles_rest)));
+            }
+            View row = roleRow(i);
             LinearLayout.LayoutParams rp = Ui.lp(Ui.MATCH, Ui.WRAP);
-            rp.topMargin = dp(18);
-            body.addView(roleRow(i), rp);
+            rp.topMargin = dp(ROLES[i] == Cast.HERALD ? 0 : 14);
+            body.addView(row, rp);
+            if (ROLES[i] == Cast.SPEAKER_A || ROLES[i] == Cast.SPEAKER_B) {
+                speakerRows.add(row);
+            }
+            if (ROLES[i] == Cast.NARRATOR) {
+                LinearLayout plate = Kit.plate(this);
+                plate.addView(Kit.rowToggle(this, getString(R.string.dialogue_switch),
+                        getString(R.string.dialogue_switch_sub), Prefs.dialogueVoice(this), new Kit.Flip() {
+                            @Override
+                            public void flipped(boolean on) {
+                                Prefs.setDialogueVoice(RolesActivity.this, on);
+                                paint();
+                            }
+                        }));
+                LinearLayout.LayoutParams tp = Ui.lp(Ui.MATCH, Ui.WRAP);
+                tp.topMargin = dp(16);
+                body.addView(plate, tp);
+            }
         }
         scroll.addView(body);
         root.addView(scroll, new LinearLayout.LayoutParams(Ui.MATCH, 0, 1f));
-
-        LinearLayout toggle = Ui.row(this);
-        toggle.setBackground(Ui.round(Palette.SURFACE, 26, this));
-        toggle.setPadding(dp(16), 0, dp(12), 0);
-        toggle.setMinimumHeight(dp(52));
-        toggle.addView(Ui.text(this, getString(R.string.dialogue_switch), 15, Palette.INK), Ui.weight(1));
-        Switch sw = new Switch(this);
-        sw.setChecked(Prefs.dialogueVoice(this));
-        sw.setThumbTintList(ColorStateList.valueOf(Palette.ACCENT));
-        sw.setTrackTintList(ColorStateList.valueOf(Palette.LINE));
-        sw.setContentDescription(getString(R.string.dialogue_switch));
-        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton b, boolean on) {
-                Prefs.setDialogueVoice(RolesActivity.this, on);
-                paint();
-            }
-        });
-        toggle.addView(sw);
-        LinearLayout.LayoutParams tgp = Ui.lp(Ui.MATCH, Ui.WRAP);
-        tgp.topMargin = dp(12);
-        root.addView(toggle, tgp);
         return root;
     }
 
@@ -165,6 +165,9 @@ public final class RolesActivity extends Activity {
     /** Colors the example by reader and marks each role's chosen voice. */
     private void paint() {
         boolean dialogue = Prefs.dialogueVoice(this);
+        for (View r : speakerRows) {
+            r.setVisibility(dialogue ? View.VISIBLE : View.GONE);
+        }
         for (int i = 0; i < ROLES.length; i++) {
             int v = Prefs.role(this, ROLES[i]);
             chosen[i].setText(Cast.name(this, v));
@@ -219,5 +222,7 @@ public final class RolesActivity extends Activity {
             recreate();
             return;
         }
+        // Duties may have been given in the voices: names and rings as they are now.
+        paint();
     }
 }

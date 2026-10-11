@@ -62,10 +62,8 @@ public final class VoicesActivity extends Activity {
     private boolean startedHere;
     /** Counts starts, so a start that comes back from its thread after a stop does nothing. */
     private int ticket;
-    /** Set when the person follows the demo into the book: then it keeps reading there. */
-    private boolean toBook;
     private TextView listenButton;
-    private TextView demoLine;
+    private LinearLayout duties;
 
     static final String EXTRA_MAKEUP = "makeup";
 
@@ -179,7 +177,7 @@ public final class VoicesActivity extends Activity {
     protected void onStop() {
         // The screen going dark or turning is not leaving: the demo reads on.
         boolean dark = !((android.os.PowerManager) getSystemService(POWER_SERVICE)).isInteractive();
-        if (!toBook && !dark && !isChangingConfigurations()) {
+        if (!dark && !isChangingConfigurations()) {
             if (startedHere && (listening || beforeUri != null)) {
                 stopDemo(true);
             } else if (beforeDemoVoice >= 0 && beforeDemoVoice != Demo.voice(this)) {
@@ -194,8 +192,7 @@ public final class VoicesActivity extends Activity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        // Back from the book the demo was followed into: the button tells the truth again.
-        toBook = false;
+        // Back from elsewhere: the button tells the truth again.
         listening = Demo.is(this, Reading.uri(this)) && Reading.playing(this);
         showListen();
     }
@@ -211,10 +208,15 @@ public final class VoicesActivity extends Activity {
 
     /** Swipes to the neighbouring voice: up for the next, down for the one before. No wrap at the ends. */
     private void turn(int step) {
-        int next = place + step;
-        if (moving || next < 0 || next >= Cast.size(this)) {
+        goTo(place + step);
+    }
+
+    /** Goes to the voice at a place in the row, the page sliding the way the row runs. */
+    private void goTo(int next) {
+        if (moving || next == place || next < 0 || next >= Cast.size(this)) {
             return;
         }
+        int step = next > place ? 1 : -1;
         moving = true;
         place = next;
         if (listening) {
@@ -301,58 +303,30 @@ public final class VoicesActivity extends Activity {
         card.addView(over, op);
         Kit.edgeToEdge(this, over, dp(20), dp(12), dp(20), 0);
 
-        // Where this voice stands among the others: a dot each, its own in its colour.
-        LinearLayout dots = Ui.column(this);
-        dots.setGravity(Gravity.CENTER_HORIZONTAL);
-        for (int i = 0; i < Cast.size(this); i++) {
-            View dot = new View(this);
-            boolean on = i == place;
-            int d = dp(on ? 12 : 8);
-            dot.setBackground(Ui.oval(on ? Palette.voice(Cast.at(i)) : Palette.MUTED, 0, 0, this));
-            dot.setAlpha(on ? 1f : 0.6f);
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(d, d);
-            p.topMargin = dp(9);
-            dots.addView(dot, p);
-        }
-        FrameLayout.LayoutParams where = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.END | Gravity.CENTER_VERTICAL);
-        where.rightMargin = dp(14);
-        where.bottomMargin = h / 6;
-        card.addView(dots, where);
-
         LinearLayout below = Ui.column(this);
         below.setGravity(Gravity.CENTER_HORIZONTAL);
         TextView name = Ui.text(this, Cast.name(this, v), 40, Palette.INK);
         name.setTypeface(Palette.display(this));
         name.setGravity(Gravity.CENTER);
         below.addView(name, Ui.lp(Ui.MATCH, Ui.WRAP));
-        TextView roles = Ui.text(this, roles(v), 14, Palette.MUTED);
-        roles.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams rp = Ui.lp(Ui.WRAP, Ui.WRAP);
-        rp.topMargin = dp(6);
-        below.addView(roles, rp);
-        boolean answering = Prefs.role(this, Cast.TALK) == v;
-        if (answering) {
-            // Already the one that answers: said plainly instead of a button that does nothing.
-            TextView now = Ui.text(this, getString(Cast.female(v) ? R.string.voices_answers_f : R.string.voices_answers_m),
-                    15, Palette.ACCENT_TEXT);
-            now.setTypeface(Palette.bodyStrong(this));
-            now.setGravity(Gravity.CENTER);
-            LinearLayout.LayoutParams np = Ui.lp(Ui.MATCH, dp(52));
-            np.topMargin = dp(20);
-            below.addView(now, np);
-        } else {
-            TextView choose = Kit.primary(this, getString(Cast.female(v) ? R.string.voices_choose_f
-                    : R.string.voices_choose_m), new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            choose(v);
-                        }
-                    });
-            LinearLayout.LayoutParams pp = Ui.lp(Ui.MATCH, dp(52));
-            pp.topMargin = dp(20);
-            below.addView(choose, pp);
-        }
+
+        // What the voice does: three duties as chips. A lit one is this voice's; a touch on a dark
+        // one gives the duty to this voice, taking it from whoever had it.
+        TextView ask = Ui.text(this, getString(Cast.female(v) ? R.string.voices_assign_f : R.string.voices_assign_m),
+                13, Palette.HINT);
+        ask.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams ap = Ui.lp(Ui.WRAP, Ui.WRAP);
+        ap.topMargin = dp(10);
+        below.addView(ask, ap);
+        duties = Ui.row(this);
+        duties.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams dp0 = Ui.lp(Ui.MATCH, Ui.WRAP);
+        dp0.topMargin = dp(8);
+        below.addView(duties, dp0);
+        fillDuties(v);
+
+        // Listen and tune, in words.
+        LinearLayout pair = Ui.row(this);
         listenButton = Kit.secondary(this, "", new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -363,48 +337,59 @@ public final class VoicesActivity extends Activity {
                 }
             }
         });
-        LinearLayout.LayoutParams lp = Ui.lp(dp(180), dp(48));
-        lp.topMargin = dp(12);
-        below.addView(listenButton, lp);
-        // What is being read, while it is: a touch follows it into the book. Invisible, not gone,
-        // so the card does not jump when reading starts.
-        demoLine = Ui.text(this, "\u00ab" + Demo.title(this) + "\u00bb \u203a", 14, Palette.MUTED);
-        demoLine.setGravity(Gravity.CENTER);
-        demoLine.setPadding(0, dp(10), 0, dp(2));
-        demoLine.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (listening) {
-                    toBook = true;
-                    startActivity(new Intent(VoicesActivity.this, BookActivity.class));
-                }
-            }
-        });
-        below.addView(demoLine, Ui.lp(Ui.MATCH, Ui.WRAP));
-        showListen();
-        // The voice's own makeup, in a sheet over the card.
-        TextView makeup = Kit.link(this, getString(R.string.voices_makeup), new View.OnClickListener() {
+        pair.addView(listenButton, new LinearLayout.LayoutParams(0, dp(48), 1f));
+        TextView tune = Kit.secondary(this, getString(R.string.voices_tune), new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 makeup(v);
             }
         });
-        makeup.setGravity(Gravity.CENTER);
-        below.addView(makeup, Ui.lp(Ui.MATCH, Ui.WRAP));
-        // Where the swipe leads, said in words: the next voice by name, a touch goes there too.
-        if (place + 1 < Cast.size(this)) {
-            TextView onward = Ui.text(this, getString(R.string.voices_next, Cast.name(this, Cast.at(place + 1))),
-                    13, Palette.MUTED);
-            onward.setGravity(Gravity.CENTER);
-            onward.setPadding(0, dp(14), 0, dp(4));
-            onward.setOnClickListener(new View.OnClickListener() {
+        LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(0, dp(48), 1f);
+        tp.leftMargin = dp(10);
+        pair.addView(tune, tp);
+        LinearLayout.LayoutParams pp = Ui.lp(Ui.MATCH, Ui.WRAP);
+        pp.topMargin = dp(18);
+        below.addView(pair, pp);
+        // What "listen" reads, said once: without it the button promises nothing.
+        TextView what = Ui.text(this, getString(R.string.voices_demo_note, Demo.title(this)), 12, Palette.HINT);
+        what.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams wp = Ui.lp(Ui.MATCH, Ui.WRAP);
+        wp.topMargin = dp(8);
+        below.addView(what, wp);
+        showListen();
+
+        // The whole row of voices, this one in its ring: there are several, and a touch goes there.
+        LinearLayout strip = Ui.row(this);
+        strip.setGravity(Gravity.CENTER);
+        int n = Cast.size(this);
+        float width = getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density;
+        int cell = Math.max(30, Math.min(44, (int) ((width - 72) / n)));
+        int side = cell - 8;
+        for (int i = 0; i < n; i++) {
+            final int at = i;
+            int fv = Cast.at(i);
+            boolean on = fv == v;
+            ImageView f = Ui.portrait(this, fv);
+            f.setPadding(dp(2), dp(2), dp(2), dp(2));
+            f.setBackground(on ? Ui.oval(Palette.BG, Palette.voice(fv), 2, this)
+                    : Ui.oval(Color.TRANSPARENT, Palette.LINE, 1, this));
+            f.setAlpha(on ? 1f : 0.6f);
+            f.setContentDescription(Cast.name(this, fv));
+            f.setClickable(true);
+            f.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    turn(1);
+                    goTo(at);
                 }
             });
-            below.addView(onward, Ui.lp(Ui.MATCH, Ui.WRAP));
+            LinearLayout.LayoutParams fp = new LinearLayout.LayoutParams(dp(side), dp(side));
+            fp.leftMargin = dp(4);
+            fp.rightMargin = dp(4);
+            strip.addView(f, fp);
         }
+        LinearLayout.LayoutParams sp = Ui.lp(Ui.MATCH, Ui.WRAP);
+        sp.topMargin = dp(22);
+        below.addView(strip, sp);
         FrameLayout.LayoutParams bp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
         card.addView(below, bp);
@@ -421,7 +406,6 @@ public final class VoicesActivity extends Activity {
         }
         listenButton.setText(listening ? "\u275a\u275a  " + getString(R.string.voices_pause)
                 : "\u25b7  " + getString(R.string.lab_listen));
-        demoLine.setVisibility(listening ? View.VISIBLE : View.INVISIBLE);
     }
 
     /** Starts the demo with this voice, from where the demo stopped; the open book is remembered. */
@@ -557,46 +541,50 @@ public final class VoicesActivity extends Activity {
         return n > 0 ? "+" + n : String.valueOf(n);
     }
 
-    /** Makes the voice the one that answers, as the main screen does: quietly. */
-    private void choose(int v) {
-        if (moving) {
-            return;
-        }
-        Prefs.setRole(this, Cast.TALK, v);
-        Prefs.setHomeVoice(this, v);
-        Widgets.refresh(this);
-        Diag.mark(this, "voices: " + v + " answers now");
-        View old = page;
-        Album gone = album;
-        if (gone != null) {
-            gone.stop();
-        }
-        page = build(v);
-        frame.addView(page, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT));
-        page.requestApplyInsets();
-        frame.removeView(old);
-        if (gone != null) {
-            gone.release();
-        }
-        if (resumed) {
-            album.start();
+    private static final int[] DUTIES = {Cast.TALK, Cast.NARRATOR, Cast.HERALD};
+    private static final int[] DUTY_NAMES = {R.string.role_talk, R.string.voices_duty_books, R.string.role_herald};
+
+    /** The three duties of a voice as chips, lit where the duty is this voice's. */
+    private void fillDuties(final int v) {
+        duties.removeAllViews();
+        for (int i = 0; i < DUTIES.length; i++) {
+            final int role = DUTIES[i];
+            boolean mine = Prefs.role(this, role) == v;
+            TextView chip = Ui.pill(this, (mine ? "\u2713 " : "") + getString(DUTY_NAMES[i]),
+                    mine ? Palette.RAISED : Palette.SURFACE, mine ? Palette.voice(v) : Palette.LINE,
+                    mine ? Palette.INK : Palette.MUTED, mine);
+            // Three must fit on a narrow phone in either language: smaller type, tighter sides.
+            chip.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14);
+            chip.setPadding(dp(11), 0, dp(11), 0);
+            chip.setSingleLine(true);
+            if (!mine) {
+                chip.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        give(role, v);
+                    }
+                });
+            }
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(40));
+            if (i > 0) {
+                p.leftMargin = dp(6);
+            }
+            duties.addView(chip, p);
         }
     }
 
-    /** What the voice does now, in plain words; nothing when it holds no role. */
-    private String roles(int v) {
-        StringBuilder s = new StringBuilder();
-        if (Prefs.role(this, Cast.NARRATOR) == v) {
-            s.append(getString(R.string.voices_role_books));
+    /** Gives a duty to a voice, as the main screen and the roles do: quietly, heard the next time it speaks. */
+    private void give(int role, int v) {
+        if (moving) {
+            return;
         }
-        if (Prefs.role(this, Cast.HERALD) == v) {
-            s.append(s.length() > 0 ? " · " : "").append(getString(R.string.voices_role_news));
+        Prefs.setRole(this, role, v);
+        if (role == Cast.TALK) {
+            Prefs.setHomeVoice(this, v);
         }
-        if (Prefs.role(this, Cast.TALK) == v) {
-            s.append(s.length() > 0 ? " · " : "").append(getString(R.string.voices_role_talk));
-        }
-        return s.length() > 0 ? s.toString() : getString(R.string.voices_role_none);
+        Widgets.refresh(this);
+        Diag.mark(this, "voices: " + v + " takes role " + role);
+        fillDuties(v);
     }
 
     private int sceneCount(int v) {

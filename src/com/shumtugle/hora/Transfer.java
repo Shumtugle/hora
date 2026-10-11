@@ -129,6 +129,10 @@ final class Transfer {
             // Books by name: the address is this phone's own.
             JSONArray shelf = new JSONArray();
             for (Library.Entry e : Library.all(c)) {
+                if (Demo.is(c, e.uri)) {
+                    // The demo comes with every install; its name could fall on a book of one's own.
+                    continue;
+                }
                 JSONObject b = new JSONObject();
                 b.put("name", e.name);
                 b.put("index", e.index);
@@ -356,7 +360,13 @@ final class Transfer {
 
     /** Whether this install is new enough that bringing settings back cannot overwrite anything of value. */
     static boolean fresh(Context c) {
-        return Library.all(c).isEmpty() && savedAt(c) == 0;
+        for (Library.Entry e : Library.all(c)) {
+            if (!Demo.is(c, e.uri)) {
+                return false;
+            }
+        }
+        // The demo on the shelf is not something of value to overwrite.
+        return savedAt(c) == 0;
     }
 
     private static void copy(InputStream in, OutputStream out) throws IOException {

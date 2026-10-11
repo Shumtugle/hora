@@ -169,6 +169,10 @@ final class Library {
 
     /** Moves a book's place; cheap enough to call at every paragraph. */
     static synchronized void progress(Context c, String uri, int index, int reader) {
+        if (Demo.is(c, uri)) {
+            demoPlace(c, uri, index);
+            return;
+        }
         List<Entry> list = all(c);
         for (Entry e : list) {
             if (e.uri.equals(uri)) {
@@ -179,6 +183,26 @@ final class Library {
                 e.reader = reader;
                 e.opened = System.currentTimeMillis();
                 save(c, list);
+                return;
+            }
+        }
+    }
+
+    /**
+     * The demo's place only: listening to voices on it must not push it before the books of
+     * one's own, nor write a reader that only tried it. Nothing when it was taken off the shelf.
+     */
+    static synchronized void demoPlace(Context c, String uri, int index) {
+        if (!Demo.shelved(c)) {
+            return;
+        }
+        List<Entry> list = all(c);
+        for (Entry e : list) {
+            if (e.uri.equals(uri)) {
+                if (e.index != index) {
+                    e.index = index;
+                    save(c, list);
+                }
                 return;
             }
         }

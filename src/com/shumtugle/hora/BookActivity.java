@@ -144,10 +144,51 @@ public final class BookActivity extends Activity {
             return;
         }
         handler.post(tick);
+        openDemoIfNothing();
+    }
+
+    /**
+     * With no book of one's own yet, the book screen is not empty: the demo opens, without
+     * reading, so the voices, the page and the scrolling can be tried on it.
+     */
+    /** Whether the screen is in front: a slow start from another thread acts only then. */
+    private boolean resumedNow;
+
+    private void openDemoIfNothing() {
+        resumedNow = true;
+        if (!Reading.uri(this).isEmpty() || !Demo.shelved(this)) {
+            return;
+        }
+        final android.content.Context app = getApplicationContext();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Demo.ensureOnShelf(app);
+                java.util.List<Library.Entry> all = Library.all(app);
+                if (all.size() == 1 && Demo.is(app, all.get(0).uri) && Reading.uri(app).isEmpty()) {
+                    // Started from the screen's thread, and only while the screen is in front.
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (isFinishing() || !resumedNow) {
+                                return;
+                            }
+                            try {
+                                open(app, Demo.uri(app), "book.txt", false);
+                                Diag.mark(app, "book: nothing open, the demo is");
+                            } catch (RuntimeException e) {
+                                Diag.log(app, "book: the demo could not be opened", e);
+                            }
+                        }
+                    });
+                }
+            }
+        }, "demo-first").start();
     }
 
     @Override
     protected void onPause() {
+        resumedNow = false;
         handler.removeCallbacks(tick);
         super.onPause();
     }

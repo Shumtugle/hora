@@ -10,8 +10,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * The built-in demo book. It is read like any other, but it is not kept on the
- * shelf; a trial voice may read it.
+ * The built-in demo book. It stands on the shelf like any other, with its own
+ * cover, marked as an example from the app, until it is taken off; it comes back
+ * from "Add a book". Any voice may read it in place of the narrator.
  */
 final class Demo {
     private static final String ASSET = "demo/book.txt";
@@ -64,17 +65,26 @@ final class Demo {
         }
     }
 
-    /** The cover as a picture, scaled down to about the given width; null if unreadable. */
-    private static android.graphics.Bitmap shown;
-    private static int shownWidth;
+    /** The cover as a picture, scaled down to about the given width; null if unreadable. A few sizes are kept. */
+    private static final java.util.Map<Integer, android.graphics.Bitmap> shown =
+            new java.util.LinkedHashMap<Integer, android.graphics.Bitmap>(4, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(java.util.Map.Entry<Integer, android.graphics.Bitmap> e) {
+                    return size() > 3;
+                }
+            };
 
     static synchronized android.graphics.Bitmap coverBitmap(Context c, int width) {
-        if (shown != null && shownWidth == width) {
-            return shown;
+        // Sizes close to each other share one picture: the decoder only halves anyway.
+        int key = Math.max(1, 800 / Math.max(1, width));
+        android.graphics.Bitmap b = shown.get(key);
+        if (b == null) {
+            b = decode(c, width);
+            if (b != null) {
+                shown.put(key, b);
+            }
         }
-        shownWidth = width;
-        shown = decode(c, width);
-        return shown;
+        return b;
     }
 
     private static android.graphics.Bitmap decode(Context c, int width) {
@@ -131,6 +141,40 @@ final class Demo {
     static void setVoice(Context c, int voice) {
         c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).edit().putInt(VOICE, voice).commit();
         BookPlayer.revoice(c);
+    }
+
+    private static final String SHELVED = "shelved";
+
+    /** Whether the demo stands on the shelf; it does until it is taken off. */
+    @SuppressWarnings("deprecation")
+    static boolean shelved(Context c) {
+        return c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).getBoolean(SHELVED, true);
+    }
+
+    @SuppressWarnings("deprecation")
+    static void setShelved(Context c, boolean on) {
+        c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).edit().putBoolean(SHELVED, on).commit();
+        Diag.mark(c, on ? "demo: back on the shelf" : "demo: taken off the shelf");
+    }
+
+    /** Whether a book's place and reading are kept in the library: every book's, and the demo's while shelved. */
+    static boolean kept(Context c, String uri) {
+        return !is(c, uri) || shelved(c);
+    }
+
+    /** Puts the demo on the shelf if it should stand there and does not yet. Slow: not on the main thread. */
+    static void ensureOnShelf(Context c) {
+        if (!shelved(c) || Library.get(c, uri(c)) != null) {
+            return;
+        }
+        try {
+            book(c);
+            Book b = Export.load(c, uri(c), "book.txt");
+            Library.found(c, uri(c), "book.txt", b);
+            Diag.mark(c, "demo: on the shelf");
+        } catch (Exception e) {
+            Diag.log(c, "demo: not put on the shelf", e);
+        }
     }
 
     /** Where earlier builds kept trial samples taken from Hora's folder. */

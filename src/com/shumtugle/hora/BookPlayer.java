@@ -380,8 +380,11 @@ public final class BookPlayer extends Service {
                     generation++;
                     Reading.setBook(BookPlayer.this, u, name);
                 }
-                // The demo is read like a book but not kept on the shelf.
-                if (!Demo.is(BookPlayer.this, u)) {
+                // The demo is kept on the shelf like a book, unless it was taken off.
+                if (Demo.is(BookPlayer.this, u) && Library.get(BookPlayer.this, u) != null) {
+                    // Already on the shelf: only its place moves, it does not jump before other books.
+                    Library.demoPlace(BookPlayer.this, u, at);
+                } else if (Demo.kept(BookPlayer.this, u)) {
                     Library.opened(BookPlayer.this, u, name, book, at, Prefs.roleShared(BookPlayer.this, Cast.NARRATOR));
                 }
                 publish();
@@ -791,7 +794,7 @@ public final class BookPlayer extends Service {
         }
         int i = Math.max(0, Math.min(p.size() - 1, playIndex));
         Reading.set(this, uri, title, i, p.size(), p.get(i), playing);
-        if (!Demo.is(this, uri)) {
+        if (Demo.kept(this, uri)) {
             Library.progress(this, uri, i, Prefs.roleShared(this, Cast.NARRATOR));
         }
         NotificationManager nm = getSystemService(NotificationManager.class);

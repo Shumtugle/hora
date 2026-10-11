@@ -49,6 +49,16 @@ final class Cover extends View {
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
 
+    private android.graphics.Bitmap picture;
+    private final Paint picturePaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    private final android.graphics.Matrix fit = new android.graphics.Matrix();
+
+    /** A real cover, from the book or given with it; drawn instead of the paper one. Null for paper. */
+    void setPicture(android.graphics.Bitmap b) {
+        picture = b;
+        invalidate();
+    }
+
     void set(String title, String author) {
         this.title = title == null ? "" : title;
         this.author = author == null ? "" : Book.shortName(author).toUpperCase(Locale.getDefault());
@@ -70,9 +80,21 @@ final class Cover extends View {
         int w = getWidth();
         int h = getHeight();
         boolean bold = Palette.contrast();
-        paper.setColor(bold ? Palette.BG : PAPER);
         box.set(0, 0, w, h);
         float r = radius();
+        if (picture != null) {
+            // The picture fills the cover, cut to its rounded corners and cropped to the middle.
+            android.graphics.BitmapShader sh = new android.graphics.BitmapShader(picture,
+                    android.graphics.Shader.TileMode.CLAMP, android.graphics.Shader.TileMode.CLAMP);
+            float scale = Math.max(w / (float) picture.getWidth(), h / (float) picture.getHeight());
+            fit.setScale(scale, scale);
+            fit.postTranslate((w - picture.getWidth() * scale) / 2f, (h - picture.getHeight() * scale) / 2f);
+            sh.setLocalMatrix(fit);
+            picturePaint.setShader(sh);
+            k.drawRoundRect(box, r, r, picturePaint);
+            return;
+        }
+        paper.setColor(bold ? Palette.BG : PAPER);
         k.drawRoundRect(box, r, r, paper);
         if (bold) {
             Paint edge = new Paint(Paint.ANTI_ALIAS_FLAG);

@@ -121,6 +121,7 @@ public final class ShelfActivity extends Activity {
                         Books.moveOut(app);
                     }
                     Books.tidy(app);
+                    Demo.ensureOnShelf(app);
                 } finally {
                     tidying = false;
                 }
@@ -154,10 +155,11 @@ public final class ShelfActivity extends Activity {
 
     /** The state line, with the temporary mark in the accent colour before it. */
     private CharSequence marked(Library.Entry e, String before) {
-        if (!Books.isTemporary(this, e.uri)) {
+        boolean demo = Demo.is(this, e.uri);
+        if (!demo && !Books.isTemporary(this, e.uri)) {
             return before + state(e);
         }
-        String mark = getString(R.string.shelf_temporary);
+        String mark = getString(demo ? R.string.shelf_demo : R.string.shelf_temporary);
         android.text.SpannableStringBuilder b = new android.text.SpannableStringBuilder(mark)
                 .append(" \u00b7 ").append(before).append(state(e));
         b.setSpan(new android.text.style.ForegroundColorSpan(Palette.ACCENT_TEXT), 0, mark.length(), 0);
@@ -212,7 +214,8 @@ public final class ShelfActivity extends Activity {
         if (now != null) {
             LinearLayout.LayoutParams np = Ui.lp(Ui.MATCH, Ui.WRAP);
             np.topMargin = dp(24);
-            list.addView(nowCard(now, playing, narrator), np);
+            int shown = Demo.is(this, now.uri) && Demo.voice(this) > 0 ? Demo.voice(this) : narrator;
+            list.addView(nowCard(now, playing, shown), np);
         }
 
         LinearLayout bar = Ui.row(this);
@@ -269,13 +272,75 @@ public final class ShelfActivity extends Activity {
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                i.addCategory(Intent.CATEGORY_OPENABLE);
-                i.setType("*/*");
-                startActivityForResult(i, PICK_BOOK);
+                if (Demo.shelved(ShelfActivity.this)) {
+                    pickBook();
+                    return;
+                }
+                // The demo was taken off: the sheet offers it back beside a file of one's own.
+                final Dialog[] sheet = new Dialog[1];
+                TextView demo = Kit.secondary(ShelfActivity.this, getString(R.string.shelf_demo_back, Demo.title(ShelfActivity.this)),
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                sheet[0].dismiss();
+                                Demo.setShelved(ShelfActivity.this, true);
+                                final android.content.Context app = getApplicationContext();
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Demo.ensureOnShelf(app);
+                                        handler.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                drawn = "";
+                                                show();
+                                            }
+                                        });
+                                    }
+                                }, "demo-back").start();
+                            }
+                        });
+                sheet[0] = Kit.sheet(ShelfActivity.this, getString(R.string.shelf_add), null,
+                        getString(R.string.shelf_pick_file), new Runnable() {
+                            @Override
+                            public void run() {
+                                pickBook();
+                            }
+                        }, demo);
             }
         });
         return add;
+    }
+
+    private void pickBook() {
+        Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        i.addCategory(Intent.CATEGORY_OPENABLE);
+        i.setType("*/*");
+        startActivityForResult(i, PICK_BOOK);
+    }
+
+    /** A book's cover: its own picture for the demo, the paper one drawn by Hora otherwise. */
+    private Cover cover(Library.Entry e, int widthDp) {
+        Cover c = new Cover(this);
+        c.set(titleOf(e), e.author);
+        if (Demo.is(this, e.uri)) {
+            c.setPicture(Demo.coverBitmap(this, dp(widthDp)));
+        }
+        return c;
+    }
+
+    /** Three dots by every book: the same sheet a long press opens, for those who do not guess it. */
+    private View more(final Library.Entry e) {
+        ImageView m = Ui.iconButton(this, R.drawable.ic_more, android.graphics.Color.TRANSPARENT, 36,
+                getString(R.string.shelf_more, titleOf(e)));
+        m.setImageTintList(ColorStateList.valueOf(Palette.MUTED));
+        m.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bookSheet(e);
+            }
+        });
+        return m;
     }
 
     private boolean finished(Library.Entry e) {
@@ -353,9 +418,7 @@ public final class ShelfActivity extends Activity {
                 return true;
             }
         });
-        Cover cover = new Cover(this);
-        cover.set(titleOf(e), e.author);
-        r.addView(cover, Ui.lp(dp(48), Ui.WRAP));
+        r.addView(cover(e, 48), Ui.lp(dp(48), Ui.WRAP));
         LinearLayout words = Ui.column(this);
         TextView name = Ui.title(this, titleOf(e), 21);
         name.setSingleLine(true);
@@ -384,6 +447,9 @@ public final class ShelfActivity extends Activity {
             fp.leftMargin = dp(14);
             r.addView(face, fp);
         }
+        LinearLayout.LayoutParams mp = Ui.lp(dp(36), dp(36));
+        mp.leftMargin = dp(6);
+        r.addView(more(e), mp);
         r.setContentDescription(titleOf(e) + ", " + state(e));
         return r;
     }
@@ -441,23 +507,40 @@ public final class ShelfActivity extends Activity {
                 startActivity(new Intent(ShelfActivity.this, BookActivity.class));
             }
         });
-        Cover cover = new Cover(this);
-        cover.set(titleOf(e), e.author);
-        card.addView(cover, Ui.lp(dp(96), Ui.WRAP));
+        card.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                bookSheet(e);
+                return true;
+            }
+        });
+        card.addView(cover(e, 96), Ui.lp(dp(96), Ui.WRAP));
 
         LinearLayout side = Ui.column(this);
         TextView label = Ui.text(this, getString(R.string.shelf_now).toUpperCase(Locale.getDefault()), 11,
                 Palette.ACCENT_TEXT);
         label.setTypeface(Palette.bodyStrong(this));
         label.setLetterSpacing(0.12f);
-        side.addView(label);
+        LinearLayout top = Ui.row(this);
+        top.setGravity(Gravity.CENTER_VERTICAL);
+        top.addView(label, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        top.addView(more(e));
+        side.addView(top, Ui.lp(Ui.MATCH, Ui.WRAP));
         TextView name = Ui.title(this, titleOf(e), 24);
         name.setMaxLines(2);
         name.setEllipsize(android.text.TextUtils.TruncateAt.END);
         LinearLayout.LayoutParams tp = Ui.lp(Ui.MATCH, Ui.WRAP);
         tp.topMargin = dp(6);
         side.addView(name, tp);
-        TextView place = Ui.text(this, where(e), 13, Palette.MUTED);
+        CharSequence at = where(e);
+        if (Demo.is(this, e.uri)) {
+            String mark = getString(R.string.shelf_demo);
+            android.text.SpannableStringBuilder b = new android.text.SpannableStringBuilder(mark)
+                    .append(" \u00b7 ").append(at);
+            b.setSpan(new android.text.style.ForegroundColorSpan(Palette.ACCENT_TEXT), 0, mark.length(), 0);
+            at = b;
+        }
+        TextView place = Ui.text(this, at, 13, Palette.MUTED);
         LinearLayout.LayoutParams pp = Ui.lp(Ui.MATCH, Ui.WRAP);
         pp.topMargin = dp(6);
         side.addView(place, pp);
@@ -504,9 +587,7 @@ public final class ShelfActivity extends Activity {
                 return true;
             }
         });
-        Cover cover = new Cover(this);
-        cover.set(titleOf(e), e.author);
-        c.addView(cover, Ui.lp(Ui.MATCH, Ui.WRAP));
+        c.addView(cover(e, 180), Ui.lp(Ui.MATCH, Ui.WRAP));
         TextView name = Ui.title(this, titleOf(e), 19);
         name.setMaxLines(2);
         name.setEllipsize(android.text.TextUtils.TruncateAt.END);
@@ -519,9 +600,13 @@ public final class ShelfActivity extends Activity {
         thread.set(e.total <= 0 ? 0f : Math.min(1f, (e.index + 1) / (float) e.total));
         line.addView(thread, new LinearLayout.LayoutParams(0, dp(3), 1f));
         TextView st = Ui.text(this, marked(e, ""), 12, Palette.MUTED);
-        LinearLayout.LayoutParams sp = Ui.lp(Ui.WRAP, Ui.WRAP);
+        st.setSingleLine(true);
+        st.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        // The thread keeps a share of the width; the state fits in the rest, and the dots always do.
+        LinearLayout.LayoutParams sp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.4f);
         sp.leftMargin = dp(8);
         line.addView(st, sp);
+        line.addView(more(e));
         LinearLayout.LayoutParams lp = Ui.lp(Ui.MATCH, Ui.WRAP);
         lp.topMargin = dp(8);
         c.addView(line, lp);
@@ -529,7 +614,7 @@ public final class ShelfActivity extends Activity {
         return c;
     }
 
-    /** Holding a cover: take the book off the shelf, or read about it. */
+    /** Holding a cover, or its three dots: take the book off the shelf, make it an audiobook, read about it. */
     private void bookSheet(final Library.Entry e) {
         final Dialog[] sheet = new Dialog[1];
         LinearLayout more = Ui.column(this);
@@ -567,7 +652,8 @@ public final class ShelfActivity extends Activity {
                 startActivity(new Intent(ShelfActivity.this, ExportActivity.class)
                         .putExtra(ExportActivity.EXTRA_URI, e.uri).putExtra(ExportActivity.EXTRA_NAME, e.name)
                         .putExtra(ExportActivity.EXTRA_TITLE, titleOf(e))
-                        .putExtra(ExportActivity.EXTRA_READER, e.reader > 0 ? e.reader : Prefs.role(ShelfActivity.this, Cast.NARRATOR)));
+                        .putExtra(ExportActivity.EXTRA_READER, e.reader > 0 && !Demo.is(ShelfActivity.this, e.uri) ? e.reader
+                                : Prefs.role(ShelfActivity.this, Cast.NARRATOR)));
             }
         }));
         more.addView(Kit.secondary(this, getString(R.string.shelf_about), new View.OnClickListener() {
@@ -583,6 +669,10 @@ public final class ShelfActivity extends Activity {
                 // Hora's own copy goes with the book; a book that only points elsewhere just leaves the shelf.
                 if (Books.owns(ShelfActivity.this, e.uri)) {
                     Books.delete(ShelfActivity.this, e.uri);
+                }
+                if (Demo.is(ShelfActivity.this, e.uri)) {
+                    // The demo leaves the shelf; it comes back from "Add a book".
+                    Demo.setShelved(ShelfActivity.this, false);
                 }
                 Library.remove(ShelfActivity.this, e.uri);
                 drawn = "";
