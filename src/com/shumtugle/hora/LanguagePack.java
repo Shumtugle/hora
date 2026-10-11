@@ -110,6 +110,11 @@ final class LanguagePack {
         Fetch.start(c, key(lang), Fetch.entry(Fetch.index(c), "packs", "id", lang), zip(c, lang), anyNetwork);
     }
 
+    /** Starts a pack from a list already read, quietly, as one of a set. */
+    static void start(Context c, String lang, org.json.JSONObject index, Fetch.Entry e) {
+        Fetch.start(c, key(lang), e, zip(c, lang), false, true);
+    }
+
     /**
      * Moves a fetch on and unpacks it once the file is whole and checked.
      * Returns Fetch.DONE, WORKING, FAILED or NONE. Slow: not on the main thread.

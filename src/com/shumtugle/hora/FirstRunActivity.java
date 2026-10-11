@@ -41,13 +41,13 @@ public final class FirstRunActivity extends Activity {
     private static final int MODEL = 6;
     private static final int STEPS = 7;
 
-    private static final int[] TITLES = {R.string.first_voice_title, R.string.first_notify_title,
+    private static final int[] TITLES = {R.string.all_title, R.string.first_notify_title,
         R.string.first_herald_title, R.string.first_folder_title, R.string.first_weather_title,
         R.string.first_engine_title, R.string.first_model_title};
-    private static final int[] TEXTS = {R.string.first_voice_text, R.string.first_notify_text,
+    private static final int[] TEXTS = {R.string.all_text, R.string.first_notify_text,
         R.string.first_herald_text, R.string.first_folder_text, R.string.first_weather_text,
         R.string.first_engine_text, R.string.first_model_text};
-    private static final int[] ACTIONS = {R.string.first_voice_action, R.string.first_notify_action,
+    private static final int[] ACTIONS = {R.string.all_get, R.string.first_notify_action,
         R.string.first_open_settings, R.string.first_folder_action, R.string.first_weather_action,
         R.string.first_open_settings, R.string.first_model_action};
 
@@ -88,7 +88,9 @@ public final class FirstRunActivity extends Activity {
         if (step >= 0 && (away || done(step))) {
             away = false;
             show(step + 1);
+            return;
         }
+        refreshStrip();
     }
 
     // The scene.
@@ -186,6 +188,9 @@ public final class FirstRunActivity extends Activity {
         LinearLayout.LayoutParams xp = Ui.lp(Ui.MATCH, Ui.WRAP);
         xp.topMargin = dp(14);
         page.addView(text, xp);
+        if (s == VOICE) {
+            page.addView(contents(), Kit.below(this, 18));
+        }
 
         final int which = s;
         View act = Kit.primary(this, getString(ACTIONS[s]), new View.OnClickListener() {
@@ -197,6 +202,18 @@ public final class FirstRunActivity extends Activity {
         LinearLayout.LayoutParams ap = Ui.lp(Ui.MATCH, Ui.WRAP);
         ap.topMargin = dp(36);
         page.addView(act, ap);
+        if (s == VOICE) {
+            TextView only = Kit.link(this, getString(R.string.all_only_voice), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onlyVoice();
+                }
+            });
+            only.setGravity(Gravity.CENTER);
+            LinearLayout.LayoutParams op = Ui.lp(Ui.MATCH, Ui.WRAP);
+            op.topMargin = dp(8);
+            page.addView(only, op);
+        }
         TextView skip = Kit.link(this, getString(R.string.first_skip), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -212,13 +229,15 @@ public final class FirstRunActivity extends Activity {
         root.addView(page, new FrameLayout.LayoutParams(Ui.MATCH, Ui.MATCH));
         Kit.edgeToEdge(this, page, dp(28), dp(24), dp(28), dp(24));
         page.animate().alpha(1f).setDuration(250).start();
+        strip();
     }
 
     /** Whether what a page asks for is already given. */
     private boolean done(int s) {
         switch (s) {
             case VOICE:
-                return Voice.ready(this) || Fetch.progress(this, LanguagePack.key(LanguagePack.NATIVE)) != null;
+                return Everything.complete(this) || Everything.on(this)
+                        || Fetch.progress(this, LanguagePack.key(LanguagePack.NATIVE)) != null;
             case NOTIFY:
                 return Build.VERSION.SDK_INT < 33
                         || checkSelfPermission(NOTIFY_PERMISSION) == PackageManager.PERMISSION_GRANTED;
@@ -240,19 +259,7 @@ public final class FirstRunActivity extends Activity {
     private void act(int s) {
         switch (s) {
             case VOICE:
-                // By Wi-Fi: the download waits for it and goes on by itself, even with the app closed.
-                final android.content.Context app = getApplicationContext();
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            LanguagePack.start(app, LanguagePack.NATIVE, false);
-                        } catch (Exception e) {
-                            Diag.log(app, "pack: voice download could not start", e);
-                        }
-                    }
-                }, "first-voice").start();
-                show(VOICE + 1);
+                everything();
                 break;
             case NOTIFY:
                 requestPermissions(new String[] {NOTIFY_PERMISSION}, REQUEST_NOTIFY);
@@ -314,6 +321,162 @@ public final class FirstRunActivity extends Activity {
         } else if (request == REQUEST_PLACE) {
             show(WEATHER + 1);
         }
+    }
+
+    // The set: everything Hora fetches, as one download.
+
+    /** What the set holds and what each part weighs, as on the page's plate. */
+    private View contents() {
+        LinearLayout plate = Kit.plate(this);
+        int[] names = {R.string.all_item_voice, R.string.all_item_english, R.string.all_item_decoder,
+            R.string.all_item_model, R.string.all_item_vision};
+        int[] sizes = {R.string.all_size_voice, R.string.all_size_english, R.string.all_size_decoder,
+            R.string.all_size_model, R.string.all_size_vision};
+        for (int i = 0; i < names.length; i++) {
+            LinearLayout row = Ui.row(this);
+            row.setPadding(dp(16), dp(10), dp(16), dp(10));
+            row.addView(Ui.text(this, getString(names[i]), 15, Palette.INK),
+                    new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            TextView size = Ui.text(this, getString(sizes[i]), 15, Palette.MUTED);
+            size.setTypeface(Palette.bodyStrong(this));
+            row.addView(size);
+            plate.addView(row);
+        }
+        return plate;
+    }
+
+    /** Starts the whole set, by Wi-Fi, after checking the room; then on to the next page. */
+    private void everything() {
+        final android.content.Context app = getApplicationContext();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String trouble = null;
+                try {
+                    Everything.start(app);
+                } catch (Everything.NoRoom e) {
+                    trouble = getString(R.string.all_no_room, Everything.gb(e.need - e.free));
+                    Diag.mark(app, "everything: not enough room, " + e.need / 1000000 + " MB needed, "
+                            + e.free / 1000000 + " MB free");
+                } catch (Exception e) {
+                    Diag.log(app, "everything: could not start", e);
+                    trouble = getString(R.string.lang_no_list);
+                }
+                final String said = trouble;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (said != null) {
+                            android.widget.Toast.makeText(FirstRunActivity.this, said,
+                                    android.widget.Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        EverythingWatch.begin(FirstRunActivity.this);
+                        show(VOICE + 1);
+                    }
+                });
+            }
+        }, "first-everything").start();
+    }
+
+    /** Only the voice, as before the set existed. */
+    private void onlyVoice() {
+        final android.content.Context app = getApplicationContext();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    LanguagePack.start(app, LanguagePack.NATIVE, false);
+                } catch (Exception e) {
+                    Diag.log(app, "pack: voice download could not start", e);
+                }
+            }
+        }, "first-voice").start();
+        show(VOICE + 1);
+    }
+
+    private View stripView;
+    private TextView stripAmount;
+    private TextView stripNow;
+    private Kit.Bar stripBar;
+
+    private final Runnable stripTick = new Runnable() {
+        @Override
+        public void run() {
+            refreshStrip();
+        }
+    };
+
+    /** The set's progress along the bottom of every page after the first, while it comes. */
+    private void strip() {
+        if (step == VOICE || !Everything.on(this)) {
+            return;
+        }
+        LinearLayout box = Ui.column(this);
+        box.setBackground(Ui.round(Palette.SURFACE, 18, this));
+        box.setPadding(dp(16), dp(12), dp(16), dp(12));
+        LinearLayout top = Ui.row(this);
+        TextView name = Ui.text(this, getString(R.string.all_title), 14, Palette.INK);
+        name.setTypeface(Palette.bodyStrong(this));
+        top.addView(name, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        stripAmount = Ui.text(this, "", 14, Palette.INK);
+        top.addView(stripAmount);
+        box.addView(top);
+        stripBar = new Kit.Bar(this);
+        LinearLayout.LayoutParams bp = Ui.lp(Ui.MATCH, dp(4));
+        bp.topMargin = dp(9);
+        box.addView(stripBar, bp);
+        stripNow = Ui.text(this, "", 12, Palette.HINT);
+        LinearLayout.LayoutParams np = Ui.lp(Ui.MATCH, Ui.WRAP);
+        np.topMargin = dp(7);
+        box.addView(stripNow, np);
+        FrameLayout.LayoutParams fp = new FrameLayout.LayoutParams(Ui.MATCH, Ui.WRAP, Gravity.BOTTOM);
+        fp.leftMargin = dp(16);
+        fp.rightMargin = dp(16);
+        fp.bottomMargin = dp(28);
+        stripView = box;
+        root.addView(box, fp);
+        refreshStrip();
+    }
+
+    private void refreshStrip() {
+        root.removeCallbacks(stripTick);
+        if (stripView == null || stripView.getParent() == null) {
+            return;
+        }
+        final android.content.Context app = getApplicationContext();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final Everything.State st = Everything.state(app);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (stripView == null || stripView.getParent() == null) {
+                            return;
+                        }
+                        stripAmount.setText(Everything.amount(FirstRunActivity.this, st));
+                        stripBar.set(st.total <= 0 ? 0f : st.done / (float) st.total);
+                        String now = Everything.nowWords(FirstRunActivity.this, st.now);
+                        String line = st.waitingWifi ? getString(R.string.lang_waiting_wifi)
+                                : (st.voiceReady ? getString(R.string.all_voice_ready_cap) : "")
+                                + (now.isEmpty() ? "" : (st.voiceReady ? " \u00b7 " : "")
+                                + getString(R.string.all_now_prefix) + now);
+                        stripNow.setText(st.running ? line : getString(st.missing == 0
+                                ? R.string.all_done : R.string.all_partly));
+                        if (st.running) {
+                            root.postDelayed(stripTick, 1000);
+                        }
+                    }
+                });
+            }
+        }, "first-strip").start();
+    }
+
+    @Override
+    protected void onPause() {
+        root.removeCallbacks(stripTick);
+        super.onPause();
     }
 
     /** The pages are over: the title page, which marks the first start as seen. */

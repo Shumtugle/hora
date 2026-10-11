@@ -54,6 +54,16 @@ public final class SettingsActivity extends Activity {
         });
         list.addView(brain);
         list.addView(rule());
+        // Everything Hora fetches, in one touch; the accelerator stays on the model's own screen.
+        allRow = row(getString(R.string.all_title), "");
+        allRow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startEverything();
+            }
+        });
+        list.addView(allRow);
+        list.addView(rule());
         View langs = row(getString(R.string.lang_title), LanguagePack.installed(this, LanguagePack.ENGLISH)
                 ? getString(R.string.lang_english) : "\u203a");
         langs.setOnClickListener(new View.OnClickListener() {
@@ -539,6 +549,14 @@ public final class SettingsActivity extends Activity {
         return row;
     }
 
+    /** Changes the value on the right of a row made by row(). */
+    private static void setRowValue(View row, String value) {
+        if (row instanceof LinearLayout && ((LinearLayout) row).getChildCount() > 1
+                && ((LinearLayout) row).getChildAt(1) instanceof TextView) {
+            ((TextView) ((LinearLayout) row).getChildAt(1)).setText(value);
+        }
+    }
+
     private View rule() {
         View v = new View(this);
         v.setBackgroundColor(Palette.RULE);
@@ -577,6 +595,73 @@ public final class SettingsActivity extends Activity {
     }
 
     private LinearLayout beta;
+    private View allRow;
+
+    private final Runnable allTick = new Runnable() {
+        @Override
+        public void run() {
+            showEverything();
+        }
+    };
+
+    /** The set's row says what is left, how far it came, or that all is here. */
+    private void showEverything() {
+        allRow.removeCallbacks(allTick);
+        final android.content.Context app = getApplicationContext();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final boolean whole = Everything.complete(app);
+                final Everything.State st = Everything.state(app);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String value = whole ? getString(R.string.all_here)
+                                : st.running ? (st.total <= 0 ? "\u2026"
+                                        : (int) (100L * st.done / st.total) + "\u00a0%")
+                                : getString(R.string.all_size_total);
+                        setRowValue(allRow, value);
+                        if (st.running && !isFinishing()) {
+                            allRow.postDelayed(allTick, 1500);
+                        }
+                    }
+                });
+            }
+        }, "settings-all").start();
+    }
+
+    private void startEverything() {
+        final android.content.Context app = getApplicationContext();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (Everything.complete(app) || Everything.state(app).running) {
+                    return;
+                }
+                String trouble = null;
+                try {
+                    Everything.start(app);
+                } catch (Everything.NoRoom e) {
+                    trouble = getString(R.string.all_no_room, Everything.gb(e.need - e.free));
+                } catch (Exception e) {
+                    Diag.log(app, "everything: could not start", e);
+                    trouble = getString(R.string.lang_no_list);
+                }
+                final String said = trouble;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (said != null) {
+                            Toast.makeText(SettingsActivity.this, said, Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        EverythingWatch.begin(SettingsActivity.this);
+                        showEverything();
+                    }
+                });
+            }
+        }, "settings-start-all").start();
+    }
 
     @Override
     protected void onResume() {
@@ -585,6 +670,7 @@ public final class SettingsActivity extends Activity {
             return;
         }
         showDeveloper();
+        showEverything();
     }
 
     private void showDeveloper() {

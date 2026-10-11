@@ -39,6 +39,15 @@ final class ModelDownload {
         }
     }
 
+    /** Starts one slot from a list already read, quietly, as one of a set. */
+    static void start(Context c, int slot, Fetch.Entry e) {
+        Fetch.start(c, key(slot), e, new File(Brain.get(c).outerFolder(), SLOTS[slot] + ".fetched"), false, true);
+    }
+
+    static String slotName(int slot) {
+        return SLOTS[slot];
+    }
+
     static boolean active(Context c, int slot) {
         return Fetch.active(c, key(slot));
     }

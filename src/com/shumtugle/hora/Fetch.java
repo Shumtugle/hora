@@ -131,6 +131,11 @@ final class Fetch {
 
     /** Starts fetching an item into the given file; whatever was fetched under this key before is dropped. */
     static synchronized void start(Context c, String key, Entry e, File target, boolean anyNetwork) {
+        start(c, key, e, target, anyNetwork, false);
+    }
+
+    /** As above; a quiet fetch shows no system notification of its own, as one of a set shown together. */
+    static synchronized void start(Context c, String key, Entry e, File target, boolean anyNetwork, boolean quiet) {
         cancel(c, key);
         try {
             JSONObject st = new JSONObject();
@@ -143,6 +148,7 @@ final class Fetch {
             st.put("done", 0L);
             st.put("target", target.getPath());
             st.put("any", anyNetwork);
+            st.put("quiet", quiet);
             enqueue(c, key, st);
         } catch (JSONException ex) {
             Diag.log(c, "fetch: cannot start " + key, ex);
@@ -340,7 +346,8 @@ final class Fetch {
         }
         long id = dm(c).enqueue(new DownloadManager.Request(Uri.parse(url))
                 .setTitle(title)
-                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                .setNotificationVisibility(st.optBoolean("quiet")
+                        ? DownloadManager.Request.VISIBILITY_HIDDEN : DownloadManager.Request.VISIBILITY_VISIBLE)
                 .setAllowedOverMetered(st.optBoolean("any"))
                 .setAllowedOverRoaming(false)
                 .setDestinationUri(Uri.fromFile(into)));
