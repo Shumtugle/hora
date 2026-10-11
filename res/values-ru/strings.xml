@@ -1647,6 +1647,16 @@
     <string name="bot_help_chip">Что ты умеешь</string>
     <string name="chapter_numbered">глава %1$s</string>
     <string name="lab_title">Настройки голосов</string>
+    <string name="voices_title">Голоса</string>
+    <string name="voices_sub">знакомство, кто отвечает</string>
+    <string name="voices_choose_f">Пусть отвечает она</string>
+    <string name="voices_choose_m">Пусть отвечает он</string>
+    <string name="voices_answers_f">Сейчас отвечает она</string>
+    <string name="voices_answers_m">Сейчас отвечает он</string>
+    <string name="voices_role_books">читает книги</string>
+    <string name="voices_role_news">читает уведомления</string>
+    <string name="voices_role_talk">отвечает в разговоре</string>
+    <string name="voices_role_none">пока без роли</string>
     <string name="lab_reset">Вернуть как было</string>
     <string name="fine_tuning">Тонкая настройка</string>
     <string name="reading_all">Чтение — для всех голосов</string>

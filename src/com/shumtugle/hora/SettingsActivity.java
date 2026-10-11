@@ -32,6 +32,43 @@ public final class SettingsActivity extends Activity {
         built = Ui.prepare(this);
         list = Kit.room(this, getString(R.string.settings));
 
+        // The voices themselves, one card at a time: the way to meet them and choose who answers.
+        LinearLayout meet = Kit.plate(this);
+        LinearLayout meetRow = Ui.row(this);
+        meetRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        meetRow.setPadding(dp(16), dp(14), dp(16), dp(14));
+        LinearLayout stack = Ui.column(this);
+        LinearLayout faces = Ui.row(this);
+        for (int i = 0; i < Cast.COUNT; i++) {
+            android.widget.ImageView f = Ui.portrait(this, Cast.at(i));
+            f.setPadding(dp(2), dp(2), dp(2), dp(2));
+            f.setBackground(Ui.oval(Palette.SURFACE, 0, 0, this));
+            LinearLayout.LayoutParams fp0 = new LinearLayout.LayoutParams(dp(38), dp(38));
+            if (i > 0) {
+                fp0.leftMargin = -dp(10);
+            }
+            faces.addView(f, fp0);
+        }
+        stack.addView(faces);
+        TextView meetTitle = Ui.text(this, getString(R.string.voices_title), 17, Palette.INK);
+        LinearLayout.LayoutParams mtp = Ui.lp(Ui.WRAP, Ui.WRAP);
+        mtp.topMargin = dp(10);
+        stack.addView(meetTitle, mtp);
+        stack.addView(Ui.text(this, getString(R.string.voices_sub), 13, Palette.MUTED));
+        meetRow.addView(stack, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        meetRow.addView(Ui.text(this, "\u203a", 20, Palette.MUTED));
+        meetRow.setBackground(Ui.pressable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)));
+        meetRow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                VoicesActivity.open(SettingsActivity.this, Prefs.role(SettingsActivity.this, Cast.TALK));
+            }
+        });
+        meet.addView(meetRow);
+        LinearLayout.LayoutParams mp = Kit.wide();
+        mp.topMargin = dp(20);
+        list.addView(meet, mp);
+
         // Voices.
         list.addView(Kit.section(this, getString(R.string.voices_section)));
         LinearLayout voices = Kit.plate(this);
