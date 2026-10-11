@@ -943,6 +943,7 @@
     </plurals>
     <string name="intro_open">What Hora can do</string>
     <string name="intro_lead">I\'m %1$s, a voice assistant. I read your notifications and books aloud.</string>
+    <string name="intro_lead_f">I\'m %1$s, a voice assistant. I read your notifications and books aloud.</string>
     <string name="intro_speech">I\'m %1$s, a voice assistant. First of all, I read your notifications into your headphones: give me access and choose the apps. I also read books aloud, in any of five voices. Below are the talk and the voice settings.</string>
     <string name="intro_troupe">Touch a face to make that voice the main one</string>
     <string name="intro_herald">Notifications aloud</string>

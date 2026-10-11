@@ -314,7 +314,7 @@ public final class BookActivity extends Activity {
         reader.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                WorkshopActivity.openCabinet(BookActivity.this, Prefs.role(BookActivity.this, Cast.NARRATOR));
+                LabActivity.open(BookActivity.this, Prefs.role(BookActivity.this, Cast.NARRATOR));
                 return true;
             }
         });

@@ -132,11 +132,11 @@ public final class IntroActivity extends Activity {
         Ui.setFace(photo, v);
         photo.setContentDescription(Cast.name(this, v));
         name.setText(Cast.name(this, v));
-        lead.setText(getString(R.string.intro_lead, Cast.name(this, v)));
+        lead.setText(getString(Cast.female(v) ? R.string.intro_lead_f : R.string.intro_lead, Cast.name(this, v)));
         glow.setBackground(Ui.oval(Palette.voice(v, 0x29), 0, 0, this));
         ring.setBackground(Ui.oval(Color.TRANSPARENT, Palette.voice(v), 2, this));
         for (int i = 0; i < dots.length; i++) {
-            boolean on = i + 1 == v;
+            boolean on = Cast.at(i) == v;
             // Every face keeps the same slot, so choosing one never moves the others.
             int[] cell = Ui.troupeCell(this, Math.min(dots.length, Cast.COUNT));
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(cell[0]), dp(cell[0]));
@@ -146,7 +146,7 @@ public final class IntroActivity extends Activity {
             // The same inset for every face: the ring marks the chosen one, the face does not grow.
             int pad = dp(3);
             dots[i].setPadding(pad, pad, pad, pad);
-            dots[i].setBackground(on ? Ui.oval(Palette.BG, Palette.voice(i + 1), 2, this) : null);
+            dots[i].setBackground(on ? Ui.oval(Palette.BG, Palette.voice(Cast.at(i)), 2, this) : null);
             dots[i].setAlpha(on ? 1f : 0.55f);
         }
         Kit.backdrop(this, backdrop, v);
@@ -236,7 +236,7 @@ public final class IntroActivity extends Activity {
         LinearLayout line = null;
         dots = new ImageView[Cast.size(this)];
         for (int i = 0; i < dots.length; i++) {
-            final int v = i + 1;
+            final int v = Cast.at(i);
             if (i % Cast.COUNT == 0) {
                 line = Ui.row(this);
                 line.setGravity(Gravity.CENTER);

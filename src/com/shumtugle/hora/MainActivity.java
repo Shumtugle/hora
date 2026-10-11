@@ -453,7 +453,7 @@ public final class MainActivity extends Activity {
 
                     @Override
                     public boolean onSingleTapUp(android.view.MotionEvent e) {
-                        WorkshopActivity.openCabinet(MainActivity.this, voice);
+                        LabActivity.open(MainActivity.this, voice);
                         return true;
                     }
 
@@ -534,7 +534,7 @@ public final class MainActivity extends Activity {
             dots[i].setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
-                    WorkshopActivity.openCabinet(MainActivity.this, v);
+                    LabActivity.open(MainActivity.this, v);
                     return true;
                 }
             });

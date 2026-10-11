@@ -125,7 +125,7 @@ public final class RolesActivity extends Activity {
         chosen[i].setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                WorkshopActivity.openCabinet(RolesActivity.this, Prefs.role(RolesActivity.this, ROLES[i]));
+                LabActivity.open(RolesActivity.this, Prefs.role(RolesActivity.this, ROLES[i]));
             }
         });
         line.addView(chosen[i]);

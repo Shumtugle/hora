@@ -90,6 +90,18 @@ final class Cast {
         return Beta.open(c) ? LAST : COUNT;
     }
 
+    /** The voices that speak of themselves as women; the rest as men. */
+    private static final int[] FEMALE = {1, 2, BETA_F, BETA_F2};
+
+    static boolean female(int voice) {
+        for (int f : FEMALE) {
+            if (f == voice) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Whether a voice is one of the trial voices. */
     static boolean trial(int voice) {
         return voice > COUNT && voice <= LAST;
