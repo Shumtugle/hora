@@ -824,6 +824,69 @@ final class Kit {
         return box;
     }
 
+    /**
+     * Children laid out in lines, each line as wide as the parent allows, the
+     * next line starting under it. Nothing hides past the edge, so nothing has
+     * to be scrolled to be found.
+     */
+    static final class Flow extends ViewGroup {
+        private final int gap;
+
+        Flow(Context c, int gapDp) {
+            super(c);
+            gap = dp(c, gapDp);
+        }
+
+        @Override
+        protected void onMeasure(int widthSpec, int heightSpec) {
+            int width = MeasureSpec.getSize(widthSpec);
+            int x = 0;
+            int y = 0;
+            int lineH = 0;
+            for (int i = 0; i < getChildCount(); i++) {
+                View ch = getChildAt(i);
+                if (ch.getVisibility() == GONE) {
+                    continue;
+                }
+                ch.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.AT_MOST),
+                        MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+                int w = ch.getMeasuredWidth();
+                if (x > 0 && x + w > width) {
+                    x = 0;
+                    y += lineH + gap;
+                    lineH = 0;
+                }
+                x += w + gap;
+                lineH = Math.max(lineH, ch.getMeasuredHeight());
+            }
+            setMeasuredDimension(width, y + lineH);
+        }
+
+        @Override
+        protected void onLayout(boolean changed, int l, int t, int r, int b) {
+            int width = r - l;
+            int x = 0;
+            int y = 0;
+            int lineH = 0;
+            for (int i = 0; i < getChildCount(); i++) {
+                View ch = getChildAt(i);
+                if (ch.getVisibility() == GONE) {
+                    continue;
+                }
+                int w = ch.getMeasuredWidth();
+                int h = ch.getMeasuredHeight();
+                if (x > 0 && x + w > width) {
+                    x = 0;
+                    y += lineH + gap;
+                    lineH = 0;
+                }
+                ch.layout(x, y, x + w, y + h);
+                x += w + gap;
+                lineH = Math.max(lineH, h);
+            }
+        }
+    }
+
     static int dp(Context c, float v) {
         return Ui.dp(c, v);
     }

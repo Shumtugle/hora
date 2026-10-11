@@ -108,7 +108,8 @@ public final class LabActivity extends Activity {
                 }
             });
             cell.addView(faces[i]);
-            names[i] = Ui.text(this, Cast.name(this, v), 12, Palette.MUTED);
+            // A long name may break after its hyphen, never in the middle of a word.
+            names[i] = Ui.text(this, Cast.name(this, v).replace("-", "-\u200b"), 12, Palette.MUTED);
             // Long trial names break onto a second line, centred under the face.
             names[i].setGravity(Gravity.CENTER_HORIZONTAL);
             names[i].setMaxLines(2);
@@ -255,9 +256,7 @@ public final class LabActivity extends Activity {
                     }
                 }));
         own.addView(Kit.divider(this));
-        // The rarer makeup: air, and the way back to how the voice came.
-        LinearLayout fine = Ui.column(this);
-        fine.addView(Kit.slider(this, getString(R.string.lab_air), getString(R.string.lab_none),
+        own.addView(Kit.slider(this, getString(R.string.lab_air), getString(R.string.lab_none),
                 getString(R.string.lab_much), Grim.AIR_MAX, Prefs.grimAir(this, v), new Kit.Value() {
                     @Override
                     public String show(int p) {
@@ -269,6 +268,7 @@ public final class LabActivity extends Activity {
                         Prefs.setGrimAir(LabActivity.this, v, p);
                     }
                 }));
+        // The way back to how the voice came, as a quiet link under the sliders.
         TextView reset = Kit.link(this, getString(R.string.lab_reset), new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -278,8 +278,7 @@ public final class LabActivity extends Activity {
             }
         });
         reset.setPadding(dp(16), dp(6), dp(16), dp(14));
-        fine.addView(reset);
-        own.addView(Kit.fold(this, "voice_fine", getString(R.string.fine_tuning), fine));
+        own.addView(reset);
     }
 
     private static String signed(int n) {

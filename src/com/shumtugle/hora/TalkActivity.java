@@ -10,11 +10,11 @@ import android.os.Looper;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -80,7 +80,8 @@ public final class TalkActivity extends Activity {
     /** The full camera shot behind the pending picture; null when the picture came from elsewhere. */
     private String pendingShot;
     /** The camera button: shown only when the model can look at pictures. */
-    private ImageView shoot;
+    /** Whether the model can look at pictures, so the camera is offered. */
+    private boolean eyes;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -172,66 +173,48 @@ public final class TalkActivity extends Activity {
         sp.topMargin = dp(10);
         root.addView(scroll, sp);
 
-        // Ready requests: a touch sends one as if it was written.
-        HorizontalScrollView strip = new HorizontalScrollView(this);
-        strip.setHorizontalScrollBarEnabled(false);
-        LinearLayout chips = Ui.row(this);
+        // Ready requests: a touch sends one as if it was written. They wrap onto a
+        // second line rather than run past the edge, so every one of them is in sight.
+        Kit.Flow chips = new Kit.Flow(this, 8);
         int[] ready = {R.string.home_time, R.string.home_weather, R.string.book_play, R.string.talk_where,
                 R.string.bot_help_chip};
         for (int k = 0; k < ready.length; k++) {
             final String said = getString(ready[k]);
             TextView chip = Ui.pill(this, said, Palette.SURFACE, Palette.LINE, Palette.INK, false);
             chip.setPadding(dp(16), 0, dp(16), 0);
+            chip.setMinHeight(dp(40));
+            chip.setGravity(Gravity.CENTER);
             chip.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     send(said);
                 }
             });
-            LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(40));
-            if (k > 0) {
-                cp.leftMargin = dp(8);
-            }
-            chips.addView(chip, cp);
+            chips.addView(chip, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
         }
-        strip.addView(chips);
         LinearLayout.LayoutParams stp = Ui.lp(Ui.MATCH, Ui.WRAP);
         stp.topMargin = dp(10);
-        root.addView(strip, stp);
+        root.addView(chips, stp);
 
         LinearLayout line = Ui.row(this);
         line.setGravity(Gravity.CENTER_VERTICAL);
         line.setBackground(Ui.round(Palette.SURFACE, 28, this));
 
+        // One way to attach: the clip opens a sheet with the camera (when the model can see),
+        // the phone's photo picker and the files.
         ImageView clip = Ui.iconButton(this, R.drawable.ic_attach, Palette.SURFACE, 40, getString(R.string.talk_attach));
-        // A touch opens the phone's own photo picker; a long touch, the files.
         clip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pickPhoto();
-            }
-        });
-        clip.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                pickFile();
-                return true;
+                attachSheet();
             }
         });
         line.setPadding(dp(6), dp(6), dp(6), dp(6));
         line.addView(clip, Ui.lp(dp(40), dp(40)));
-        shoot = Ui.iconButton(this, R.drawable.ic_camera, Palette.SURFACE, 40, getString(R.string.talk_camera));
-        shoot.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                takePhoto();
-            }
-        });
-        line.addView(shoot, Ui.lp(dp(40), dp(40)));
         draft = new EditText(this);
         Ui.field(draft);
-        draft.setHint(R.string.talk_hint);
-        draft.setHintTextColor(Palette.HINT);
+        // No hint text: everybody knows what a message field is for; the screen reader still says it.
+        draft.setContentDescription(getString(R.string.talk_hint));
         draft.setTextColor(Palette.INK);
         draft.setTextSize(16);
         draft.setTypeface(Palette.body(this));
@@ -306,12 +289,41 @@ public final class TalkActivity extends Activity {
     /**
      * A camera with nothing to look through its pictures is a promise the app
      * cannot keep, so the button is there only with the model and its photo part.
-     * The paper clip stays: it is the way to learn that a download is missing.
+     * The pictures from the gallery and the files stay: they are the way to learn that a download is missing.
      */
     private void showCamera() {
         Brain b = Brain.get(this);
-        boolean eyes = b.hasModel() && b.has(Brain.SLOT_VISION) && !b.visionRefused();
-        shoot.setVisibility(eyes ? View.VISIBLE : View.GONE);
+        eyes = b.hasModel() && b.has(Brain.SLOT_VISION) && !b.visionRefused();
+    }
+
+    /** The sheet behind the clip: camera, photos, files, one row each. */
+    private void attachSheet() {
+        final android.app.Dialog[] sheet = new android.app.Dialog[1];
+        LinearLayout rows = Ui.column(this);
+        if (eyes) {
+            rows.addView(Kit.rowNav(this, getString(R.string.talk_camera), null, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    sheet[0].dismiss();
+                    takePhoto();
+                }
+            }));
+        }
+        rows.addView(Kit.rowNav(this, getString(R.string.talk_photos), null, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sheet[0].dismiss();
+                pickPhoto();
+            }
+        }));
+        rows.addView(Kit.rowNav(this, getString(R.string.talk_files), null, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sheet[0].dismiss();
+                pickFile();
+            }
+        }));
+        sheet[0] = Kit.sheet(this, getString(R.string.talk_attach), rows, null, null);
     }
 
     private void showVoice(int v) {

@@ -1920,6 +1920,8 @@
     <string name="talk_image_default">Что на этой картинке?</string>
     <string name="talk_camera">Камера</string>
     <string name="talk_attach">Картинка</string>
+    <string name="talk_photos">Фото из галереи</string>
+    <string name="talk_files">Из файлов</string>
     <string name="talk_attach_remove">Убрать картинку</string>
     <string name="talk_shot_save">Сохранить в галерею</string>
     <string name="talk_shot_saved">В галерее</string>

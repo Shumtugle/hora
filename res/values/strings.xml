@@ -922,6 +922,8 @@
     <string name="talk_image_default">What is in this picture?</string>
     <string name="talk_camera">Camera</string>
     <string name="talk_attach">Picture</string>
+    <string name="talk_photos">Photos</string>
+    <string name="talk_files">From files</string>
     <string name="talk_attach_remove">Remove picture</string>
     <string name="talk_shot_save">Save to gallery</string>
     <string name="talk_shot_saved">In the gallery</string>
