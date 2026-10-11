@@ -225,11 +225,11 @@ public final class VoicesActivity extends Activity {
         for (int i = 0; i < Cast.size(this); i++) {
             View dot = new View(this);
             boolean on = i == place;
-            int d = dp(on ? 8 : 5);
+            int d = dp(on ? 12 : 8);
             dot.setBackground(Ui.oval(on ? Palette.voice(Cast.at(i)) : Palette.MUTED, 0, 0, this));
             dot.setAlpha(on ? 1f : 0.6f);
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(d, d);
-            p.topMargin = dp(6);
+            p.topMargin = dp(9);
             dots.addView(dot, p);
         }
         FrameLayout.LayoutParams where = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
@@ -242,7 +242,8 @@ public final class VoicesActivity extends Activity {
         below.setGravity(Gravity.CENTER_HORIZONTAL);
         TextView name = Ui.text(this, Cast.name(this, v), 40, Palette.INK);
         name.setTypeface(Palette.display(this));
-        below.addView(name);
+        name.setGravity(Gravity.CENTER);
+        below.addView(name, Ui.lp(Ui.MATCH, Ui.WRAP));
         TextView roles = Ui.text(this, roles(v), 14, Palette.MUTED);
         roles.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams rp = Ui.lp(Ui.WRAP, Ui.WRAP);
@@ -280,6 +281,20 @@ public final class VoicesActivity extends Activity {
         LinearLayout.LayoutParams lp = Ui.lp(dp(180), dp(48));
         lp.topMargin = dp(12);
         below.addView(listen, lp);
+        // Where the swipe leads, said in words: the next voice by name, a touch goes there too.
+        if (place + 1 < Cast.size(this)) {
+            TextView onward = Ui.text(this, getString(R.string.voices_next, Cast.name(this, Cast.at(place + 1))),
+                    13, Palette.MUTED);
+            onward.setGravity(Gravity.CENTER);
+            onward.setPadding(0, dp(14), 0, dp(4));
+            onward.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    turn(1);
+                }
+            });
+            below.addView(onward, Ui.lp(Ui.MATCH, Ui.WRAP));
+        }
         FrameLayout.LayoutParams bp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
         card.addView(below, bp);

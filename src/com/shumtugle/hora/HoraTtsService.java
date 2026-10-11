@@ -51,7 +51,8 @@ public final class HoraTtsService extends TextToSpeechService {
         java.util.List<String> names = new java.util.ArrayList<String>();
         names.add(VOICE_MAIN);
         names.add(VOICE_ALT);
-        for (int v = 1; v <= Cast.size(this); v++) {
+        for (int at = 0; at < Cast.size(this); at++) {
+            int v = Cast.at(at);
             names.add(NUMBERED + v);
         }
         for (String name : names) {
@@ -64,7 +65,8 @@ public final class HoraTtsService extends TextToSpeechService {
             java.util.List<String> enNames = new java.util.ArrayList<String>();
             enNames.add(EN_MAIN);
             enNames.add(EN_ALT);
-            for (int v = 1; v <= Cast.size(this); v++) {
+            for (int at = 0; at < Cast.size(this); at++) {
+            int v = Cast.at(at);
                 enNames.add(EN_NUMBERED + v);
             }
             for (String name : enNames) {

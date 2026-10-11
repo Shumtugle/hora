@@ -84,7 +84,8 @@ final class Prefs {
     }
 
     static void setDialogueVoice(Context c, boolean on) {
-        sp(c).edit().putBoolean(DIALOGUE, on).apply();
+        sp(c).edit().putBoolean(DIALOGUE, on).commit();
+        BookPlayer.revoice(c);
     }
 
     /** Whether the second sample reads everything outside dialogue. */
@@ -216,7 +217,11 @@ final class Prefs {
     }
 
     static void setRole(Context c, int role, int voice) {
-        sp(c).edit().putInt(ROLE_PREFIX + role, voice).apply();
+        // Written at once: the reading process reads it right after being told.
+        sp(c).edit().putInt(ROLE_PREFIX + role, voice).commit();
+        if (role == Cast.NARRATOR || role == Cast.SPEAKER_A || role == Cast.SPEAKER_B) {
+            BookPlayer.revoice(c);
+        }
     }
 
     /** Slowing down lengthens the pauses instead of stretching the speech itself. */
@@ -339,7 +344,8 @@ final class Prefs {
     }
 
     static void setGrimAir(Context c, int voice, int air) {
-        sp(c).edit().putInt(GRIM_AIR + voice, air).apply();
+        sp(c).edit().putInt(GRIM_AIR + voice, air).commit();
+        BookPlayer.revoice(c);
     }
 
     /** The trial: the sound decoder kept whole instead of the compressed one. */
@@ -388,7 +394,8 @@ final class Prefs {
     }
 
     static void setGrim(Context c, int voice, int timbre, int pitch) {
-        sp(c).edit().putInt(GRIM_TIMBRE + voice, timbre).putInt(GRIM_PITCH + voice, pitch).apply();
+        sp(c).edit().putInt(GRIM_TIMBRE + voice, timbre).putInt(GRIM_PITCH + voice, pitch).commit();
+        BookPlayer.revoice(c);
     }
 
     private static final String LOOK = "look";

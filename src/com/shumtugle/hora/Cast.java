@@ -11,8 +11,9 @@ import java.io.File;
 final class Cast {
     static final int COUNT = 5;
     /**
-     * Four trial voices: faces, scenes and names like the cast's, and the same roles.
-     * Their samples ship with the app; they stand in the row while the developer room is open.
+     * Four more voices made after the first five: faces, scenes and names like the
+     * cast's, and the same roles. Three stand with the cast; the last one, close to
+     * another male voice, stays in the developer room.
      */
     static final int BETA_F = COUNT + 1;
     static final int BETA_M = COUNT + 2;
@@ -84,11 +85,12 @@ final class Cast {
     }
 
     /**
-     * How many voices stand in the row now: the cast, and the trial voices while
-     * the developer room is open. They then have every right the cast has.
+     * How many voices stand in the row now: all but the last of the order, and the
+     * last one too while the developer room is open. The row is always a prefix of
+     * the order, so a place in the row and a voice number are not the same thing.
      */
     static int size(Context c) {
-        return Beta.open(c) ? LAST : COUNT;
+        return Beta.open(c) ? LAST : LAST - 1;
     }
 
     /** The voices that speak of themselves as women; the rest as men. */
@@ -103,14 +105,20 @@ final class Cast {
         return false;
     }
 
-    /** Whether a voice is one of the trial voices. */
+    /** Whether a voice is one of the four made after the first five. */
     static boolean trial(int voice) {
         return voice > COUNT && voice <= LAST;
     }
 
-    /** Whether a voice can be chosen now. */
+    /** Whether a voice can be chosen now: it stands in the row. */
     static boolean available(Context c, int voice) {
-        return voice >= 1 && voice <= size(c);
+        int n = size(c);
+        for (int i = 0; i < n; i++) {
+            if (ORDER[i] == voice) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Where a voice stands in the row, counted from 0. */

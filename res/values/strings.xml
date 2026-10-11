@@ -150,7 +150,7 @@
     <string name="about_voice_model">Voice model</string>
     <string name="about_samples_123">Voices 1–3</string>
     <string name="about_samples_45">Voices 4–5</string>
-    <string name="about_samples_trial">Trial voices 6–9</string>
+    <string name="about_samples_trial">Voices 6–9</string>
     <string name="about_lic_trial">model: Apache 2.0</string>
     <string name="about_english">English module</string>
     <string name="about_speech_engine">Speech engine</string>
@@ -756,6 +756,7 @@
     <string name="voices_role_news">reads notifications</string>
     <string name="voices_role_talk">answers in the talk</string>
     <string name="voices_role_none">no role yet</string>
+    <string name="voices_next">next — %1$s ↓</string>
     <string name="lab_reset">Back to how it came</string>
     <string name="fine_tuning">Fine tuning</string>
     <string name="reading_all">Reading — for every voice</string>
@@ -875,7 +876,7 @@
     <string name="dev_already">Already open</string>
     <string name="dev_steps">%1$d more to open the developer section</string>
     <string name="dev_close">Close the section</string>
-    <string name="beta_in_cast">While this room is open, the four trial voices, two female and two male, stand in the row of faces on the main screen and take roles like the others: books, notifications, talk. The name changes with the pen. Close the room, and the five voices stay.</string>
+    <string name="beta_in_cast">Nyx, Claire and Mark always stand in the row of faces. Severin only while this room is open: he is close to Mark. Here the demo and an overnight audiobook can be made with any of the four.</string>
     <string name="beta_audiobook">Audiobook overnight</string>
     <string name="folder_samples">Samples</string>
     <string name="record_reading_name">Reading</string>

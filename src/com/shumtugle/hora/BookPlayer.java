@@ -49,6 +49,8 @@ public final class BookPlayer extends Service {
     static final String ACTION_BED = "bed";
     /** EXTRA_ON true: the voice falls silent and the background goes on; false: the voice reads again. */
     static final String ACTION_VOICE_QUIET = "voice_quiet";
+    /** Who reads, or how a voice sounds, changed: the sound made ahead is dropped and the paragraph read anew. */
+    static final String ACTION_REVOICE = "revoice";
     static final String EXTRA_ON = "on";
     static final String EXTRA_URI = "uri";
     static final String EXTRA_NAME = "name";
@@ -148,6 +150,22 @@ public final class BookPlayer extends Service {
         return new Intent(c, BookPlayer.class).setAction(action);
     }
 
+    /**
+     * Tells a reading book that its voices changed. Up to some forty seconds of
+     * sound is made ahead with the old voice; without this, the change would be
+     * heard only paragraphs later. Nothing happens when no book is playing.
+     */
+    static void revoice(Context c) {
+        if (!Reading.playing(c)) {
+            return;
+        }
+        try {
+            c.startService(intent(c, ACTION_REVOICE));
+        } catch (RuntimeException e) {
+            Diag.log(c, "book: could not tell the player about the new voice", e);
+        }
+    }
+
     @Override
     public IBinder onBind(Intent i) {
         return null;
@@ -214,6 +232,11 @@ public final class BookPlayer extends Service {
                 ensureLoaded(false);
             }
             warm();
+        } else if (ACTION_REVOICE.equals(action)) {
+            if (paragraphs != null) {
+                Diag.mark(this, "book: voices changed, paragraph " + playIndex + " read anew");
+                seek(playIndex);
+            }
         } else if (ACTION_SEEK.equals(action)) {
             int at = intent.getIntExtra(EXTRA_INDEX, playIndex);
             if (paragraphs != null) {

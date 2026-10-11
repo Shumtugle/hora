@@ -154,7 +154,7 @@
     <string name="about_voice_model">Модель голоса</string>
     <string name="about_samples_123">Голоса 1–3</string>
     <string name="about_samples_45">Голоса 4–5</string>
-    <string name="about_samples_trial">Пробные голоса 6–9</string>
+    <string name="about_samples_trial">Голоса 6–9</string>
     <string name="about_lic_trial">модель: Apache 2.0</string>
     <string name="about_english">Английский модуль</string>
     <string name="about_speech_engine">Движок речи</string>
@@ -1657,6 +1657,7 @@
     <string name="voices_role_news">читает уведомления</string>
     <string name="voices_role_talk">отвечает в разговоре</string>
     <string name="voices_role_none">пока без роли</string>
+    <string name="voices_next">дальше — %1$s ↓</string>
     <string name="lab_reset">Вернуть как было</string>
     <string name="fine_tuning">Тонкая настройка</string>
     <string name="reading_all">Чтение — для всех голосов</string>
@@ -1873,7 +1874,7 @@
     <string name="dev_already">Раздел уже открыт</string>
     <string name="dev_steps">Ещё %1$d — и откроется раздел для разработчиков</string>
     <string name="dev_close">Закрыть раздел</string>
-    <string name="beta_in_cast">Пока этот раздел открыт, четыре пробных голоса — два женских и два мужских — стоят в ряду лиц на главном экране и берут роли, как остальные: книги, уведомления, разговор. Имя меняется карандашом. Закроешь раздел — останутся пятеро.</string>
+    <string name="beta_in_cast">Никс, Клер и Марк стоят в ряду лиц всегда. Северин — только пока открыт этот раздел: он близок к Марку. Здесь демо и аудиокнигу на ночь можно поставить любым из четырёх.</string>
     <string name="beta_audiobook">Аудиокнига на ночь</string>
     <string name="folder_samples">Образцы</string>
     <string name="record_reading_name">Чтение</string>

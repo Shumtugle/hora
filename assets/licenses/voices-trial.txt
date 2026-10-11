@@ -1,8 +1,8 @@
-Trial voice samples 6 to 9
+Voice samples 6 to 9
 
-Four short samples, one per trial voice (6 female, 7 male, 8 male, 9 female),
-used as voice reference samples. They are trial voices: they appear only while
-the developer room of the app is open.
+Four short samples, one per voice (6 female, 7 male, 8 male, 9 female), used
+as voice reference samples. Voices 6, 7 and 9 stand with the other voices;
+voice 8 appears only while the developer room of the app is open.
 
 Origin. Each sample is cut from speech generated on 11 October 2026 by the
 voice design model Qwen3-TTS-12Hz-1.7B-VoiceDesign (Qwen team, Alibaba Cloud),
@@ -20,8 +20,7 @@ Version 2.0 (Copyright 2026 Alibaba Cloud); the full text is in the notice
 "Apache License 2.0" of this app. The licence covers the model; it states
 no conditions for audio the model generates, and no other terms are shown
 by the model card or the demo. The Qwen team has not given a separate
-written confirmation for generated voices used inside an app; until it
-does, these voices stay trial voices.
+written confirmation for generated voices used inside an app.
 
 Changes: each sample was cut to whole sentences, trimmed at the edges with
 short fades, and its level set to a common peak. Nothing else was altered.

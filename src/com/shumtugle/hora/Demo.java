@@ -105,6 +105,7 @@ final class Demo {
     @SuppressWarnings("deprecation")
     static void setVoice(Context c, int voice) {
         c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).edit().putInt(VOICE, voice).commit();
+        BookPlayer.revoice(c);
     }
 
     /** Where earlier builds kept trial samples taken from Hora's folder. */

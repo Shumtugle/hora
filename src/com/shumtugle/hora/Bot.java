@@ -266,7 +266,8 @@ final class Bot {
             }
             case "voice":
             case "other_voice": {
-                int v = hit.intent.equals("other_voice") ? voice % Cast.size(c) + 1 : voiceByName(c, hit.slot("q"));
+                int v = hit.intent.equals("other_voice") ? Cast.at((Cast.place(voice) + 1) % Cast.size(c))
+                        : voiceByName(c, hit.slot("q"));
                 if (v <= 0) {
                     return new Answer(SAY, line(r, "no_voice", "names", troupe(c, r)), voice);
                 }
@@ -282,7 +283,8 @@ final class Bot {
 
     private static java.util.List<String> ownNames(Context c) {
         java.util.List<String> out = new java.util.ArrayList<String>();
-        for (int v = 1; v <= Cast.size(c); v++) {
+        for (int at = 0; at < Cast.size(c); at++) {
+            int v = Cast.at(at);
             String own = Prefs.voiceName(c, v);
             if (!own.isEmpty()) {
                 out.add(own);
@@ -358,7 +360,8 @@ final class Bot {
         if (s.length() < 3) {
             return 0;
         }
-        for (int v = 1; v <= Cast.size(c); v++) {
+        for (int at = 0; at < Cast.size(c); at++) {
+            int v = Cast.at(at);
             String name = Intents.fold(Cast.name(c, v));
             int k = Math.min(4, Math.min(name.length(), s.length()));
             if (s.regionMatches(0, name, 0, k)) {
