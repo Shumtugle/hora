@@ -1647,6 +1647,12 @@
     <string name="bot_help_chip">Что ты умеешь</string>
     <string name="chapter_numbered">глава %1$s</string>
     <string name="lab_title">Настройки голосов</string>
+    <string name="lab_reset">Вернуть как было</string>
+    <string name="fine_tuning">Тонкая настройка</string>
+    <string name="reading_all">Чтение — для всех голосов</string>
+    <string name="settings_voices_roles">Голоса и роли</string>
+    <string name="settings_rest">Остальное</string>
+    <string name="settings_more">Журнал, словарь</string>
     <string name="lab_hint">Вставь сюда текст — он останется, пока не сменишь</string>
     <string name="lab_listen">Послушать</string>
     <string name="lab_save">Записать в файл</string>
@@ -1663,6 +1669,7 @@
     <string name="lab_ms">%1$d мс</string>
     <string name="lab_engine">Движок · опыт</string>
     <string name="lab_decoder">Декодер звука</string>
+    <string name="decoder_where">Скачать полный декодер — в «Языках»</string>
     <string name="lab_decoder_small">сжатый</string>
     <string name="lab_decoder_full">полный</string>
     <string name="lab_decoder_note">Полный декодер — тот же, только без сжатия: около +8 % работы. Скачивается отдельно, около 20 МБ. Меняется со следующей фразы.</string>

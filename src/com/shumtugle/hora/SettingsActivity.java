@@ -4,250 +4,221 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
-import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/** Reading settings: pauses, pronunciation, the dictionary, and "About". Voices live in the workshop, roles in the book screen. */
+import java.util.Locale;
+
+/**
+ * Settings, one thing in one place. Voices: roles, a voice's own settings,
+ * notifications. Reading: what holds for every voice, the rarer part folded.
+ * Then the look, everything else, and about the app; the journal and the
+ * dictionary folded at the very bottom.
+ */
 public final class SettingsActivity extends Activity {
     /** The look this screen was built with. */
     private int built;
-    private static final int PAUSE_STEP_MS = 50;
 
     private LinearLayout list;
+    private LinearLayout beta;
+    private View allRow;
 
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         built = Ui.prepare(this);
+        list = Kit.room(this, getString(R.string.settings));
 
-        list = new LinearLayout(this);
-        list.setOrientation(LinearLayout.VERTICAL);
-        list.setPadding(dp(24), dp(32), dp(24), dp(24));
+        // Voices.
+        list.addView(Kit.section(this, getString(R.string.voices_section)));
+        LinearLayout voices = Kit.plate(this);
+        voices.addView(Kit.rowNav(this, getString(R.string.settings_voices_roles), null, open(RolesActivity.class)));
+        voices.addView(Kit.divider(this));
+        voices.addView(Kit.rowNav(this, getString(R.string.lab_title), null, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LabActivity.open(SettingsActivity.this, Prefs.role(SettingsActivity.this, Cast.TALK));
+            }
+        }));
+        voices.addView(Kit.divider(this));
+        voices.addView(Kit.rowNav(this, getString(R.string.intro_herald), null, open(HeraldActivity.class)));
+        list.addView(voices);
 
-        list.addView(Ui.header(this, getString(R.string.settings), false),
-                new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(48)));
+        // Reading, for every voice: pace and character in sight, the rest folded.
+        list.addView(Kit.section(this, getString(R.string.reading_all)));
+        LinearLayout reading = Kit.plate(this);
+        final float spMin = 0.6f;
+        reading.addView(Kit.slider(this, getString(R.string.lab_tempo), getString(R.string.ws_slow),
+                getString(R.string.ws_fast), Math.round((1.3f - spMin) * 20), Math.round((Prefs.speed(this) - spMin) * 20),
+                new Kit.Value() {
+                    @Override
+                    public String show(int p) {
+                        return String.format(Locale.getDefault(), "%.2f\u00d7", spMin + p / 20f);
+                    }
 
-        section(R.string.voices_section);
-        View workshop = row(getString(R.string.lab_title), "\u203a");
-        workshop.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void set(int p) {
+                        Prefs.setSpeed(SettingsActivity.this, Math.round((spMin + p / 20f) * 100f) / 100f);
+                    }
+                }));
+        reading.addView(Kit.divider(this));
+        final float exMin = Prefs.EXPRESSION_MIN;
+        reading.addView(Kit.slider(this, getString(R.string.lab_character), getString(R.string.ws_calm),
+                getString(R.string.ws_lively), Math.round((Prefs.EXPRESSION_MAX - exMin) * 20),
+                Math.round((Prefs.expression(this) - exMin) * 20), new Kit.Value() {
+                    @Override
+                    public String show(int p) {
+                        return String.format(Locale.getDefault(), "%.2f", exMin + p / 20f);
+                    }
+
+                    @Override
+                    public void set(int p) {
+                        Prefs.setExpression(SettingsActivity.this, exMin + p / 20f);
+                    }
+                }));
+        reading.addView(Kit.divider(this));
+        LinearLayout fine = Ui.column(this);
+        fine.addView(Kit.slider(this, getString(R.string.lab_pause), getString(R.string.lab_shorter),
+                getString(R.string.lab_longer), Prefs.PAUSE_MAX_MS / 25, Prefs.pauseMs(this) / 25, new Kit.Value() {
+                    @Override
+                    public String show(int p) {
+                        return getString(R.string.lab_ms, p * 25);
+                    }
+
+                    @Override
+                    public void set(int p) {
+                        Prefs.setPauseMs(SettingsActivity.this, p * 25);
+                    }
+                }));
+        fine.addView(Kit.rowToggle(this, getString(R.string.even_tempo), null, Prefs.evenTempo(this), new Kit.Flip() {
             @Override
-            public void onClick(View v) {
-                LabActivity.open(SettingsActivity.this, Prefs.role(SettingsActivity.this, Cast.NARRATOR));
+            public void flipped(boolean on) {
+                Prefs.setEvenTempo(SettingsActivity.this, on);
             }
-        });
-        list.addView(workshop);
-        list.addView(rule());
-        View brain = row(getString(R.string.brain_title), "\u203a");
-        brain.setOnClickListener(new View.OnClickListener() {
+        }));
+        fine.addView(Kit.rowToggle(this, getString(R.string.slow_by_pauses), null, Prefs.slowByPauses(this),
+                new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Prefs.setSlowByPauses(SettingsActivity.this, on);
+                    }
+                }));
+        fine.addView(Kit.rowToggle(this, getString(R.string.respell), null, Prefs.respell(this), new Kit.Flip() {
             @Override
-            public void onClick(View v) {
-                startActivity(new Intent(SettingsActivity.this, BrainActivity.class));
+            public void flipped(boolean on) {
+                Prefs.setRespell(SettingsActivity.this, on);
             }
-        });
-        list.addView(brain);
-        list.addView(rule());
-        // Everything Hora fetches, in one touch; the accelerator stays on the model's own screen.
-        allRow = row(getString(R.string.all_title), "");
-        allRow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startEverything();
-            }
-        });
-        list.addView(allRow);
-        list.addView(rule());
-        View langs = row(getString(R.string.lang_title), LanguagePack.installed(this, LanguagePack.ENGLISH)
-                ? getString(R.string.lang_english) : "\u203a");
-        langs.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(SettingsActivity.this, LanguagesActivity.class));
-            }
-        });
-        list.addView(langs);
-        list.addView(rule());
-        String where = Weather.placeName(this);
-        View place = row(getString(R.string.place_title), where.isEmpty()
-                ? (Weather.hasPlace(this) ? getString(R.string.place_here_short) : "\u203a") : where);
-        place.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(SettingsActivity.this, PlaceActivity.class));
-            }
-        });
-        list.addView(place);
-        section(R.string.look);
-        lookChooser();
-        TextView shelfLabel = text(getString(R.string.settings_shelf_view), 17, 1f);
-        LinearLayout.LayoutParams slp = wrap();
-        slp.topMargin = dp(20);
-        list.addView(shelfLabel, slp);
-        LinearLayout.LayoutParams sgp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        sgp.topMargin = dp(10);
+        }));
+        // The sound decoder: the compact one by default, the full one once its pack is here.
+        LinearLayout dec = Ui.column(this);
+        dec.setPadding(dp(16), dp(12), dp(16), dp(8));
+        dec.addView(Ui.text(this, getString(R.string.lab_decoder), 16, Palette.INK));
+        LinearLayout.LayoutParams segP = Ui.lp(Ui.MATCH, Ui.WRAP);
+        segP.topMargin = dp(10);
+        dec.addView(Kit.segments(this, new String[] {getString(R.string.lab_decoder_small),
+                getString(R.string.lab_decoder_full)}, Prefs.fullDecoder(this) ? 1 : 0, new Kit.Chosen() {
+                    @Override
+                    public void chose(int which) {
+                        Prefs.setFullDecoder(SettingsActivity.this, which == 1);
+                    }
+                }), segP);
+        TextView decNote = Ui.text(this, getString(R.string.lab_decoder_note), 12, Palette.HINT);
+        decNote.setLineSpacing(0, 1.3f);
+        decNote.setPadding(0, dp(8), 0, dp(6));
+        dec.addView(decNote);
+        // The full decoder is a pack of its own, fetched where the other packs are.
+        if (!LanguagePack.installed(this, LanguagePack.DECODER)) {
+            TextView fetch = Kit.link(this, getString(R.string.decoder_where), open(LanguagesActivity.class));
+            fetch.setPadding(0, dp(2), 0, dp(8));
+            dec.addView(fetch);
+        }
+        fine.addView(dec);
+        reading.addView(Kit.fold(this, "reading_fine", getString(R.string.fine_tuning), fine));
+        list.addView(reading);
+
+        // The look.
+        list.addView(Kit.section(this, getString(R.string.look)));
+        LinearLayout looks = Ui.column(this);
+        lookChooser(looks);
+        list.addView(looks, Kit.wide());
+        LinearLayout.LayoutParams sgp = Kit.wide();
+        sgp.topMargin = dp(14);
+        TextView shelfLabel = Ui.text(this, getString(R.string.settings_shelf_view), 15, Palette.MUTED);
+        list.addView(shelfLabel, sgp);
+        LinearLayout.LayoutParams segShelf = Kit.wide();
+        segShelf.topMargin = dp(8);
         list.addView(Kit.segments(this, new String[] {getString(R.string.settings_shelf_covers),
                 getString(R.string.settings_shelf_list)}, Prefs.shelfList(this) ? 1 : 0, new Kit.Chosen() {
                     @Override
                     public void chose(int which) {
                         Prefs.setShelfList(SettingsActivity.this, which == 1);
                     }
-                }), sgp);
-        section(R.string.reading);
-        android.widget.Switch slow = new android.widget.Switch(this);
-        slow.setText(R.string.slow_by_pauses);
-        slow.setTextColor(Palette.INK);
-        slow.setAlpha(0.8f);
-        slow.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
-        slow.setChecked(Prefs.slowByPauses(this));
-        slow.setThumbTintList(ColorStateList.valueOf(Palette.ACCENT));
-        slow.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(android.widget.CompoundButton b, boolean on) {
-                Prefs.setSlowByPauses(SettingsActivity.this, on);
-            }
-        });
-        slow.setMinHeight(dp(48));
-        list.addView(slow);
-        android.widget.Switch even = new android.widget.Switch(this);
-        even.setText(R.string.even_tempo);
-        even.setTextColor(Palette.INK);
-        even.setAlpha(0.8f);
-        even.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
-        even.setChecked(Prefs.evenTempo(this));
-        even.setThumbTintList(ColorStateList.valueOf(Palette.ACCENT));
-        even.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(android.widget.CompoundButton b, boolean on) {
-                Prefs.setEvenTempo(SettingsActivity.this, on);
-            }
-        });
-        even.setMinHeight(dp(48));
-        list.addView(even);
-        list.addView(rule());
-        pauseSlider();
-        list.addView(rule());
-        bedRows();
-        list.addView(rule());
-        android.widget.Switch respell = new android.widget.Switch(this);
-        respell.setText(R.string.respell);
-        respell.setTextColor(Palette.INK);
-        respell.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
-        respell.setChecked(Prefs.respell(this));
-        respell.setThumbTintList(ColorStateList.valueOf(Palette.ACCENT));
-        respell.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(android.widget.CompoundButton b, boolean on) {
-                Prefs.setRespell(SettingsActivity.this, on);
-            }
-        });
-        respell.setMinHeight(dp(56));
-        list.addView(respell);
+                }), segShelf);
 
-        section(R.string.herald_section);
-        View herald = row(getString(R.string.herald_row), "\u203a");
-        herald.setOnClickListener(new View.OnClickListener() {
+        // Everything else.
+        list.addView(Kit.section(this, getString(R.string.settings_rest)));
+        LinearLayout rest = Kit.plate(this);
+        rest.addView(Kit.rowNav(this, getString(R.string.brain_title), null, open(BrainActivity.class)));
+        rest.addView(Kit.divider(this));
+        rest.addView(Kit.rowNav(this, getString(R.string.lang_title), LanguagePack.installed(this,
+                LanguagePack.ENGLISH) ? getString(R.string.lang_english) : null, open(LanguagesActivity.class)));
+        rest.addView(Kit.divider(this));
+        // Everything Hora fetches, in one touch; the accelerator stays on the model's own screen.
+        allRow = Kit.rowNav(this, getString(R.string.all_title), null, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(SettingsActivity.this, HeraldActivity.class));
+                startEverything();
             }
         });
-        list.addView(herald);
-
-        section(R.string.tools);
-        View journal = row(getString(R.string.journal), "›");
-        journal.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(SettingsActivity.this, JournalActivity.class));
-            }
-        });
-        list.addView(journal);
-        list.addView(rule());
-        View check = row(getString(R.string.text_check), "\u203a");
-        check.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(SettingsActivity.this, TextCheckActivity.class));
-            }
-        });
-        list.addView(check);
-        list.addView(rule());
-        View lex = row(getString(R.string.lexicon), "›");
-        lex.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(SettingsActivity.this, LexiconActivity.class));
-            }
-        });
-        list.addView(lex);
-        list.addView(rule());
-        View probe = row(getString(R.string.probe), getString(R.string.probe_hint));
-        probe.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                VoiceService.probe(SettingsActivity.this);
-            }
-        });
-        list.addView(probe);
-
-        View books = row(getString(R.string.export_title), Export.queue(this).length() == 0 ? "\u203a"
-                : String.valueOf(Export.queue(this).length()));
-        books.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(SettingsActivity.this, ExportActivity.class));
-            }
-        });
-        list.addView(books);
-        list.addView(rule());
-
-        section(R.string.transfer_section);
+        rest.addView(allRow);
+        rest.addView(Kit.divider(this));
+        String where = Weather.placeName(this);
+        rest.addView(Kit.rowNav(this, getString(R.string.place_title), where.isEmpty()
+                ? (Weather.hasPlace(this) ? getString(R.string.place_here_short) : null) : where,
+                open(PlaceActivity.class)));
+        rest.addView(Kit.divider(this));
+        int queued = Export.queue(this).length();
+        rest.addView(Kit.rowNav(this, getString(R.string.export_title), queued == 0 ? null : String.valueOf(queued),
+                open(ExportActivity.class)));
+        rest.addView(Kit.divider(this));
         long saved = Transfer.savedAt(this);
-        View move = row(getString(R.string.transfer_row), HoraFolder.tree(this) == null
+        rest.addView(Kit.rowNav(this, getString(R.string.transfer_row), HoraFolder.tree(this) == null
                 ? getString(R.string.transfer_no_folder)
                 : saved <= 0 ? getString(R.string.transfer_not_yet)
                 : java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
-                        .format(new java.util.Date(saved)));
-        move.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                transferSheet();
-            }
-        });
-        list.addView(move);
-        list.addView(rule());
+                        .format(new java.util.Date(saved)), new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                transferSheet();
+                            }
+                        }));
+        list.addView(rest);
 
-        section(R.string.about);
-        View intro = row(getString(R.string.intro_open), "\u203a");
-        intro.setOnClickListener(new View.OnClickListener() {
+        // About the app.
+        list.addView(Kit.section(this, getString(R.string.about)));
+        LinearLayout about = Kit.plate(this);
+        about.addView(Kit.rowNav(this, getString(R.string.intro_open), null, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 IntroActivity.open(SettingsActivity.this);
             }
-        });
-        list.addView(intro);
-        list.addView(rule());
+        }));
+        about.addView(Kit.divider(this));
         // The demo book, read by the narrator; it never sits on the shelf.
-        View demo = row(getString(R.string.demo_title), "\u25b7");
-        demo.setOnClickListener(new View.OnClickListener() {
+        about.addView(Kit.rowNav(this, getString(R.string.demo_title), "\u25b7", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 BetaActivity.read(SettingsActivity.this, 0);
             }
-        });
-        list.addView(demo);
-        list.addView(rule());
+        }));
+        about.addView(Kit.divider(this));
+        about.addView(Kit.rowNav(this, getString(R.string.about_title), null, open(AboutActivity.class)));
+        about.addView(Kit.divider(this));
         // Seven touches on the build number open the developer room, as on the phone itself.
-        View build = row(getString(R.string.build), buildLabel());
-        build.setOnClickListener(new View.OnClickListener() {
+        about.addView(Kit.rowNav(this, getString(R.string.build), buildLabel(), new View.OnClickListener() {
             private int taps;
             private long last;
 
@@ -272,105 +243,35 @@ public final class SettingsActivity extends Activity {
                             Toast.LENGTH_SHORT).show();
                 }
             }
-        });
-        list.addView(build);
-        // The developer room: shown once opened, until closed from inside.
-        beta = new LinearLayout(this);
-        beta.setOrientation(LinearLayout.VERTICAL);
-        list.addView(beta);
-        list.addView(rule());
-        View about = row(getString(R.string.about_title), "\u203a");
-        about.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(SettingsActivity.this, AboutActivity.class));
-            }
-        });
+        }));
         list.addView(about);
 
-        ScrollView scroll = new ScrollView(this);
-        scroll.setBackgroundColor(Palette.BG);
-        scroll.addView(list);
-        setContentView(scroll);
+        // The developer room: shown once opened, until closed from inside.
+        beta = Ui.column(this);
+        list.addView(beta, Kit.wide());
+
+        // For those who look under the hood: the journal and the dictionary.
+        LinearLayout tools = Kit.plate(this);
+        tools.addView(Kit.rowNav(this, getString(R.string.journal), null, open(JournalActivity.class)));
+        tools.addView(Kit.divider(this));
+        tools.addView(Kit.rowNav(this, getString(R.string.lexicon), null, open(LexiconActivity.class)));
+        LinearLayout.LayoutParams fp = Kit.wide();
+        fp.topMargin = dp(18);
+        list.addView(Kit.fold(this, "settings_tools", getString(R.string.settings_more), tools), fp);
     }
 
-    /** The background under the book: what it is, and how loud, always below the voice. */
-    private void bedRows() {
-        final String[] kinds = getResources().getStringArray(R.array.bed_kinds);
-        final LinearLayout which = row(getString(R.string.bed), kinds[Prefs.bed(this)]);
-        which.setClickable(true);
-        which.setBackground(Ui.pressable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)));
-        which.setOnClickListener(new View.OnClickListener() {
+    /** A click that opens another screen. */
+    private View.OnClickListener open(final Class<? extends Activity> screen) {
+        return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LinearLayout choices = new LinearLayout(SettingsActivity.this);
-                choices.setOrientation(LinearLayout.VERTICAL);
-                final android.app.Dialog[] d = new android.app.Dialog[1];
-                for (int k = 0; k < kinds.length; k++) {
-                    final int kind = k;
-                    LinearLayout r = row(kinds[k], k == Prefs.bed(SettingsActivity.this) ? "\u2713" : "");
-                    r.setClickable(true);
-                    r.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Prefs.setBed(SettingsActivity.this, kind);
-                            ((TextView) which.getChildAt(1)).setText(kinds[kind]);
-                            BedSheet.tell(SettingsActivity.this);
-                            d[0].dismiss();
-                        }
-                    });
-                    choices.addView(r);
-                }
-                d[0] = Kit.sheet(SettingsActivity.this, getString(R.string.bed), choices, null, null);
-                d[0].show();
+                startActivity(new Intent(SettingsActivity.this, screen));
             }
-        });
-        list.addView(which);
-        int cur = Prefs.bedVolume(this);
-        final TextView value = text(getString(R.string.bed_volume_value, cur), 17, 0.6f);
-        final SeekBar bar = slider(100, cur);
-        bar.setOnSeekBarChangeListener(new Listener() {
-            @Override
-            public void onProgressChanged(SeekBar s, int p, boolean user) {
-                value.setText(getString(R.string.bed_volume_value, p));
-                if (user) {
-                    Prefs.setBedVolume(SettingsActivity.this, p);
-                }
-            }
-        });
-        list.addView(labelled(getString(R.string.bed_volume), value, bar));
+        };
     }
 
-    private void pauseSlider() {
-        int cur = Prefs.pauseMs(this);
-        final TextView value = text(getString(R.string.pause_value, cur), 17, 0.6f);
-        final SeekBar bar = slider(Prefs.PAUSE_MAX_MS / PAUSE_STEP_MS, cur / PAUSE_STEP_MS);
-        bar.setOnSeekBarChangeListener(new Listener() {
-            @Override
-            public void onProgressChanged(SeekBar s, int p, boolean user) {
-                int v = p * PAUSE_STEP_MS;
-                value.setText(getString(R.string.pause_value, v));
-                if (user) {
-                    Prefs.setPauseMs(SettingsActivity.this, v);
-                }
-            }
-        });
-        list.addView(labelled(getString(R.string.pause), value, bar));
-    }
-
-    private android.widget.Button flatButton(String label, View.OnClickListener l) {
-        android.widget.Button b = new android.widget.Button(this);
-        b.setText(label);
-        b.setAllCaps(false);
-        b.setTextColor(Palette.ACCENT_TEXT);
-        b.setBackground(null);
-        b.setOnClickListener(l);
-        return b;
-    }
-
-    /** Bordeaux or contrast, side by side; the chosen one stands out. */
     /** The looks as tiles, two to a row, each drawn in its own colors so it can be judged before choosing. */
-    private void lookChooser() {
+    private void lookChooser(LinearLayout into) {
         int current = Prefs.look(this);
         int[] names = new int[4];
         names[Palette.BORDEAUX] = R.string.look_bordeaux;
@@ -419,7 +320,7 @@ public final class SettingsActivity extends Activity {
                 row = Ui.row(this);
                 LinearLayout.LayoutParams lp = Ui.lp(Ui.MATCH, Ui.WRAP);
                 lp.topMargin = dp(i == 0 ? 8 : 12);
-                list.addView(row, lp);
+                into.addView(row, lp);
             }
             LinearLayout.LayoutParams p = Ui.weight(1);
             if (i % 2 == 1) {
@@ -427,34 +328,6 @@ public final class SettingsActivity extends Activity {
             }
             row.addView(tile, p);
         }
-    }
-
-    private SeekBar slider(int max, int progress) {
-        SeekBar bar = new SeekBar(this);
-        bar.setMax(max);
-        bar.setProgress(Math.max(0, Math.min(max, progress)));
-        ColorStateList accent = ColorStateList.valueOf(Palette.ACCENT);
-        bar.setProgressTintList(accent);
-        bar.setThumbTintList(accent);
-        bar.setProgressBackgroundTintList(ColorStateList.valueOf(Palette.INK));
-        return bar;
-    }
-
-    private View labelled(String label, TextView value, SeekBar bar) {
-        LinearLayout box = new LinearLayout(this);
-        box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(0, dp(12), 0, dp(8));
-        LinearLayout head = new LinearLayout(this);
-        head.setOrientation(LinearLayout.HORIZONTAL);
-        head.addView(text(label, 17, 1f), new LinearLayout.LayoutParams(0,
-                LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        head.addView(value, wrap());
-        box.addView(head);
-        LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        bp.topMargin = dp(8);
-        box.addView(bar, bp);
-        return box;
     }
 
     private static final int PICK_ARCHIVE = 81;
@@ -517,16 +390,6 @@ public final class SettingsActivity extends Activity {
         }
     }
 
-    private void section(int res) {
-        TextView section = text(getString(res), 13, 1f);
-        section.setTextColor(Palette.MUTED);
-        section.setTypeface(Palette.bodyStrong(this));
-        LinearLayout.LayoutParams sp = wrap();
-        sp.topMargin = dp(36);
-        sp.bottomMargin = dp(8);
-        list.addView(section, sp);
-    }
-
     private String buildLabel() {
         try {
             PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
@@ -535,67 +398,6 @@ public final class SettingsActivity extends Activity {
             return "?";
         }
     }
-
-    private LinearLayout row(String label, String value) {
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setMinimumHeight(dp(56));
-        row.addView(text(label, 17, 1f), new LinearLayout.LayoutParams(0,
-                LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        TextView v = text(value, 17, 0.6f);
-        v.setGravity(Gravity.END);
-        row.addView(v, wrap());
-        return row;
-    }
-
-    /** Changes the value on the right of a row made by row(). */
-    private static void setRowValue(View row, String value) {
-        if (row instanceof LinearLayout && ((LinearLayout) row).getChildCount() > 1
-                && ((LinearLayout) row).getChildAt(1) instanceof TextView) {
-            ((TextView) ((LinearLayout) row).getChildAt(1)).setText(value);
-        }
-    }
-
-    private View rule() {
-        View v = new View(this);
-        v.setBackgroundColor(Palette.RULE);
-        v.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, Math.max(1, dp(1) / 2)));
-        return v;
-    }
-
-    private TextView text(String s, int sp, float alpha) {
-        TextView t = new TextView(this);
-        t.setText(s);
-        t.setTextColor(Palette.INK);
-        t.setAlpha(alpha);
-        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
-        t.setTypeface(Palette.body(this));
-        return t;
-    }
-
-    private static LinearLayout.LayoutParams wrap() {
-        return new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-    }
-
-    private int dp(int v) {
-        return Math.round(v * getResources().getDisplayMetrics().density);
-    }
-
-    private abstract static class Listener implements SeekBar.OnSeekBarChangeListener {
-        @Override
-        public void onStartTrackingTouch(SeekBar s) {
-        }
-
-        @Override
-        public void onStopTrackingTouch(SeekBar s) {
-        }
-    }
-
-    private LinearLayout beta;
-    private View allRow;
 
     private final Runnable allTick = new Runnable() {
         @Override
@@ -620,7 +422,7 @@ public final class SettingsActivity extends Activity {
                                 : st.running ? (st.total <= 0 ? "\u2026"
                                         : (int) (100L * st.done / st.total) + "\u00a0%")
                                 : getString(R.string.all_size_total);
-                        setRowValue(allRow, value);
+                        Kit.setValue(allRow, value);
                         if (st.running && !isFinishing()) {
                             allRow.postDelayed(allTick, 1500);
                         }
@@ -681,22 +483,21 @@ public final class SettingsActivity extends Activity {
         if (!Beta.open(this)) {
             return;
         }
-        list.removeView(beta);
-        list.addView(beta);
-        TextView head = text(getString(R.string.dev_section), 13, 1f);
-        head.setTextColor(Palette.MUTED);
-        head.setTypeface(Palette.bodyStrong(this));
-        LinearLayout.LayoutParams hp = wrap();
-        hp.topMargin = dp(36);
-        hp.bottomMargin = dp(8);
-        beta.addView(head, hp);
-        View trial = row(getString(R.string.beta_title), "\u203a");
-        trial.setOnClickListener(new View.OnClickListener() {
+        beta.addView(Kit.section(this, getString(R.string.dev_section)));
+        LinearLayout room = Kit.plate(this);
+        room.addView(Kit.rowNav(this, getString(R.string.beta_title), null, open(BetaActivity.class)));
+        room.addView(Kit.divider(this));
+        // A short spoken sample of every voice, written to a file, for comparing builds by ear.
+        room.addView(Kit.rowNav(this, getString(R.string.probe), null, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(SettingsActivity.this, BetaActivity.class));
+                VoiceService.probe(SettingsActivity.this);
             }
-        });
-        beta.addView(trial);
+        }));
+        beta.addView(room);
+    }
+
+    private int dp(float v) {
+        return Kit.dp(this, v);
     }
 }

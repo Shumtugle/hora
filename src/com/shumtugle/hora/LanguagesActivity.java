@@ -14,10 +14,12 @@ import android.widget.LinearLayout;
 public final class LanguagesActivity extends Activity {
     private static final int PICK_VOICE = 71;
     private static final int PICK_ENGLISH = 72;
+    private static final int PICK_DECODER = 73;
 
     private int built;
     private PackPanel voice;
     private PackPanel english;
+    private PackPanel decoder;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -33,6 +35,11 @@ public final class LanguagesActivity extends Activity {
         english = new PackPanel(this, LanguagePack.ENGLISH, PICK_ENGLISH, 100, R.string.lang_bad_file,
                 R.string.lang_not_yet, true, null);
         list.addView(english.view(), Kit.wide());
+        // The full sound decoder: fetched on its own; the switch for it is in Settings, under Reading.
+        list.addView(Kit.section(this, getString(R.string.lab_decoder)));
+        decoder = new PackPanel(this, LanguagePack.DECODER, PICK_DECODER, 20, R.string.decoder_pack_bad_file,
+                0, true, null);
+        list.addView(decoder.view(), Kit.wide());
     }
 
     @Override
@@ -43,20 +50,22 @@ public final class LanguagesActivity extends Activity {
         }
         voice.resume();
         english.resume();
+        decoder.resume();
     }
 
     @Override
     protected void onPause() {
         voice.pause();
         english.pause();
+        decoder.pause();
         super.onPause();
     }
 
     @Override
     protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
-        if (!voice.result(request, result, data)) {
-            english.result(request, result, data);
+        if (!voice.result(request, result, data) && !english.result(request, result, data)) {
+            decoder.result(request, result, data);
         }
     }
 }

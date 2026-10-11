@@ -411,14 +411,8 @@ final class Ui {
             sign.setImageResource(R.drawable.hora_sign);
             sign.setScaleType(ImageView.ScaleType.FIT_CENTER);
             sign.setBackground(round(0xFFA83428, 12, a));
-            // The sign is the way back to the title page, as a site's logo leads to its first page.
-            sign.setContentDescription(a.getString(R.string.intro_open));
-            sign.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    IntroActivity.open(a);
-                }
-            });
+            // The sign only marks the app: the title page shows on the first start and from Settings.
+            sign.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
             head.addView(sign, lp(dp(a, 44), dp(a, 44)));
         } else {
             ImageView back = iconButton(a, R.drawable.ic_back, Palette.SURFACE, 44, a.getString(R.string.ws_back));

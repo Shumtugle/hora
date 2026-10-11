@@ -736,6 +736,94 @@ final class Kit {
         }
     }
 
+    /** How a slider's position reads and what it sets. */
+    interface Value {
+        String show(int position);
+
+        void set(int position);
+    }
+
+    /** A titled slider with its value on the right and the two ends named under it. */
+    static LinearLayout slider(Context c, CharSequence title, CharSequence left, CharSequence right, int max, int at,
+            final Value value) {
+        LinearLayout box = Ui.column(c);
+        box.setPadding(dp(c, 16), dp(c, 12), dp(c, 16), dp(c, 10));
+        LinearLayout head = Ui.row(c);
+        head.addView(Ui.text(c, title, 16, Palette.INK),
+                new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        final TextView shown = Ui.text(c, value.show(at), 14, Palette.ACCENT_TEXT);
+        shown.setTypeface(Palette.bodyStrong(c));
+        head.addView(shown);
+        box.addView(head);
+        android.widget.SeekBar bar = Ui.slider(c, max, at);
+        bar.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(android.widget.SeekBar s, int p, boolean user) {
+                shown.setText(value.show(p));
+            }
+
+            @Override
+            public void onStartTrackingTouch(android.widget.SeekBar s) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(android.widget.SeekBar s) {
+                value.set(s.getProgress());
+            }
+        });
+        box.addView(bar, Ui.lp(Ui.MATCH, Ui.WRAP));
+        LinearLayout ends = Ui.row(c);
+        ends.addView(Ui.text(c, left, 12, Palette.HINT),
+                new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        ends.addView(Ui.text(c, right, 12, Palette.HINT));
+        box.addView(ends);
+        return box;
+    }
+
+    /** A thin line between rows of a plate. */
+    static View divider(Context c) {
+        View v = new View(c);
+        v.setBackgroundColor(Palette.RAISED);
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
+        p.leftMargin = dp(c, 16);
+        p.rightMargin = dp(c, 16);
+        v.setLayoutParams(p);
+        return v;
+    }
+
+    /**
+     * The one level of "more": a row in accent text with a chevron, and under it
+     * the rarer settings, shown or hidden. It opens downwards, so what is above
+     * stays where it was, and the app remembers whether it was left open.
+     */
+    static LinearLayout fold(final Context c, final String key, CharSequence title, final View inside) {
+        final android.content.SharedPreferences sp = c.getSharedPreferences("folds", Context.MODE_PRIVATE);
+        LinearLayout box = Ui.column(c);
+        LinearLayout r = bareRow(c);
+        TextView t = Ui.text(c, title, 15, Palette.ACCENT_TEXT);
+        t.setTypeface(Palette.bodyStrong(c));
+        r.addView(t, fill());
+        // The chevron of the other rows, turned down when closed and up when open.
+        final TextView mark = Ui.text(c, "\u203a", 20, Palette.ACCENT_TEXT);
+        r.addView(mark);
+        r.setBackground(Ui.pressable(new ColorDrawable(Color.TRANSPARENT)));
+        box.addView(r);
+        box.addView(inside, wide());
+        final boolean[] open = {sp.getBoolean(key, false)};
+        inside.setVisibility(open[0] ? View.VISIBLE : View.GONE);
+        mark.setRotation(open[0] ? -90f : 90f);
+        r.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                open[0] = !open[0];
+                inside.setVisibility(open[0] ? View.VISIBLE : View.GONE);
+                mark.setRotation(open[0] ? -90f : 90f);
+                sp.edit().putBoolean(key, open[0]).apply();
+            }
+        });
+        return box;
+    }
+
     static int dp(Context c, float v) {
         return Ui.dp(c, v);
     }

@@ -746,6 +746,12 @@
     <string name="bot_help_chip">What can you do</string>
     <string name="chapter_numbered">chapter %1$s</string>
     <string name="lab_title">Voice settings</string>
+    <string name="lab_reset">Back to how it came</string>
+    <string name="fine_tuning">Fine tuning</string>
+    <string name="reading_all">Reading — for every voice</string>
+    <string name="settings_voices_roles">Voices and roles</string>
+    <string name="settings_rest">Everything else</string>
+    <string name="settings_more">Journal, dictionary</string>
     <string name="lab_hint">Paste text here — it stays until you change it</string>
     <string name="lab_listen">Listen</string>
     <string name="lab_save">Record to a file</string>
@@ -762,6 +768,7 @@
     <string name="lab_ms">%1$d ms</string>
     <string name="lab_engine">Engine · trial</string>
     <string name="lab_decoder">Sound decoder</string>
+    <string name="decoder_where">Get the full decoder in Languages</string>
     <string name="lab_decoder_small">compressed</string>
     <string name="lab_decoder_full">full</string>
     <string name="lab_decoder_note">The full decoder is the same one without compression: about 8% more work. Downloaded separately, about 20 MB. Takes effect from the next phrase.</string>
