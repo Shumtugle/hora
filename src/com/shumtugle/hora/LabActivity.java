@@ -31,6 +31,8 @@ public final class LabActivity extends Activity {
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private int built;
+    /** How many voices stood in the cast when the screen was built. */
+    private int cast;
     private int voice;
     private final ImageView[] faces = new ImageView[Cast.LAST];
     private final TextView[] names = new TextView[Cast.LAST];
@@ -47,6 +49,7 @@ public final class LabActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         built = Ui.prepare(this);
+        cast = Cast.size(this);
         voice = getIntent().getIntExtra(EXTRA_VOICE, Prefs.role(this, Cast.NARRATOR));
         if (!Cast.available(this, voice)) {
             voice = 1;
@@ -58,6 +61,11 @@ public final class LabActivity extends Activity {
     protected void onResume() {
         super.onResume();
         if (Ui.stale(this, built)) {
+            return;
+        }
+        if (cast != Cast.size(this)) {
+            // The trial voices came or went while the screen was away: it is laid out anew.
+            recreate();
             return;
         }
         showRatio();
@@ -78,10 +86,20 @@ public final class LabActivity extends Activity {
     private void build() {
         LinearLayout list = Kit.room(this, getString(R.string.lab_title));
 
+        // The cast in one row; the trial voices, when shown, in a second row of the same cells.
         LinearLayout row = Ui.row(this);
         row.setGravity(Gravity.BOTTOM);
+        LinearLayout faceRows = Ui.column(this);
+        faceRows.addView(row, Ui.lp(Ui.MATCH, Ui.WRAP));
         for (int i = 0; i < Cast.size(this); i++) {
             final int v = Cast.at(i);
+            if (i == Cast.COUNT) {
+                row = Ui.row(this);
+                row.setGravity(Gravity.TOP);
+                LinearLayout.LayoutParams second = Ui.lp(Ui.MATCH, Ui.WRAP);
+                second.topMargin = dp(14);
+                faceRows.addView(row, second);
+            }
             LinearLayout cell = Ui.column(this);
             cell.setGravity(Gravity.CENTER_HORIZONTAL);
             faces[i] = Ui.portrait(this, v);
@@ -95,12 +113,19 @@ public final class LabActivity extends Activity {
             });
             cell.addView(faces[i]);
             names[i] = Ui.text(this, Cast.name(this, v), 12, Palette.MUTED);
+            // Long trial names break onto a second line, centred under the face.
+            names[i].setGravity(Gravity.CENTER_HORIZONTAL);
+            names[i].setMaxLines(2);
             LinearLayout.LayoutParams np = Ui.lp(Ui.WRAP, Ui.WRAP);
             np.topMargin = dp(6);
             cell.addView(names[i], np);
             row.addView(cell, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
         }
-        list.addView(row, Kit.below(this, 20));
+        // An unfinished second row keeps the cells as wide as the first one's.
+        for (int i = Cast.size(this); i > Cast.COUNT && i % Cast.COUNT != 0; i++) {
+            row.addView(new View(this), new LinearLayout.LayoutParams(0, 1, 1f));
+        }
+        list.addView(faceRows, Kit.below(this, 20));
 
         // The text plate: what is pasted here stays until it is changed or cleared.
         LinearLayout plate = Kit.plate(this);

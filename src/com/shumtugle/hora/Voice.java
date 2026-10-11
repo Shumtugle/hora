@@ -1107,8 +1107,8 @@ final class Voice {
         if (samples[v] == null) {
             samples[v] = new Sample();
         }
-        // A trial voice whose sample is not on the phone reads with the first voice instead.
-        File f = v > Cast.COUNT ? Demo.sample(context, v) : new File(root, Cast.slot(v));
+        // A voice whose sample is missing reads with the first voice instead.
+        File f = new File(root, Cast.slot(v));
         if (!f.isFile()) {
             v = 1;
             f = new File(root, Cast.slot(1));

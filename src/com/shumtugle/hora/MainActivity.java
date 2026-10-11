@@ -392,9 +392,10 @@ public final class MainActivity extends Activity {
         for (int i = 0; i < dots.length; i++) {
             boolean on = Cast.at(i) == v;
             // Every face keeps the same slot, so choosing one never moves the others.
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(36), dp(36));
-            p.leftMargin = dp(7);
-            p.rightMargin = dp(7);
+            int[] cell = Ui.troupeCell(this, dots.length);
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(cell[0]), dp(cell[0]));
+            p.leftMargin = dp(cell[1]);
+            p.rightMargin = dp(cell[1]);
             dots[i].setLayoutParams(p);
             int pad = on ? dp(3) : dp(5);
             dots[i].setPadding(pad, pad, pad, pad);

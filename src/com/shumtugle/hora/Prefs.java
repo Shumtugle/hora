@@ -306,8 +306,8 @@ final class Prefs {
     // Starting makeup per voice, measured on the bench against good human readers (breathiness
     // and top band): the smooth, dark samples get a little brightness and air; the voices whose
     // samples are already breathy or rough are left as they are.
-    private static final int[] TIMBRE_DEFAULT = {0, 5, 5, 0, 5, 0, 0, 0};
-    private static final int[] AIR_DEFAULT = {0, 3, 3, 0, 3, 0, 0, 0};
+    private static final int[] TIMBRE_DEFAULT = {0, 5, 5, 0, 5, 0, 0, 0, 0, 0};
+    private static final int[] AIR_DEFAULT = {0, 3, 3, 0, 3, 0, 0, 0, 0, 0};
 
     static int defaultTimbre(int voice) {
         return voice >= 1 && voice < TIMBRE_DEFAULT.length ? TIMBRE_DEFAULT[voice] : 0;
@@ -521,7 +521,7 @@ final class Prefs {
     // Every voice reads whole sentences by default, as it does for other apps: cut into breath
     // groups, each piece lost the sentence's melody and ended as if the sentence had.
     private static final int[] BREATH_DEFAULT = {Breath.NONE, Breath.NONE, Breath.NONE,
-        Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE};
+        Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE};
 
     static int breathShared(Context c, int voice) {
         int v = Math.max(1, Math.min(Cast.LAST, voice));

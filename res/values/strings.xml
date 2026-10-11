@@ -150,6 +150,8 @@
     <string name="about_voice_model">Voice model</string>
     <string name="about_samples_123">Voices 1–3</string>
     <string name="about_samples_45">Voices 4–5</string>
+    <string name="about_samples_trial">Trial voices 6–9</string>
+    <string name="about_lic_trial">model: Apache 2.0</string>
     <string name="about_english">English module</string>
     <string name="about_speech_engine">Speech engine</string>
     <string name="about_text">Text and stress</string>
@@ -318,6 +320,8 @@
         <item>Sadko</item>
         <item>Beta female</item>
         <item>Beta male</item>
+        <item>Beta male 2</item>
+        <item>Beta neutral</item>
     </string-array>
     <string name="slow_by_pauses">Slow down with pauses, not stretching</string>
     <string name="journal">Journal</string>
@@ -429,6 +433,8 @@
         <item>assistant</item>
         <item>assistant</item>
         <item>assistant</item>
+        <item>assistant</item>
+        <item>assistant</item>
     </string-array>
     <string-array name="voice_kinds">
         <item>female · main</item>
@@ -438,6 +444,8 @@
         <item>male · main</item>
         <item>female · beta</item>
         <item>male · beta</item>
+        <item>male · beta</item>
+        <item>neutral · beta</item>
     </string-array>
     <string name="fonts_license">Cormorant, Manrope · OFL 1.1</string>
     <string name="tools">Tools</string>
@@ -774,6 +782,8 @@
         <item>You are young, light and cheerful.</item>
         <item>You are focused, precise and direct.</item>
         <item>You are calm, attentive and kind.</item>
+        <item>You are low-voiced, unhurried and plain-spoken.</item>
+        <item>You are even, clear and unhurried.</item>
     </string-array>
     <string name="brain_trial_question">I am tired today.</string>
     <string name="lab_brain">AI model · test</string>
@@ -848,15 +858,12 @@
     <string name="dev_already">Already open</string>
     <string name="dev_steps">%1$d more to open the developer section</string>
     <string name="dev_close">Close the section</string>
-    <string name="beta_samples">Samples</string>
-    <string name="beta_samples_ready">Both samples are here</string>
-    <string name="beta_samples_wrong">Not the known recordings: Hora takes only its two samples</string>
-    <string name="beta_samples_half">One of the two samples found</string>
-    <string name="beta_samples_none">Put beta-f.wav and beta-m.wav into Hora\'s folder → Samples</string>
-    <string name="beta_in_cast">Both voices stand in the row of faces on the main screen and take roles like the others: books, notifications, talk. The name changes with the pen.</string>
+    <string name="beta_in_cast">While this room is open, the four trial voices stand in the row of faces on the main screen and take roles like the others: books, notifications, talk. The name changes with the pen. Close the room, and the five voices stay.</string>
     <string name="beta_audiobook">Audiobook overnight</string>
     <string name="beta_female">Beta female</string>
     <string name="beta_male">Beta male</string>
+    <string name="beta_male2">Beta male 2</string>
+    <string name="beta_neutral">Beta neutral</string>
     <string name="folder_samples">Samples</string>
     <string name="record_reading_name">Reading</string>
     <string name="record_probe_name">Voice sample</string>
@@ -953,12 +960,16 @@
         <item>Time, weather and the book are below. You can type too.</item>
         <item>Time, weather and the book are below. Anything else, just type.</item>
         <item>Time, weather and the book are below. Or type.</item>
+        <item>Buttons below. Or type.</item>
+        <item>Time, weather and the book are below. You can type too.</item>
     </string-array>
     <string-array name="voice_step_forward">
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m talking now.</item>
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. Answering.</item>
+        <item>%1$s. I\'m answering now.</item>
+        <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m answering now.</item>
@@ -1045,6 +1056,8 @@
         <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>
+        <item>Are you ready to work?</item>
+        <item>Ready to start?</item>
     </string-array>
     <string name="brain_look_rules">You have just been shown a picture, and for the answer about it the rules above change. Talk about what is visible in it now, in the present tense, starting with “In the photo” or “In the picture”, not about yourself. Name the main thing and the setting; if the picture has large lettering, read it as it is. Name a place or thing only if you recognise it for sure; otherwise do not guess. Two or three sentences.</string>
     <string name="brain_wiki_rules">You have been asked about the world, and the rules above change: below is the text of the encyclopedia article “%1$s”. Answer the question from this text only, in one to three sentences, in your own words. Take dates, numbers and names from the text only. If the text has no answer, say so: “The article does not say.”</string>

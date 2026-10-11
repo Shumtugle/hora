@@ -11,8 +11,8 @@ import android.widget.Toast;
 import java.io.IOException;
 
 /**
- * Trial voices, in the developer room: whether their samples are here (then they
- * stand with the cast and take roles), the demo read by them, and an audiobook of it.
+ * Trial voices, in the developer room: while it is open they stand with the cast
+ * and take roles; here the demo is read by them, or made into an audiobook.
  * The plain demo, read by the narrator, starts the same way from the settings.
  */
 public final class BetaActivity extends Activity {
@@ -35,73 +35,48 @@ public final class BetaActivity extends Activity {
         if (Ui.stale(this, built)) {
             return;
         }
-        final android.content.Context app = getApplicationContext();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final int found = Demo.take(app);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!isFinishing()) {
-                            show(found);
-                        }
-                    }
-                });
-            }
-        }, "beta-look").start();
+        show();
     }
 
-    private void show(int found) {
+    /** Names of the trial voice rows, in voice order from the first trial voice. */
+    private static final int[] LABELS = {R.string.beta_female, R.string.beta_male,
+        R.string.beta_male2, R.string.beta_neutral};
+
+    private void show() {
         body.removeAllViews();
-        body.addView(Kit.section(this, getString(R.string.beta_samples)));
-        LinearLayout state = Kit.plate(this);
-        int words = found == Demo.SAMPLES_READY ? R.string.beta_samples_ready
-                : found == Demo.SAMPLES_WRONG ? R.string.beta_samples_wrong
-                : found == Demo.SAMPLES_HALF ? R.string.beta_samples_half : R.string.beta_samples_none;
-        state.addView(Kit.status(this, getString(words), found == Demo.SAMPLES_READY ? Kit.Mood.FINE
-                : found == Demo.SAMPLES_WRONG ? Kit.Mood.TROUBLE : Kit.Mood.UNKNOWN));
-        body.addView(state, Kit.wide());
-        if (found == Demo.SAMPLES_READY) {
-            // Ready: the trial voices stand in the row of faces and take roles like the cast.
-            TextView note = Ui.text(this, getString(R.string.beta_in_cast), 13, Palette.MUTED);
-            note.setLineSpacing(0, 1.3f);
-            note.setPadding(Ui.dp(this, 4), Ui.dp(this, 10), Ui.dp(this, 4), 0);
-            body.addView(note);
+        // The trial voices stand in the row of faces and take roles like the cast while this room is open.
+        TextView note = Ui.text(this, getString(R.string.beta_in_cast), 13, Palette.MUTED);
+        note.setLineSpacing(0, 1.3f);
+        note.setPadding(Ui.dp(this, 4), Ui.dp(this, 4), Ui.dp(this, 4), 0);
+        body.addView(note);
 
-            body.addView(Kit.section(this, getString(R.string.demo_title)));
-            LinearLayout demo = Kit.plate(this);
-            demo.addView(Kit.rowNav(this, getString(R.string.beta_female), "▷", new View.OnClickListener() {
+        body.addView(Kit.section(this, getString(R.string.demo_title)));
+        LinearLayout demo = Kit.plate(this);
+        for (int i = 0; i < LABELS.length; i++) {
+            final int voice = Cast.BETA_F + i;
+            demo.addView(Kit.rowNav(this, getString(LABELS[i]), "\u25b7", new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    read(BetaActivity.this, Cast.BETA_F);
+                    read(BetaActivity.this, voice);
                 }
             }));
-            demo.addView(Kit.rowNav(this, getString(R.string.beta_male), "▷", new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    read(BetaActivity.this, Cast.BETA_M);
-                }
-            }));
-            body.addView(demo, Kit.wide());
-
-            // The demo as an audiobook, made overnight on the charger like any other.
-            body.addView(Kit.section(this, getString(R.string.beta_audiobook)));
-            LinearLayout night = Kit.plate(this);
-            night.addView(Kit.rowNav(this, getString(R.string.beta_female), "\u203a", new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    audiobook(Cast.BETA_F);
-                }
-            }));
-            night.addView(Kit.rowNav(this, getString(R.string.beta_male), "\u203a", new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    audiobook(Cast.BETA_M);
-                }
-            }));
-            body.addView(night, Kit.wide());
         }
+        body.addView(demo, Kit.wide());
+
+        // The demo as an audiobook, made overnight on the charger like any other.
+        body.addView(Kit.section(this, getString(R.string.beta_audiobook)));
+        LinearLayout night = Kit.plate(this);
+        for (int i = 0; i < LABELS.length; i++) {
+            final int voice = Cast.BETA_F + i;
+            night.addView(Kit.rowNav(this, getString(LABELS[i]), "\u203a", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    audiobook(voice);
+                }
+            }));
+        }
+        body.addView(night, Kit.wide());
+
         body.addView(Kit.link(this, getString(R.string.dev_close), new View.OnClickListener() {
             @Override
             public void onClick(View v) {

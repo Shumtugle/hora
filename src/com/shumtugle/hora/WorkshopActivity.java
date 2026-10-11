@@ -24,6 +24,8 @@ import java.util.Locale;
 public final class WorkshopActivity extends Activity {
     /** The look this screen was built with. */
     private int built;
+    /** How many voices stood in the cast when the screen was built. */
+    private int cast;
     private static final int TAB_VOICE = 0;
     private static final int TAB_TIMBRE = 1;
     private static final int TAB_PITCH = 2;
@@ -66,6 +68,7 @@ public final class WorkshopActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         built = Ui.prepare(this);
+        cast = Cast.size(this);
         int asked = getIntent().getIntExtra(EXTRA_VOICE, 0);
         cabinet = asked >= 1 && Cast.available(this, asked);
         voice = cabinet ? asked : Prefs.homeVoice(this);
@@ -80,6 +83,11 @@ public final class WorkshopActivity extends Activity {
     protected void onResume() {
         super.onResume();
         if (Ui.stale(this, built)) {
+            return;
+        }
+        if (cast != Cast.size(this)) {
+            // The trial voices came or went while the screen was away: it is laid out anew.
+            recreate();
             return;
         }
         breath.start();

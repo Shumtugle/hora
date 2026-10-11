@@ -44,12 +44,12 @@ public final class HoraApp extends Application {
         if (getPackageName().equals(processName())) {
             Export.schedule(this);
             watchForeground();
-            // Trial samples put in the folder by hand join the cast at the next start.
+            // Trial samples once taken from the folder by hand: the app carries its own now.
             final android.content.Context app = this;
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    Demo.take(app);
+                    Demo.forgetOldSamples(app);
                 }
             }, "trial-samples").start();
         }

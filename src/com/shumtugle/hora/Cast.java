@@ -5,20 +5,21 @@ import android.content.Context;
 import java.io.File;
 
 /**
- * The voices. Each one is a short sample in a numbered slot; the bundled
- * sample can be replaced by the user's own, per slot. Each also has a
+ * The voices. Each one is a short bundled sample in a numbered slot, with a
  * portrait, which is fictional, and a short description.
  */
 final class Cast {
     static final int COUNT = 5;
     /**
-     * Two trial voices: faces, scenes and names like the cast's, and the same roles.
-     * They stand in the row only when their samples were put on the phone by hand.
+     * Four trial voices: faces, scenes and names like the cast's, and the same roles.
+     * Their samples ship with the app; they stand in the row while the developer room is open.
      */
     static final int BETA_F = COUNT + 1;
     static final int BETA_M = COUNT + 2;
+    static final int BETA_M2 = COUNT + 3;
+    static final int BETA_N = COUNT + 4;
     /** The highest voice number, trial voices included. */
-    static final int LAST = BETA_M;
+    static final int LAST = BETA_N;
     /** Roles: who reads outside dialogue, and the two sides of a dialogue. */
     static final int NARRATOR = 0;
     static final int SPEAKER_A = 1;
@@ -66,7 +67,7 @@ final class Cast {
     static final int HOST = 1;
 
     static boolean renamable(int voice) {
-        return voice == RENAMABLE || voice == HOST || voice == BETA_F || voice == BETA_M;
+        return voice == RENAMABLE || voice == HOST || voice > COUNT;
     }
 
     /**
@@ -74,7 +75,7 @@ final class Cast {
      * female voice, the main male one, then the rest. Numbers stay what they
      * were, so samples, portraits and saved choices keep their places.
      */
-    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_M};
+    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_M, BETA_M2, BETA_N};
 
     /** The voice standing at a place in the row, counted from 0. */
     static int at(int place) {
@@ -82,11 +83,16 @@ final class Cast {
     }
 
     /**
-     * How many voices stand in the row now: the cast, and the two trial voices
-     * when their samples are on the phone. They then have every right the cast has.
+     * How many voices stand in the row now: the cast, and the trial voices while
+     * the developer room is open. They then have every right the cast has.
      */
     static int size(Context c) {
-        return Demo.ready(c) ? LAST : COUNT;
+        return Beta.open(c) ? LAST : COUNT;
+    }
+
+    /** Whether a voice is one of the trial voices. */
+    static boolean trial(int voice) {
+        return voice > COUNT && voice <= LAST;
     }
 
     /** Whether a voice can be chosen now. */
@@ -107,6 +113,7 @@ final class Cast {
     private static final int[] PORTRAITS = {
         R.drawable.portrait_1, R.drawable.portrait_2, R.drawable.portrait_3,
         R.drawable.portrait_4, R.drawable.portrait_5, R.drawable.portrait_6, R.drawable.portrait_7,
+        R.drawable.portrait_8, R.drawable.portrait_9,
     };
 
     static int portrait(int voice) {

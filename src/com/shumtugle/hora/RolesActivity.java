@@ -26,6 +26,8 @@ import android.widget.TextView;
 public final class RolesActivity extends Activity {
     /** The look this screen was built with. */
     private int built;
+    /** How many voices stood in the cast when the screen was built. */
+    private int cast;
     private static final int[] ROLES = {Cast.NARRATOR, Cast.SPEAKER_A, Cast.SPEAKER_B, Cast.HERALD, Cast.TALK};
     private static final int[] TITLES = {R.string.role_narrator, R.string.role_speaker_a, R.string.role_speaker_b,
         R.string.role_herald, R.string.role_talk};
@@ -39,6 +41,7 @@ public final class RolesActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         built = Ui.prepare(this);
+        cast = Cast.size(this);
         setContentView(build());
         paint();
     }
@@ -128,7 +131,12 @@ public final class RolesActivity extends Activity {
         line.addView(chosen[i]);
         box.addView(line, Ui.lp(Ui.MATCH, Ui.WRAP));
         LinearLayout faceRow = Ui.row(this);
-        for (int place = 0; place < Cast.size(this); place++) {
+        // Five faces at full size; a larger cast shares the width of the screen, inside the margins.
+        int count = Cast.size(this);
+        int gap = count > Cast.COUNT ? 4 : 8;
+        float width = getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density;
+        int side = Math.max(30, Math.min(54, (int) ((width - 40 - gap * (count - 1)) / count)));
+        for (int place = 0; place < count; place++) {
             final int v = Cast.at(place);
             final int voice = v;
             ImageView f = Ui.portrait(this, v);
@@ -143,11 +151,9 @@ public final class RolesActivity extends Activity {
                 }
             });
             faces[i][v] = f;
-            // Seven faces fit a row only a little smaller than five.
-            int side = Cast.size(this) > Cast.COUNT ? 44 : 54;
             LinearLayout.LayoutParams fp = Ui.lp(dp(side), dp(side));
             if (place > 0) {
-                fp.leftMargin = dp(side == 54 ? 8 : 6);
+                fp.leftMargin = dp(gap);
             }
             faceRow.addView(f, fp);
         }
@@ -206,6 +212,13 @@ public final class RolesActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        Ui.stale(this, built);
+        if (Ui.stale(this, built)) {
+            return;
+        }
+        if (cast != Cast.size(this)) {
+            // The trial voices came or went while the screen was away: it is laid out anew.
+            recreate();
+            return;
+        }
     }
 }

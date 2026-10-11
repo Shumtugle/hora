@@ -146,6 +146,19 @@ final class Ui {
     }
 
     /** A portrait cut into a circle. */
+    /**
+     * The row of small faces: face size and side margin in dp for a number of
+     * faces. Five keep 36 dp faces with 7 dp margins; more share the width of the
+     * screen, so the row never runs off its edges.
+     */
+    static int[] troupeCell(Context c, int count) {
+        float width = c.getResources().getDisplayMetrics().widthPixels / c.getResources().getDisplayMetrics().density;
+        int cell = Math.min(50, (int) ((width - 48) / Math.max(1, count)));
+        int side = Math.max(24, Math.min(36, cell - 8));
+        int margin = Math.max(2, (cell - side) / 2);
+        return new int[] {side, margin};
+    }
+
     static ImageView portrait(Context c, int voice) {
         ImageView p = new ImageView(c);
         // The face is a circle of its own inside the padding, so a ring around it
@@ -162,7 +175,7 @@ final class Ui {
         return p;
     }
 
-    private static final android.graphics.Bitmap[] FACES = new android.graphics.Bitmap[8];
+    private static final android.graphics.Bitmap[] FACES = new android.graphics.Bitmap[Cast.LAST + 1];
 
     /** Puts a reader's face into a view made by portrait(). */
     static void setFace(ImageView v, int voice) {

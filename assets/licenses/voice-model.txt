@@ -15,7 +15,8 @@ from 16-bit to 32-bit floats. The weights were not retrained. The full-precision
 audio decoder offered as an option is Kyutai's own, taken from the English
 Pocket TTS export and widened the same way.
 
-The app has no voice cloning: it speaks only with its five built-in samples, whose
-origin is described in the notices for the voice samples. The model must not be
+The app has no voice cloning: it speaks only with its built-in samples (five voices,
+and four trial voices in the developer room), whose origin is described in the
+notices for the voice samples. The model must not be
 used to impersonate people, to mislead, or for any harmful or unlawful purpose.
 Chapters of audiobooks carry a note that their speech is synthetic.
