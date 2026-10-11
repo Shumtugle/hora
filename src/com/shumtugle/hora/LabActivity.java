@@ -173,7 +173,10 @@ public final class LabActivity extends Activity {
                 }
             }
         });
-        actions.addView(listen, new LinearLayout.LayoutParams(0, dp(48), 1f));
+        // The one main action across the whole plate; writing and clearing on the row below.
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(52));
+        lp.topMargin = dp(14);
+        plate.addView(listen, lp);
         TextView save = Kit.secondary(this, getString(R.string.lab_save), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -185,19 +188,16 @@ public final class LabActivity extends Activity {
                 }
             }
         });
-        LinearLayout.LayoutParams sp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(48));
-        sp.leftMargin = dp(10);
-        actions.addView(save, sp);
+        actions.addView(save, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(48)));
+        actions.addView(new View(this), new LinearLayout.LayoutParams(0, 1, 1f));
         TextView clear = Kit.link(this, getString(R.string.lab_clear), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 text.setText("");
             }
         });
-        LinearLayout.LayoutParams cp = Ui.lp(Ui.WRAP, Ui.WRAP);
-        cp.leftMargin = dp(12);
-        actions.addView(clear, cp);
-        plate.addView(actions, Kit.below(this, 12));
+        actions.addView(clear, Ui.lp(Ui.WRAP, Ui.WRAP));
+        plate.addView(actions, Kit.below(this, 10));
         info = Ui.text(this, "", 12, Palette.HINT);
         plate.addView(info, Kit.below(this, 10));
         list.addView(plate, Kit.below(this, 18));

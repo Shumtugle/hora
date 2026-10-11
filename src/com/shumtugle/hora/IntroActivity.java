@@ -138,7 +138,7 @@ public final class IntroActivity extends Activity {
         for (int i = 0; i < dots.length; i++) {
             boolean on = i + 1 == v;
             // Every face keeps the same slot, so choosing one never moves the others.
-            int[] cell = Ui.troupeCell(this, dots.length);
+            int[] cell = Ui.troupeCell(this, Math.min(dots.length, Cast.COUNT));
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(cell[0]), dp(cell[0]));
             p.leftMargin = dp(cell[1]);
             p.rightMargin = dp(cell[1]);
@@ -229,11 +229,22 @@ public final class IntroActivity extends Activity {
         bp.topMargin = dp(18);
         root.addView(listen, bp);
 
-        LinearLayout troupe = Ui.row(this);
-        troupe.setGravity(Gravity.CENTER);
+        // Five faces to a line: the cast on the first, the trial voices on a second when shown.
+        LinearLayout troupe = Ui.column(this);
+        troupe.setGravity(Gravity.CENTER_HORIZONTAL);
+        LinearLayout line = null;
         dots = new ImageView[Cast.size(this)];
         for (int i = 0; i < dots.length; i++) {
             final int v = i + 1;
+            if (i % Cast.COUNT == 0) {
+                line = Ui.row(this);
+                line.setGravity(Gravity.CENTER);
+                LinearLayout.LayoutParams linep = Ui.lp(Ui.WRAP, Ui.WRAP);
+                if (i > 0) {
+                    linep.topMargin = dp(6);
+                }
+                troupe.addView(line, linep);
+            }
             dots[i] = Ui.portrait(this, v);
             dots[i].setClickable(true);
             dots[i].setContentDescription(getString(R.string.home_make_main, Cast.name(this, v)));
@@ -245,7 +256,7 @@ public final class IntroActivity extends Activity {
                     }
                 }
             });
-            troupe.addView(dots[i]);
+            line.addView(dots[i]);
         }
         LinearLayout.LayoutParams tp = Ui.lp(Ui.WRAP, Ui.WRAP);
         tp.topMargin = dp(24);
