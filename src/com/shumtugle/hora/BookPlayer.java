@@ -72,7 +72,7 @@ public final class BookPlayer extends Service {
     private volatile boolean alive = true;
     private volatile boolean playing;
     /** The instance living in this process, for the notification reader next door. */
-    private static BookPlayer live;
+    private static volatile BookPlayer live;
     /** Paused to let a notification through; resumes when it is over. */
     private boolean heldForNews;
     /** The voice is silent on purpose while the background plays on. */
@@ -161,6 +161,57 @@ public final class BookPlayer extends Service {
         p.pause("notification");
         p.heldForNews = true;
         return true;
+    }
+
+    /** How loud the book stays under a route hint: low enough to hear the hint, never silent. */
+    private static final float DUCKED = 0.3f;
+    /** The way down or up takes this long, in this many steps, so the book never clicks. */
+    private static final int DUCK_STEPS = 10;
+    private static final long DUCK_STEP_MS = 30;
+    /** Where the book's loudness is heading, and where it is now (1 is full). */
+    private static volatile float duckTarget = 1f;
+    private volatile float gain = duckTarget;
+    /** The track that plays right now, so the loudness can be set from outside the play loop. */
+    private volatile AudioTrack out;
+    private final Runnable ramp = new Runnable() {
+        @Override
+        public void run() {
+            float target = duckTarget;
+            float step = (1f - DUCKED) / DUCK_STEPS;
+            float g = gain;
+            g = g < target ? Math.min(target, g + step) : Math.max(target, g - step);
+            gain = g;
+            loudness(out, g);
+            if (g != target) {
+                main.postDelayed(this, DUCK_STEP_MS);
+            }
+        }
+    };
+
+    /**
+     * Any thread. Makes a playing book quieter while a short hint is said over it, or brings
+     * it back. The book keeps playing and keeps its place: a hint on the way is not news
+     * that stops the story. The system's own ducking is not relied on, as the book and the
+     * hint are the same app.
+     */
+    static void duck(boolean on) {
+        duckTarget = on ? DUCKED : 1f;
+        BookPlayer p = live;
+        if (p != null) {
+            p.main.removeCallbacks(p.ramp);
+            p.main.post(p.ramp);
+        }
+    }
+
+    private static void loudness(AudioTrack t, float g) {
+        if (t == null) {
+            return;
+        }
+        try {
+            t.setVolume(g);
+        } catch (RuntimeException ignored) {
+            // Released meanwhile; the next track takes the loudness when it opens.
+        }
     }
 
     /** Main thread only. Resumes a book paused by holdForNews(), unless the user acted since. */
@@ -356,6 +407,7 @@ public final class BookPlayer extends Service {
             }
         }
         Bed.stop();
+        main.removeCallbacks(ramp);
         if (live == this) {
             live = null;
         }
@@ -794,10 +846,13 @@ public final class BookPlayer extends Service {
             }
             if (track == null || trackRate != rate) {
                 if (track != null) {
+                    out = null;
                     track.release();
                 }
                 trackRate = rate;
                 track = openTrack(trackRate);
+                out = track;
+                loudness(track, gain);
             }
             playIndex = c.index;
             publish();
@@ -827,6 +882,7 @@ public final class BookPlayer extends Service {
                 at += n;
             }
         }
+        out = null;
         if (track != null) {
             track.release();
         }

@@ -1,0 +1,9 @@
+# Units a navigator may write a distance in, and how many metres each is.
+# One per line: the unit as written, a tab, metres. Lines with # are notes.
+м	1
+км	1000
+m	1
+km	1000
+ft	0.3048
+mi	1609.344
+yd	0.9144

@@ -65,6 +65,7 @@ final class Books {
                  OutputStream out = c.getContentResolver().openOutputStream(file, "wt")) {
                 copy(in, out);
             }
+            HoraFolder.announce(c, file);
             return file;
         }
         File dir = new File(c.getFilesDir(), temp ? INNER_TEMP : INNER_BOOKS);
@@ -141,7 +142,9 @@ final class Books {
                     new File(path).delete();
                 }
             } else {
-                DocumentsContract.deleteDocument(c.getContentResolver(), Uri.parse(uri));
+                Uri gone = Uri.parse(uri);
+                DocumentsContract.deleteDocument(c.getContentResolver(), gone);
+                HoraFolder.announce(c, gone);
             }
         } catch (IOException | RuntimeException e) {
             Diag.log(c, "shelf: a file not removed", e);

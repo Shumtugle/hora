@@ -107,6 +107,7 @@ final class Transfer {
                 }
                 write(c, out);
             }
+            HoraFolder.announce(c, file);
             c.getSharedPreferences("hora", Context.MODE_PRIVATE).edit()
                     .putLong("transfer_saved", System.currentTimeMillis()).apply();
         }

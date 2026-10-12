@@ -2269,8 +2269,53 @@
     <string name="battery_low">Заряд %1$d процентов. Пора на зарядку.</string>
     <string name="battery_very_low">Заряд всего %1$d процентов. Телефон скоро выключится.</string>
     <string name="battery_switch">Предупреждать о заряде</string>
-    <string name="nav_switch">Подсказки маршрута</string>
-    <string name="nav_switch_sub">пока только запись в журнал, без улиц</string>
+    <string name="nav_section">Маршрут</string>
+    <string name="nav_switch">Подсказки поворотов</string>
+    <string name="nav_switch_sub">Из навигатора, в наушники.</string>
+    <string name="nav_street">Называть улицу</string>
+    <string name="nav_street_sub">«Направо — Садовая улица»</string>
+    <string name="nav_sample">Послушать пример</string>
+    <string name="nav_sample_no_ears">нужны наушники</string>
+    <string name="nav_sample_no_access">нет доступа</string>
+    <string name="nav_note">Hora говорит дважды: заранее — пешком метров за сто, на велосипеде и в машине раньше — и у самого поворота. Прямо — молчит. Книга не останавливается, а притихает на время подсказки. Названия улиц — только вслух, в журнал не попадают.</string>
+    <string name="nav_onto">%1$s — %2$s</string>
+    <plurals name="nav_in_metres">
+        <item quantity="one">Через %d метр</item>
+        <item quantity="few">Через %d метра</item>
+        <item quantity="many">Через %d метров</item>
+        <item quantity="other">Через %d метров</item>
+    </plurals>
+    <!-- By the kinds of NavArrow: none, unknown, straight, slight right, right, sharp right, back right,
+         slight left, left, sharp left, back left, arrive. Said after "In N metres". -->
+    <string-array name="nav_soon">
+        <item></item>
+        <item>поворот</item>
+        <item></item>
+        <item>правее</item>
+        <item>направо</item>
+        <item>резко направо</item>
+        <item>разворот</item>
+        <item>левее</item>
+        <item>налево</item>
+        <item>резко налево</item>
+        <item>разворот</item>
+        <item>— на месте</item>
+    </string-array>
+    <!-- The same kinds, said at the turn itself. -->
+    <string-array name="nav_now">
+        <item></item>
+        <item>Поворот</item>
+        <item></item>
+        <item>Правее</item>
+        <item>Направо</item>
+        <item>Резко направо</item>
+        <item>Разворот</item>
+        <item>Левее</item>
+        <item>Налево</item>
+        <item>Резко налево</item>
+        <item>Разворот</item>
+        <item>На месте</item>
+    </string-array>
     <string name="battery_switch_sub">В наушники, при 15 и при 5 процентах.</string>
     <string name="folder_books">Книги</string>
     <string name="folder_temp">Временные</string>

@@ -1191,8 +1191,51 @@
     <string name="battery_low">Battery at %1$d percent. Time to charge.</string>
     <string name="battery_very_low">Battery at only %1$d percent. The phone will switch off soon.</string>
     <string name="battery_switch">Warn about the battery</string>
-    <string name="nav_switch">Route hints</string>
-    <string name="nav_switch_sub">for now only noted in the journal, without the streets</string>
+    <string name="nav_section">Route</string>
+    <string name="nav_switch">Turn hints</string>
+    <string name="nav_switch_sub">From a navigator, into the headphones.</string>
+    <string name="nav_street">Name the street</string>
+    <string name="nav_street_sub">“Turn right onto Main Street”</string>
+    <string name="nav_sample">Hear an example</string>
+    <string name="nav_sample_no_ears">headphones needed</string>
+    <string name="nav_sample_no_access">no access</string>
+    <string name="nav_note">Hora speaks twice: ahead of the turn — about a hundred metres on foot, earlier on a bike or in a car — and at the turn itself. Straight on, it stays silent. The book does not stop; it goes quieter for the hint. Street names are only spoken, never written to the journal.</string>
+    <string name="nav_onto">%1$s onto %2$s</string>
+    <plurals name="nav_in_metres">
+        <item quantity="one">In %d metre,</item>
+        <item quantity="other">In %d metres,</item>
+    </plurals>
+    <!-- By the kinds of NavArrow: none, unknown, straight, slight right, right, sharp right, back right,
+         slight left, left, sharp left, back left, arrive. Said after "In N metres". -->
+    <string-array name="nav_soon">
+        <item></item>
+        <item>a turn</item>
+        <item></item>
+        <item>keep right</item>
+        <item>turn right</item>
+        <item>turn sharp right</item>
+        <item>make a U-turn</item>
+        <item>keep left</item>
+        <item>turn left</item>
+        <item>turn sharp left</item>
+        <item>make a U-turn</item>
+        <item>you arrive</item>
+    </string-array>
+    <!-- The same kinds, said at the turn itself. -->
+    <string-array name="nav_now">
+        <item></item>
+        <item>A turn</item>
+        <item></item>
+        <item>Keep right</item>
+        <item>Turn right</item>
+        <item>Turn sharp right</item>
+        <item>Make a U-turn</item>
+        <item>Keep left</item>
+        <item>Turn left</item>
+        <item>Turn sharp left</item>
+        <item>Make a U-turn</item>
+        <item>You have arrived</item>
+    </string-array>
     <string name="battery_switch_sub">Into the headphones, at 15 and at 5 percent.</string>
     <string name="folder_books">Books</string>
     <string name="folder_temp">Temporary</string>

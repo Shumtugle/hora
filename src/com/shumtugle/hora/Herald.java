@@ -43,6 +43,10 @@ public final class Herald extends NotificationListenerService {
     private static final int REMEMBERED = 128;
     private static final int QUEUE_LIMIT = 4;
     private static final int STEP = 2048;
+    /** A route hint that waited longer than this is about a turn already passed, and is dropped. */
+    private static final long ROUTE_STALE_MS = 5_000;
+    /** "Hear an example" on the notifications screen; the screen lives in another process. */
+    static final String ACTION_ROUTE_SAMPLE = "com.shumtugle.hora.ROUTE_SAMPLE";
     // AudioAttributes.USAGE_ASSISTANT; not available at the compile-time API level.
     private static final int USAGE_ASSISTANT = 16;
 
@@ -58,6 +62,11 @@ public final class Herald extends NotificationListenerService {
     private volatile String why = "headphones gone";
     /** The notification being read now, and those gone before their turn came. */
     private volatile String readingKey;
+    /** A notification is being read now; a route hint may cut it short. */
+    private volatile boolean newsSpeaking;
+    /** The route hint waiting to be said; a newer one replaces it. */
+    private final java.util.concurrent.atomic.AtomicReference<NavWhisper.Said> route =
+            new java.util.concurrent.atomic.AtomicReference<NavWhisper.Said>();
     private final java.util.Set<String> gone = java.util.Collections.newSetFromMap(
             new LinkedHashMap<String, Boolean>(16, 0.75f, false) {
                 @Override
@@ -91,6 +100,14 @@ public final class Herald extends NotificationListenerService {
         @Override
         public void onReceive(Context c, Intent i) {
             cutNow("quiet tile");
+        }
+    };
+
+    /** "Hear an example": an early hint for a right turn, into the headphones. */
+    private final BroadcastReceiver sample = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context c, Intent i) {
+            routeSoon(NavWhisper.sample(Herald.this));
         }
     };
 
@@ -187,8 +204,10 @@ public final class Herald extends NotificationListenerService {
             registerReceiver(battery, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
             if (android.os.Build.VERSION.SDK_INT >= 33) {
                 registerReceiver(hush, new IntentFilter(Hush.ACTION), RECEIVER_NOT_EXPORTED);
+                registerReceiver(sample, new IntentFilter(ACTION_ROUTE_SAMPLE), RECEIVER_NOT_EXPORTED);
             } else {
                 registerReceiver(hush, new IntentFilter(Hush.ACTION));
+                registerReceiver(sample, new IntentFilter(ACTION_ROUTE_SAMPLE));
             }
             listening = true;
         }
@@ -216,6 +235,7 @@ public final class Herald extends NotificationListenerService {
             unregisterReceiver(noisy);
             unregisterReceiver(battery);
             unregisterReceiver(hush);
+            unregisterReceiver(sample);
             listening = false;
         }
     }
@@ -226,10 +246,19 @@ public final class Herald extends NotificationListenerService {
         if (pkg.equals(getPackageName())) {
             return;
         }
-        // A navigator's hint: the route scout looks at it when asked to. A one-off alert of the same
+        // A navigator's hint: its turns are whispered when asked to. A one-off alert of the same
         // kind ("arriving") is still read as before; the ongoing turn-by-turn one is skipped below.
-        if (NavScout.isRouteHint(sbn) && Prefs.navScoutShared(this)) {
-            NavScout.seen(this, sbn, label(pkg));
+        if (NavWhisper.isRouteHint(sbn) && (sbn.getNotification().flags & Notification.FLAG_ONGOING_EVENT) != 0
+                && Prefs.navWhisperShared(this)) {
+            try {
+                NavWhisper.Said s = NavWhisper.seen(this, sbn, label(pkg));
+                if (s != null) {
+                    routeSoon(s);
+                }
+            } catch (RuntimeException | OutOfMemoryError e) {
+                // A hint that cannot be read is not worth the book and the reader in this process.
+                Diag.mark(this, "nav: a hint not read, " + e.getClass().getSimpleName());
+            }
         }
         if (!Prefs.heraldHearsShared(this, pkg)) {
             return;
@@ -300,8 +329,8 @@ public final class Herald extends NotificationListenerService {
      */
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn, RankingMap rankings, int reason) {
-        if (NavScout.isRouteHint(sbn)) {
-            NavScout.gone(this, sbn);
+        if (NavWhisper.isRouteHint(sbn)) {
+            NavWhisper.gone(this, sbn);
         }
         String key = sbn.getKey();
         gone.add(key);
@@ -390,8 +419,83 @@ public final class Herald extends NotificationListenerService {
         }
     }
 
+    /**
+     * Puts a route hint ahead of everything waiting. A notification being read is cut short:
+     * a turn will not wait, a message will.
+     */
+    private void routeSoon(NavWhisper.Said s) {
+        NavWhisper.Said before = route.getAndSet(s);
+        if (before != null && !before.sample) {
+            Diag.mark(this, "nav: replaced by a newer hint, " + NavArrow.NAMES[before.kind]);
+        }
+        if (newsSpeaking) {
+            cutNow("route hint");
+        }
+        worker.execute(new Runnable() {
+            @Override
+            public void run() {
+                sayRouteSafely();
+            }
+        });
+    }
+
+    /**
+     * On the worker thread: says the waiting route hint, if any. The book is not paused but
+     * made quieter for the length of the phrase, and keeps its place.
+     */
+    private void sayRoute() throws Exception {
+        NavWhisper.Said s = route.getAndSet(null);
+        if (s == null) {
+            return;
+        }
+        String what = (s.early ? "early, " : "now, ") + NavArrow.NAMES[s.kind] + (s.sample ? ", example" : "");
+        if (!s.sample && (android.os.SystemClock.elapsedRealtime() - s.at > ROUTE_STALE_MS
+                || !NavWhisper.current(s))) {
+            Diag.mark(this, "nav: dropped stale, " + what);
+            return;
+        }
+        if (!s.sample && quietNow()) {
+            Diag.mark(this, "nav: quiet hours, " + what);
+            return;
+        }
+        if (!mayStart()) {
+            Diag.mark(this, "nav: quiet, no headphones, " + what);
+            return;
+        }
+        AudioFocusRequest focus = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                .setAudioAttributes(attributes())
+                .setOnAudioFocusChangeListener(yield, main)
+                .build();
+        Awake.hold(this);
+        BookPlayer.duck(true);
+        try {
+            if (audio.requestAudioFocus(focus) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                Diag.mark(this, "nav: quiet, no focus, " + what);
+                return;
+            }
+            why = "headphones gone";
+            boolean whole = speak(s.text);
+            Diag.mark(this, (whole ? "nav: said " : "nav: cut, " + why + ", ") + what);
+        } finally {
+            audio.abandonAudioFocusRequest(focus);
+            BookPlayer.duck(false);
+            Awake.let(this);
+        }
+    }
+
+    /** A route hint's failure is its own: it never takes a notification down with it. */
+    private void sayRouteSafely() {
+        try {
+            sayRoute();
+        } catch (Throwable t) {
+            Diag.mark(this, "nav: failed, " + t.getClass().getSimpleName());
+        }
+    }
+
     /** On the worker thread: pauses the book, speaks, gives the book back. */
     private void read(String app, String said, String key) throws Exception {
+        // A route hint that came in meanwhile goes first.
+        sayRouteSafely();
         if (key != null && gone.remove(key)) {
             Diag.mark(this, "herald: gone before its turn, " + app);
             return;
@@ -404,13 +508,22 @@ public final class Herald extends NotificationListenerService {
             Diag.mark(this, "herald: quiet, no headphones, " + app);
             return;
         }
-        boolean held = onMain(true);
+        // From here on a route hint coming in cuts this reading short, at whatever stage it is.
+        newsSpeaking = true;
+        if (route.get() != null) {
+            // A hint came in just now: it goes first, over the playing book, and the reading follows.
+            newsSpeaking = false;
+            sayRouteSafely();
+            newsSpeaking = true;
+        }
+        boolean held = false;
         AudioFocusRequest focus = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
                 .setAudioAttributes(attributes())
                 .setOnAudioFocusChangeListener(yield, main)
                 .build();
         Awake.hold(this);
         try {
+            held = onMain(true);
             if (audio.requestAudioFocus(focus) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 Diag.mark(this, "herald: quiet, no focus, " + app);
                 return;
@@ -426,10 +539,14 @@ public final class Herald extends NotificationListenerService {
             boolean whole = speak(said);
             Diag.mark(this, (whole ? "herald: read, " : "herald: cut, " + why + ", ") + app);
         } finally {
+            newsSpeaking = false;
             readingKey = null;
             Hush.end(this);
             audio.abandonAudioFocusRequest(focus);
             Awake.let(this);
+            // A hint that cut this reading is said while the book is still held, so the book
+            // does not burst back at full loudness only to be ducked a moment later.
+            sayRouteSafely();
             if (held) {
                 onMain(false);
             }
@@ -480,6 +597,10 @@ public final class Herald extends NotificationListenerService {
             return SpareVoice.say(this, TextPrep.clean(said), new Voice.Cancel() {
                 @Override
                 public boolean cancelled() {
+                    if (newsSpeaking && route.get() != null) {
+                        why = "route hint";
+                        return true;
+                    }
                     return cut || !Earpiece.present(audio);
                 }
             });
@@ -555,9 +676,16 @@ public final class Herald extends NotificationListenerService {
         }
     }
 
-    /** Stop when told to, when the headphones are gone, or when the sound went elsewhere. */
+    /**
+     * Stop when told to, when the headphones are gone, or when the sound went elsewhere. A
+     * notification also stops for a route hint waiting behind it: a turn will not wait.
+     */
     private boolean stopped(AudioTrack out) {
         if (cut || !Earpiece.present(audio)) {
+            return true;
+        }
+        if (newsSpeaking && route.get() != null) {
+            why = "route hint";
             return true;
         }
         AudioDeviceInfo routed = out.getRoutedDevice();

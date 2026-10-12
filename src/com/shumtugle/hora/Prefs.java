@@ -435,15 +435,26 @@ final class Prefs {
 
     private static final String INTRO_SEEN = "intro_seen";
     private static final String BATTERY_WARN = "battery_warn";
-    private static final String NAV_SCOUT = "nav_scout";
+    /** The key of the earlier route scout: whoever let it look at the navigator now hears the turns. */
+    private static final String NAV_WHISPER = "nav_scout";
+    private static final String NAV_STREET = "nav_street";
 
-    /** Whether the route scout notes how a navigator's hints live; read from the voice process. */
-    static boolean navScoutShared(Context c) {
-        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(NAV_SCOUT, false);
+    /** Whether turn hints from a navigator are said into the headphones; read from the voice process. */
+    static boolean navWhisperShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(NAV_WHISPER, false);
     }
 
-    static void setNavScout(Context c, boolean on) {
-        sp(c).edit().putBoolean(NAV_SCOUT, on).commit();
+    static void setNavWhisper(Context c, boolean on) {
+        sp(c).edit().putBoolean(NAV_WHISPER, on).commit();
+    }
+
+    /** Whether a turn said at the turn itself names the street too; read from the voice process. */
+    static boolean navStreetShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(NAV_STREET, false);
+    }
+
+    static void setNavStreet(Context c, boolean on) {
+        sp(c).edit().putBoolean(NAV_STREET, on).commit();
     }
 
     /** Whether the reader says so when the battery runs low; read from the voice process too. */

@@ -174,8 +174,14 @@ final class HoraFolder {
         return tree == null ? null : child(c, tree, DocumentsContract.getDocumentId(dir), name);
     }
 
-    /** Writes any file into a subfolder and returns where it is. */
+    /** Writes any file into a subfolder, tells the media index, and returns where it is. */
     static Uri writeBytes(Context c, String folder, String fileName, String mime, byte[] data) throws IOException {
+        return writeBytes(c, folder, fileName, mime, data, true);
+    }
+
+    /** Writes any file into a subfolder and returns where it is; the media index is told only when asked. */
+    static Uri writeBytes(Context c, String folder, String fileName, String mime, byte[] data, boolean announce)
+            throws IOException {
         Uri dir = sub(c, folder);
         Uri file;
         try {
@@ -193,7 +199,57 @@ final class HoraFolder {
             out.write(data);
         }
         Diag.mark(c, "folder: saved a file");
+        if (announce) {
+            announce(c, file);
+        }
         return file;
+    }
+
+    /**
+     * Tells the phone's media index about files written or removed through the folder grant,
+     * which the index does not notice by itself: players and galleries that list from the index
+     * then see what is new and forget what is gone (for a path that no longer exists, the
+     * scanner drops it). One call for all the files of one piece of work. Only files on the
+     * phone's own storage or a card have a path to give; others are left to the index's own pace.
+     */
+    static void announce(Context c, Uri... files) {
+        java.util.List<String> paths = new java.util.ArrayList<String>();
+        for (Uri file : files) {
+            String p = path(file);
+            if (p != null) {
+                paths.add(p);
+            }
+        }
+        if (paths.isEmpty()) {
+            return;
+        }
+        try {
+            android.media.MediaScannerConnection.scanFile(c.getApplicationContext(),
+                    paths.toArray(new String[0]), null, null);
+        } catch (RuntimeException e) {
+            Diag.log(c, "folder: the media index was not told", e);
+        }
+    }
+
+    /** The file system path behind a document on the phone's storage or a card, or null. */
+    private static String path(Uri file) {
+        try {
+            if (file == null || !"com.android.externalstorage.documents".equals(file.getAuthority())) {
+                return null;
+            }
+            String id = DocumentsContract.getDocumentId(file);
+            int colon = id.indexOf(':');
+            if (colon < 0) {
+                return null;
+            }
+            String volume = id.substring(0, colon);
+            String rest = id.substring(colon + 1);
+            String root = "primary".equalsIgnoreCase(volume)
+                    ? android.os.Environment.getExternalStorageDirectory().getPath() : "/storage/" + volume;
+            return root + "/" + rest;
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 
     /** Writes a text file into a subfolder and returns where it is. */
@@ -215,6 +271,7 @@ final class HoraFolder {
             out.write(text.getBytes("UTF-8"));
         }
         Diag.mark(c, "folder: saved a file");
+        announce(c, file);
         return file;
     }
 }

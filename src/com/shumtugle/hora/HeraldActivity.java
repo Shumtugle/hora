@@ -46,6 +46,8 @@ public final class HeraldActivity extends Activity {
     private View fromRow;
     private View toRow;
     private TextView appsTitle;
+    private View streetRow;
+    private View sampleRow;
     private LinearLayout apps;
     private EditText search;
     /** One app: package, name, and the name made unique when two apps share it. */
@@ -142,19 +144,40 @@ public final class HeraldActivity extends Activity {
         pp.topMargin = Ui.dp(this, 12);
         list.addView(power, pp);
 
-        // Route hints from a navigator: for now only noted in the journal, without the streets.
+        // Turn hints from a navigator, whispered into the headphones.
+        list.addView(Kit.section(this, getString(R.string.nav_section)));
         LinearLayout route = Kit.plate(this);
         route.addView(Kit.rowToggle(this, getString(R.string.nav_switch), getString(R.string.nav_switch_sub),
-                Prefs.navScoutShared(this), new Kit.Flip() {
+                Prefs.navWhisperShared(this), new Kit.Flip() {
                     @Override
                     public void flipped(boolean on) {
-                        Prefs.setNavScout(HeraldActivity.this, on);
-                        Diag.mark(HeraldActivity.this, "nav: scout " + (on ? "on" : "off"));
+                        Prefs.setNavWhisper(HeraldActivity.this, on);
+                        Diag.mark(HeraldActivity.this, "nav: turn hints " + (on ? "on" : "off"));
+                        showRoute();
                     }
                 }));
-        LinearLayout.LayoutParams rp = Kit.wide();
-        rp.topMargin = Ui.dp(this, 12);
-        list.addView(route, rp);
+        route.addView(Kit.divider(this));
+        streetRow = Kit.rowToggle(this, getString(R.string.nav_street), getString(R.string.nav_street_sub),
+                Prefs.navStreetShared(this), new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Prefs.setNavStreet(HeraldActivity.this, on);
+                    }
+                });
+        route.addView(streetRow);
+        route.addView(Kit.divider(this));
+        sampleRow = Kit.rowNav(this, getString(R.string.nav_sample), "", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sample();
+            }
+        });
+        route.addView(sampleRow);
+        list.addView(route, Kit.wide());
+        TextView note = Ui.text(this, getString(R.string.nav_note), 13, Palette.MUTED);
+        note.setLineSpacing(0, 1.25f);
+        list.addView(note, Kit.below(this, 12));
+        showRoute();
 
         appsTitle = Kit.section(this, "");
         list.addView(appsTitle);
@@ -257,6 +280,30 @@ public final class HeraldActivity extends Activity {
             v.setAlpha(on ? 1f : 0.4f);
             v.setEnabled(on);
         }
+    }
+
+    /** The street row only matters while the hints are on; it dims rather than hides, so nothing jumps. */
+    private void showRoute() {
+        boolean on = Prefs.navWhisperShared(this);
+        streetRow.setAlpha(on ? 1f : 0.4f);
+        streetRow.setEnabled(on);
+    }
+
+    /**
+     * An early hint for a right turn, said by the notification reader into the headphones. When
+     * it cannot be heard, the row says why instead of staying silent.
+     */
+    private void sample() {
+        if (!granted()) {
+            Kit.setValue(sampleRow, getString(R.string.nav_sample_no_access));
+            return;
+        }
+        if (Earpiece.find(audio) == null) {
+            Kit.setValue(sampleRow, getString(R.string.nav_sample_no_ears));
+            return;
+        }
+        Kit.setValue(sampleRow, "");
+        sendBroadcast(new Intent(Herald.ACTION_ROUTE_SAMPLE).setPackage(getPackageName()));
     }
 
     private static String clock(int minutes) {

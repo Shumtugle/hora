@@ -559,6 +559,7 @@ public final class TalkActivity extends Activity {
                             try (java.io.OutputStream out = getContentResolver().openOutputStream(file)) {
                                 java.nio.file.Files.copy(new java.io.File(l.shot).toPath(), out);
                             }
+                            HoraFolder.announce(TalkActivity.this, file);
                             ok = true;
                         }
                     }
