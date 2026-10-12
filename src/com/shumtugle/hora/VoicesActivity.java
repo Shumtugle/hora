@@ -370,7 +370,7 @@ public final class VoicesActivity extends Activity {
         strip.setGravity(Gravity.CENTER);
         int n = Cast.size(this);
         float width = getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density;
-        int cell = Math.max(26, Math.min(44, (int) ((width - 72) / n)));
+        int cell = Math.max(24, Math.min(44, (int) ((width - 72) / n)));
         int side = cell - 8;
         for (int i = 0; i < n; i++) {
             final int at = i;

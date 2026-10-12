@@ -829,7 +829,7 @@
     <string name="dev_already">Already open</string>
     <string name="dev_steps">%1$d more to open the developer section</string>
     <string name="dev_close">Close the section</string>
-    <string name="dev_note">While this section is open, the beta voices stand in the row of faces too: %1$s and the earlier samples of Hora and Porfiry. They take roles like the others.</string>
+    <string name="dev_note">While this section is open, the beta voices stand in the row of faces too: %1$s and the earlier samples of Hora, Teya and Porfiry. They take roles like the others.</string>
     <string name="voices_beta">beta</string>
     <string name="voice_echo_name">%1$s · %2$s</string>
     <string name="folder_samples">Samples</string>

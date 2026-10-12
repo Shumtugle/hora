@@ -311,12 +311,12 @@ final class Prefs {
     // Starting makeup per voice, measured on the bench against good human readers (breathiness
     // and top band): the smooth, dark samples get a little brightness and air; the voices whose
     // samples are already breathy or rough are left as they are. The first voice's sample was
-    // made anew and is bright by itself, so it needs none.
-    // The two echoes keep the makeup their old samples had.
-    private static final int[] TIMBRE_DEFAULT = {0, 0, 5, 0, 5, 0, 0, 0, 0, 0, 5, 5};
-    private static final int[] AIR_DEFAULT = {0, 0, 3, 0, 3, 0, 1, 0, 0, 0, 3, 3};
+    // made anew and is bright by itself, so it needs none; so was the second voice's.
+    // The echoes keep the makeup their old samples had.
+    private static final int[] TIMBRE_DEFAULT = {0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 5, 5};
+    private static final int[] AIR_DEFAULT = {0, 0, 0, 0, 3, 0, 1, 0, 0, 0, 3, 3, 3};
     /** Pitch makeup by voice: the trial voices were set by ear on the phone. */
-    private static final int[] PITCH_DEFAULT = {0, 0, 0, 0, 0, 0, 4, -1, 0, 1, 0, 0};
+    private static final int[] PITCH_DEFAULT = {0, 0, 0, 0, 0, 0, 4, -1, 0, 1, 0, 0, 0};
 
     static int defaultTimbre(int voice) {
         return voice >= 1 && voice < TIMBRE_DEFAULT.length ? TIMBRE_DEFAULT[voice] : 0;
@@ -558,7 +558,7 @@ final class Prefs {
     // groups, each piece lost the sentence's melody and ended as if the sentence had.
     private static final int[] BREATH_DEFAULT = {Breath.NONE, Breath.NONE, Breath.NONE,
         Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE,
-        Breath.NONE, Breath.NONE};
+        Breath.NONE, Breath.NONE, Breath.NONE};
 
     static int breathShared(Context c, int voice) {
         int v = Math.max(1, Math.min(Cast.LAST, voice));

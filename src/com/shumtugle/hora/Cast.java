@@ -20,14 +20,15 @@ final class Cast {
     static final int BETA_M2 = COUNT + 3;
     static final int BETA_F2 = COUNT + 4;
     /**
-     * Earlier samples of two voices, kept to compare with: each speaks as the voice it
+     * Earlier samples of three voices, kept to compare with: each speaks as the voice it
      * came from, with that voice's face, scenes and manner, only from its old sample.
      * They stand in the row only while the developer room is open.
      */
     static final int ECHO_HOST = COUNT + 5;
     static final int ECHO_FOURTH = COUNT + 6;
+    static final int ECHO_SECOND = COUNT + 7;
     /** The highest voice number, trial voices and echoes included. */
-    static final int LAST = ECHO_FOURTH;
+    static final int LAST = ECHO_SECOND;
     /** How many voices stand in the row while the developer room is closed. */
     private static final int STANDING = 8;
     /** Roles: who reads outside dialogue, and the two sides of a dialogue. */
@@ -88,7 +89,16 @@ final class Cast {
 
     /** The voice whose face, scenes, lines and manner a voice has: an echo's source, else itself. */
     static int origin(int voice) {
-        return voice == ECHO_HOST ? HOST : voice == ECHO_FOURTH ? 4 : voice;
+        switch (voice) {
+            case ECHO_HOST:
+                return HOST;
+            case ECHO_SECOND:
+                return 2;
+            case ECHO_FOURTH:
+                return 4;
+            default:
+                return voice;
+        }
     }
 
     /** Whether a voice stands in the row only while the developer room is open. */
@@ -111,7 +121,7 @@ final class Cast {
      * female voice, the main male one, then the rest. Numbers stay what they
      * were, so samples, portraits and saved choices keep their places.
      */
-    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_F2, BETA_M, BETA_M2, ECHO_HOST, ECHO_FOURTH};
+    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_F2, BETA_M, BETA_M2, ECHO_HOST, ECHO_SECOND, ECHO_FOURTH};
 
     /** The voice standing at a place in the row, counted from 0. */
     static int at(int place) {
@@ -140,7 +150,7 @@ final class Cast {
         return false;
     }
 
-    /** Whether a voice came after the first five: the four made later and the two echoes. */
+    /** Whether a voice came after the first five: the four made later and the echoes. */
     static boolean trial(int voice) {
         return voice > COUNT && voice <= LAST;
     }
