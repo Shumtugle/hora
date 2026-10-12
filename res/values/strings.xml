@@ -740,7 +740,7 @@
     <string name="chapter_numbered">chapter %1$s</string>
     <string name="voices_title">Voices</string>
     <string name="voices_sub">meet them, choose who answers</string>
-    <string name="lab_reset">Back to how it came</string>
+    <string name="lab_reset">Back to how it was</string>
     <string name="fine_tuning">Fine tuning</string>
     <string name="reading_all">Reading — for every voice</string>
     <string name="settings_voices_roles">Voices and roles</string>

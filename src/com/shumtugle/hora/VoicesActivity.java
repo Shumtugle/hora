@@ -53,6 +53,9 @@ public final class VoicesActivity extends Activity {
     private boolean flung;
     /** Whether the demo is being read here; a swipe hands it to the next voice. */
     private boolean listening;
+    /** The tuning sheet while it is open, and its own listen button. */
+    private android.app.Dialog tuneSheet;
+    private TextView sheetListen;
     /** The book that was open before the demo was started here, put back when the voices are left. */
     private String beforeUri;
     private String beforeName;
@@ -178,6 +181,11 @@ public final class VoicesActivity extends Activity {
         // The screen going dark or turning is not leaving: the demo reads on.
         boolean dark = !((android.os.PowerManager) getSystemService(POWER_SERVICE)).isInteractive();
         if (!dark && !isChangingConfigurations()) {
+            // Leaving with the tuning sheet open gives its trial up: the rest of the app should not
+            // go on speaking with values nobody saved.
+            if (tuneSheet != null && tuneSheet.isShowing()) {
+                tuneSheet.dismiss();
+            }
             if (startedHere && (listening || beforeUri != null)) {
                 stopDemo(true);
             } else if (beforeDemoVoice >= 0 && beforeDemoVoice != Demo.voice(this)) {
@@ -199,6 +207,10 @@ public final class VoicesActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        // A tuning sheet still open gives its trial up, as any other way of closing it does.
+        if (tuneSheet != null && tuneSheet.isShowing()) {
+            tuneSheet.dismiss();
+        }
         if (album != null) {
             album.release();
         }
@@ -425,8 +437,12 @@ public final class VoicesActivity extends Activity {
         if (listenButton == null) {
             return;
         }
-        listenButton.setText(listening ? "\u275a\u275a  " + getString(R.string.voices_pause)
-                : "\u25b7  " + getString(R.string.lab_listen));
+        String label = listening ? "\u275a\u275a  " + getString(R.string.voices_pause)
+                : "\u25b7  " + getString(R.string.lab_listen);
+        listenButton.setText(label);
+        if (sheetListen != null) {
+            sheetListen.setText(label);
+        }
     }
 
     /** Starts the demo with this voice, from where the demo stopped; the open book is remembered. */
@@ -500,14 +516,45 @@ public final class VoicesActivity extends Activity {
         }
     }
 
-    /** Pitch, timbre and air of one voice, in a sheet; each move is heard at once. */
+    /**
+     * Pitch, timbre and air of one voice, in a sheet; each move is heard at once, with the demo
+     * reading from the sheet itself. Only the save button keeps what was tried: closing the sheet
+     * any other way, or the button that turns things back, puts back what was saved before.
+     */
     private void makeup(final int v) {
+        // One sheet at a time: a second one under the first would put back what the first saved.
+        if (tuneSheet != null && tuneSheet.isShowing()) {
+            return;
+        }
+        final int[] kept = {Prefs.grimPitch(this, v), Prefs.grimTimbre(this, v), Prefs.grimAir(this, v)};
         final LinearLayout box = Ui.column(this);
-        fillMakeup(box, v);
-        Kit.liveSheet(this, Cast.name(this, v), box);
+        fillMakeup(box, v, kept);
+        tuneSheet = Kit.saveSheet(this, Cast.name(this, v), box, new Runnable() {
+            @Override
+            public void run() {
+                Diag.mark(VoicesActivity.this, "voices: makeup of " + v + " saved");
+                sheetListen = null;
+            }
+        }, new Runnable() {
+            @Override
+            public void run() {
+                putBack(v, kept);
+                sheetListen = null;
+            }
+        });
     }
 
-    private void fillMakeup(final LinearLayout box, final int v) {
+    /** Puts a voice's makeup back as it was saved, if it was moved since. */
+    private void putBack(int v, int[] kept) {
+        if (Prefs.grimPitch(this, v) != kept[0] || Prefs.grimTimbre(this, v) != kept[1]) {
+            Prefs.setGrim(this, v, kept[1], kept[0]);
+        }
+        if (Prefs.grimAir(this, v) != kept[2]) {
+            Prefs.setGrimAir(this, v, kept[2]);
+        }
+    }
+
+    private void fillMakeup(final LinearLayout box, final int v, final int[] kept) {
         box.removeAllViews();
         box.addView(Kit.slider(this, getString(R.string.ws_pitch), getString(R.string.lab_lower),
                 getString(R.string.lab_higher), Grim.PITCH_MAX - Grim.PITCH_MIN, Prefs.grimPitch(this, v) - Grim.PITCH_MIN,
@@ -547,15 +594,31 @@ public final class VoicesActivity extends Activity {
                         Prefs.setGrimAir(VoicesActivity.this, v, p);
                     }
                 }));
+        // Back to what was saved, and listening, side by side under the sliders, where the thumb is.
+        LinearLayout last = Ui.row(this);
+        last.setGravity(Gravity.CENTER_VERTICAL);
         TextView reset = Kit.link(this, getString(R.string.lab_reset), new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Prefs.setGrim(VoicesActivity.this, v, Prefs.defaultTimbre(v), Prefs.defaultPitch(v));
-                Prefs.setGrimAir(VoicesActivity.this, v, Prefs.defaultAir(v));
-                fillMakeup(box, v);
+                putBack(v, kept);
+                fillMakeup(box, v, kept);
             }
         });
-        box.addView(reset, Kit.below(this, 8));
+        last.addView(reset, Ui.weight(1));
+        sheetListen = Kit.secondary(this, "", new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (listening) {
+                    stopDemo(false);
+                } else {
+                    startDemo(v);
+                }
+            }
+        });
+        sheetListen.setPadding(dp(20), 0, dp(20), 0);
+        last.addView(sheetListen, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(48)));
+        showListen();
+        box.addView(last, Kit.below(this, 8));
     }
 
     private static String signed(int n) {

@@ -327,7 +327,7 @@ final class Kit {
      */
     static Dialog sheet(Activity a, CharSequence title, View content, CharSequence action, final Runnable onAction,
             View lesser) {
-        return sheet(a, title, content, action, onAction, lesser, R.string.kit_cancel);
+        return sheet(a, title, content, action, onAction, lesser, R.string.kit_cancel, null);
     }
 
     /**
@@ -335,11 +335,38 @@ final class Kit {
      * it closes with "Done".
      */
     static Dialog liveSheet(Activity a, CharSequence title, View content) {
-        return sheet(a, title, content, null, null, null, R.string.kit_done);
+        return sheet(a, title, content, null, null, null, R.string.kit_done, null);
+    }
+
+    /**
+     * A sheet whose changes are tried out live and kept only by its save button. Closing it any
+     * other way (back, a touch outside, the screen going away) gives the changes up: onDrop runs.
+     */
+    static Dialog saveSheet(Activity a, CharSequence title, View content, final Runnable onSave,
+            final Runnable onDrop) {
+        final boolean[] saved = {false};
+        Dialog d = sheet(a, title, content, null, null, null, R.string.save, new Runnable() {
+            @Override
+            public void run() {
+                saved[0] = true;
+                if (onSave != null) {
+                    onSave.run();
+                }
+            }
+        });
+        d.setOnDismissListener(new android.content.DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(android.content.DialogInterface dialog) {
+                if (!saved[0] && onDrop != null) {
+                    onDrop.run();
+                }
+            }
+        });
+        return d;
     }
 
     private static Dialog sheet(Activity a, CharSequence title, View content, CharSequence action,
-            final Runnable onAction, View lesser, int closeLabel) {
+            final Runnable onAction, View lesser, int closeLabel, final Runnable onClose) {
         final Dialog d = new Dialog(a, Palette.sheetTheme());
         d.requestWindowFeature(Window.FEATURE_NO_TITLE);
         LinearLayout card = Ui.column(a);
@@ -369,6 +396,9 @@ final class Kit {
         TextView cancel = link(a, a.getString(closeLabel), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (onClose != null) {
+                    onClose.run();
+                }
                 d.dismiss();
             }
         });
