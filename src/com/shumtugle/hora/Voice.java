@@ -449,9 +449,15 @@ final class Voice {
             // Uneven silence at the ends of each chunk made the joins stumble; keep a fixed sliver.
             best = trimEdges(best, MODEL_RATE);
             best = level(best, voice);
-            // The model keeps the pace of its sample; tempo is applied afterwards.
+            // The model keeps the pace of its sample; tempo is applied afterwards. A voice's own pace
+            // is the speech itself, slower or quicker: stretched, never padded. When the common tempo
+            // stretches too, both go in one stretch.
             madeSeconds += best.length / (double) MODEL_RATE;
-            return pace(best, MODEL_RATE, speed, inManner);
+            float own = Prefs.ownTempoFactorShared(context, voice);
+            if (speed >= 1f || !Prefs.slowByPausesShared(context)) {
+                return TimeStretch.apply(best, MODEL_RATE, speed * own);
+            }
+            return pace(TimeStretch.apply(best, MODEL_RATE, own), MODEL_RATE, speed, inManner);
         } catch (RuntimeException e) {
             // One unreadable chunk must not end the whole reading, but it is recorded.
             // Never the words themselves: they may be someone's message read aloud.
@@ -533,7 +539,8 @@ final class Voice {
             a = trimEdges(a, MODEL_RATE);
             a = levelIn(levelEn, a, voice);
             madeSeconds += a.length / (double) MODEL_RATE;
-            float tempo = Math.max(0.6f, Math.min(1.3f, englishTempo * speed / Prefs.SPEED_DEFAULT));
+            float tempo = Math.max(0.6f, Math.min(1.3f, englishTempo * speed / Prefs.SPEED_DEFAULT
+                    * Prefs.ownTempoFactorShared(context, voice)));
             Diag.log(context, "voice: English piece, " + text.length() + " letters, tempo " + tempo);
             return Math.abs(tempo - 1f) < 0.02f ? a : TimeStretch.apply(a, MODEL_RATE, tempo);
         } catch (RuntimeException e) {

@@ -752,6 +752,9 @@
     <string name="voices_assign_m">What to give him</string>
     <string name="voices_duty_books">Books</string>
     <string name="voices_tune">Tune</string>
+    <string name="voice_own_tempo">Own pace</string>
+    <string name="voice_own_slower">slower</string>
+    <string name="voice_own_faster">faster</string>
     <string name="voices_demo_other">Another book: “%1$s”</string>
     <string name="voices_demo_note">reads “%1$s” from where it stopped</string>
     <string name="lab_character">Character</string>

@@ -419,9 +419,12 @@ final class Export {
 
     static Book load(Context c, String uri, String name) throws IOException {
         android.content.res.Resources res = SpeechLanguage.resources(c);
+        Book b;
         try (InputStream in = c.getContentResolver().openInputStream(Uri.parse(uri))) {
-            return BookText.read(name, in, res.getString(R.string.chapter_words), res.getString(R.string.chapter_ordinals));
+            b = BookText.read(name, in, res.getString(R.string.chapter_words), res.getString(R.string.chapter_ordinals));
         }
+        Demo.titled(c, uri, b);
+        return b;
     }
 
     /** What a slice of work asks for next. */

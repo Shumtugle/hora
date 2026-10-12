@@ -571,7 +571,7 @@ public final class VoicesActivity extends Activity {
     }
 
     /**
-     * Pitch, timbre and air of one voice, in a sheet; each move is heard at once, with the demo
+     * Pitch, timbre, air and own pace of one voice, in a sheet; each move is heard at once, with the demo
      * reading from the sheet itself. Only the save button keeps what was tried: closing the sheet
      * any other way, or the button that turns things back, puts back what was saved before.
      */
@@ -580,7 +580,8 @@ public final class VoicesActivity extends Activity {
         if (tuneSheet != null && tuneSheet.isShowing()) {
             return;
         }
-        final int[] kept = {Prefs.grimPitch(this, v), Prefs.grimTimbre(this, v), Prefs.grimAir(this, v)};
+        final int[] kept = {Prefs.grimPitch(this, v), Prefs.grimTimbre(this, v), Prefs.grimAir(this, v),
+            Prefs.ownTempo(this, v)};
         final LinearLayout box = Ui.column(this);
         fillMakeup(box, v, kept);
         tuneSheet = Kit.saveSheet(this, Cast.name(this, v), box, new Runnable() {
@@ -605,6 +606,9 @@ public final class VoicesActivity extends Activity {
         }
         if (Prefs.grimAir(this, v) != kept[2]) {
             Prefs.setGrimAir(this, v, kept[2]);
+        }
+        if (Prefs.ownTempo(this, v) != kept[3]) {
+            Prefs.setOwnTempo(this, v, kept[3]);
         }
     }
 
@@ -646,6 +650,21 @@ public final class VoicesActivity extends Activity {
                     @Override
                     public void set(int p) {
                         Prefs.setGrimAir(VoicesActivity.this, v, p);
+                    }
+                }));
+        // The voice's own pace, on top of the common tempo of the settings: zero is that tempo.
+        box.addView(Kit.slider(this, getString(R.string.voice_own_tempo), getString(R.string.voice_own_slower),
+                getString(R.string.voice_own_faster), Prefs.OWN_TEMPO_MAX - Prefs.OWN_TEMPO_MIN,
+                Prefs.ownTempo(this, v) - Prefs.OWN_TEMPO_MIN, new Kit.Value() {
+                    @Override
+                    public String show(int p) {
+                        int t = p + Prefs.OWN_TEMPO_MIN;
+                        return t == 0 ? "0" : signed(t * 5) + " %";
+                    }
+
+                    @Override
+                    public void set(int p) {
+                        Prefs.setOwnTempo(VoicesActivity.this, v, p + Prefs.OWN_TEMPO_MIN);
                     }
                 }));
         // Back to what was saved, and listening, side by side under the sliders, where the thumb is.

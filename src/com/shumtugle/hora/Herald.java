@@ -537,7 +537,10 @@ public final class Herald extends NotificationListenerService {
 
     /** The key a made phrase is kept under: the same words with another voice or pace are another sound. */
     private String madeKey(String text) {
-        return Prefs.roleShared(this, Cast.HERALD) + "|" + Prefs.speedShared(this) + "|"
+        int herald = Prefs.roleShared(this, Cast.HERALD);
+        return herald + "|" + Prefs.speedShared(this) + "|" + Prefs.ownTempoFactorShared(this, herald) + "|"
+                + Prefs.grimPitchShared(this, herald) + "|" + Prefs.grimTimbreShared(this, herald) + "|"
+                + Prefs.grimAirShared(this, herald) + "|"
                 + Prefs.pauseMsShared(this) + "|" + Prefs.fullDecoderShared(this) + "|" + text;
     }
 

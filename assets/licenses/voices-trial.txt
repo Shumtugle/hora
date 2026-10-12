@@ -26,7 +26,9 @@ written confirmation for generated voices used inside an app.
 
 Changes: each sample was cut to whole sentences, trimmed at the edges with
 short fades, and its level set to a common peak; in sample 14 long pauses
-between sentences were shortened. Nothing else was altered.
+between sentences were shortened, and samples 13 and 15 were slowed (by a
+fifth and a quarter, pitch kept) so the voices read at a calmer pace.
+Nothing else was altered.
 
 The app has no voice cloning, and these samples must not be used to
 impersonate people, to mislead, or for any harmful or unlawful purpose.

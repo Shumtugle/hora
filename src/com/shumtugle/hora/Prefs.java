@@ -331,6 +331,37 @@ final class Prefs {
     }
 
     private static final String GRIM_AIR = "grim_air_";
+    private static final String OWN_TEMPO = "own_tempo_";
+    /** A voice's own pace on top of the common tempo, in steps of five per cent. */
+    static final int OWN_TEMPO_MIN = -6;
+    static final int OWN_TEMPO_MAX = 6;
+    private static final float OWN_TEMPO_STEP = 0.05f;
+    /** By voice: the fifteenth hurried through its sample's pace and starts a tenth slower. */
+    private static final int[] OWN_TEMPO_DEFAULT = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2};
+
+    static int defaultOwnTempo(int voice) {
+        return voice >= 1 && voice < OWN_TEMPO_DEFAULT.length ? OWN_TEMPO_DEFAULT[voice] : 0;
+    }
+
+    static int ownTempo(Context c, int voice) {
+        return clampTempo(sp(c).getInt(OWN_TEMPO + voice, defaultOwnTempo(voice)));
+    }
+
+    /** For the voice process: the pace as a factor, 1 for the common tempo. */
+    @SuppressWarnings("deprecation")
+    static float ownTempoFactorShared(Context c, int voice) {
+        int t = c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getInt(OWN_TEMPO + voice, defaultOwnTempo(voice));
+        return 1f + OWN_TEMPO_STEP * clampTempo(t);
+    }
+
+    static void setOwnTempo(Context c, int voice, int steps) {
+        sp(c).edit().putInt(OWN_TEMPO + voice, clampTempo(steps)).commit();
+        BookPlayer.revoice(c);
+    }
+
+    private static int clampTempo(int t) {
+        return Math.max(OWN_TEMPO_MIN, Math.min(OWN_TEMPO_MAX, t));
+    }
     private static final String FULL_DECODER = "full_decoder";
     private static final String LAB_TEXT = "lab_text";
     private static final String LAST_RATIO = "last_ratio";

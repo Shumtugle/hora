@@ -208,6 +208,20 @@ final class Library {
         }
     }
 
+    /** Gives a book on the shelf another title; nothing if it is not there or already has it. */
+    static synchronized void retitle(Context c, String uri, String title) {
+        List<Entry> list = all(c);
+        for (Entry e : list) {
+            if (e.uri.equals(uri)) {
+                if (!title.equals(e.title)) {
+                    e.title = title;
+                    save(c, list);
+                }
+                return;
+            }
+        }
+    }
+
     static synchronized void remove(Context c, String uri) {
         List<Entry> list = all(c);
         for (int i = list.size() - 1; i >= 0; i--) {

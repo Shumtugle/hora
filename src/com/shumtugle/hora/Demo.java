@@ -164,6 +164,17 @@ final class Demo {
         return titles[i];
     }
 
+    /**
+     * Gives a book read from a demo's file the demo's title: a story without chapters would
+     * otherwise go by its file's name. Other books are left as they are.
+     */
+    static void titled(Context c, String uri, Book b) {
+        int i = which(c, uri);
+        if (i >= 0 && b != null && !title(c, i).isEmpty()) {
+            b.title = title(c, i);
+        }
+    }
+
     /** The chosen demo's address. */
     static String uri(Context c) {
         return uri(c, chosen(c));
@@ -259,7 +270,14 @@ final class Demo {
     /** Puts every demo on the shelf that should stand there and does not yet. Slow: not on the main thread. */
     static void ensureOnShelf(Context c) {
         for (int i = 0; i < COUNT; i++) {
-            if (!shelved(c, i) || Library.get(c, uri(c, i)) != null) {
+            if (!shelved(c, i)) {
+                continue;
+            }
+            if (Library.get(c, uri(c, i)) != null) {
+                // An earlier build may have shelved it under its file's name.
+                if (!title(c, i).isEmpty()) {
+                    Library.retitle(c, uri(c, i), title(c, i));
+                }
                 continue;
             }
             try {

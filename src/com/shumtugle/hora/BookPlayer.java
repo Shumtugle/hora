@@ -476,6 +476,7 @@ public final class BookPlayer extends Service {
                         android.content.res.Resources res = SpeechLanguage.resources(BookPlayer.this);
                         book = BookText.read(name, in, res.getString(R.string.chapter_words),
                                 res.getString(R.string.chapter_ordinals));
+                        Demo.titled(BookPlayer.this, u, book);
                         p = book.paragraphs;
                     } finally {
                         if (in != null) {
