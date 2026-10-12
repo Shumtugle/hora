@@ -879,6 +879,8 @@
     <string name="book_reader">Читает: %1$s</string>
     <string name="book_change_reader">Сменить</string>
     <string name="book_who_reads">Кто читает книгу</string>
+    <string name="ruler_tag">%1$d из %2$d</string>
+    <string name="ruler_back">К голосу · %1$s</string>
     <string name="book_tune_reader">Настроить голос</string>
     <string name="book_roles">Чтение по ролям</string>
     <string name="voices_section">Голоса</string>
@@ -966,6 +968,9 @@
         <item>Дождь</item>
         <item>Прибой</item>
         <item>Музыка</item>
+        <item>Камин</item>
+        <item>Пластинка</item>
+        <item>Ритм</item>
     </string-array>
     <string name="bed_volume_near_voice">Громкость фона</string>
     <string name="bed_volume_low">едва слышен</string>
@@ -986,6 +991,9 @@
         <item>Дождь</item>
         <item>Прибой</item>
         <item>Тихая музыка</item>
+        <item>Камин</item>
+        <item>Пластинка</item>
+        <item>Ритм</item>
     </string-array>
     <string name="kit_cancel">Отмена</string>
     <string name="name_ask">Назови имя для этого персонажа</string>

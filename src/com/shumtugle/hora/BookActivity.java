@@ -56,6 +56,14 @@ public final class BookActivity extends Activity {
     private ImageView bedIcon;
     private int shownReader = -1;
     private ListView ribbon;
+    private BookRuler ruler;
+    /** Set when the ruler left the ribbon somewhere on purpose: it no longer follows the voice by itself. */
+    private boolean pinned;
+    /** While the ruler is held the header tells the paragraph in hand, not the voice's. */
+    private boolean rulerHeld;
+    private LinearLayout backToVoice;
+    private ImageView backFace;
+    private TextView backText;
     private ImageView backdrop;
     private ImageView contents;
     private ImageView finder;
@@ -312,6 +320,9 @@ public final class BookActivity extends Activity {
 
             @Override
             public void onScroll(AbsListView v, int first, int visible, int total) {
+                if (userScroll && ruler != null) {
+                    ruler.moved();
+                }
             }
         });
         ribbon.setOnTouchListener(new View.OnTouchListener() {
@@ -326,6 +337,34 @@ public final class BookActivity extends Activity {
         });
         card.addView(ribbon, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT));
+        ruler = new BookRuler(this, pages);
+        card.addView(ruler, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
+        // After the ruler left the ribbon elsewhere: the way back to where the voice is.
+        backToVoice = Ui.row(this);
+        backToVoice.setGravity(Gravity.CENTER_VERTICAL);
+        backToVoice.setBackground(Ui.pressable(Ui.round(Palette.RAISED, 22, this)));
+        backToVoice.setPadding(dp(6), dp(6), dp(16), dp(6));
+        backFace = Ui.portrait(this, 1);
+        backToVoice.addView(backFace, Ui.lp(dp(32), dp(32)));
+        backText = Ui.text(this, "", 14, Palette.INK);
+        backText.setSingleLine(true);
+        LinearLayout.LayoutParams btp = Ui.lp(Ui.WRAP, Ui.WRAP);
+        btp.leftMargin = dp(10);
+        backToVoice.addView(backText, btp);
+        backToVoice.setClickable(true);
+        backToVoice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                unpin();
+                follow(true);
+            }
+        });
+        backToVoice.setVisibility(View.GONE);
+        FrameLayout.LayoutParams bvp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
+                dp(44), Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        bvp.bottomMargin = dp(14);
+        card.addView(backToVoice, bvp);
         LinearLayout.LayoutParams cdp = new LinearLayout.LayoutParams(Ui.MATCH, 0, 1f);
         cdp.topMargin = dp(14);
         book.addView(card, cdp);
@@ -501,7 +540,9 @@ public final class BookActivity extends Activity {
         String name = Reading.title(this);
         title.setText(name.isEmpty() ? getString(R.string.nav_book) : name);
         int total = Reading.total(this);
-        where.setText(total <= 0 ? getString(R.string.book_opening) : place(total));
+        if (!rulerHeld) {
+            where.setText(total <= 0 ? getString(R.string.book_opening) : place(total));
+        }
         int narrator = Prefs.role(this, Cast.NARRATOR);
         // The demo may be read by a voice of its own choosing: its face is shown, not the narrator's.
         if (Demo.is(this, Reading.uri(this)) && Demo.voice(this) > 0) {
@@ -637,6 +678,7 @@ public final class BookActivity extends Activity {
         String action = Reading.playing(this) ? BookPlayer.ACTION_FROM : BookPlayer.ACTION_SEEK;
         startForegroundService(BookPlayer.intent(this, action).putExtra(BookPlayer.EXTRA_INDEX, index));
         touchedAt = 0;
+        unpin();
     }
 
     /** The contents as a sheet: read chapters quiet, the current one raised with its own thread, the rest ahead. */
@@ -746,12 +788,148 @@ public final class BookActivity extends Activity {
         sheet[0] = Kit.sheet(this, null, content, null, null);
     }
 
+    /** The ribbon follows the voice again, and the way back goes. */
+    private void unpin() {
+        pinned = false;
+        userScroll = false;
+        if (backToVoice != null) {
+            backToVoice.setVisibility(View.GONE);
+        }
+    }
+
+    /** "Chapter six · paragraph 2 of 14 · 24 %" for any paragraph, as the header says it for the voice's. */
+    private String placeAt(int i) {
+        int total = text == null ? 0 : text.size();
+        if (total <= 0) {
+            return "";
+        }
+        int percent = total <= 1 ? 100 : i * 100 / (total - 1);
+        int ch = -1;
+        for (int n = 0; n < chapters.size(); n++) {
+            if (chapters.get(n).at <= i) {
+                ch = n;
+            }
+        }
+        if (ch < 0) {
+            return getString(R.string.book_where_percent, i + 1, total, percent);
+        }
+        Book.Chapter c = chapters.get(ch);
+        int end = ch + 1 < chapters.size() ? chapters.get(ch + 1).at : total;
+        return getString(R.string.book_where_chapter, c.label, Math.max(1, i - c.at), Math.max(1, end - c.at - 1), percent);
+    }
+
+    /** What the ruler is laid along: this book's paragraphs, its chapters, the voice and the ribbon. */
+    private final BookRuler.Pages pages = new BookRuler.Pages() {
+        @Override
+        public int count() {
+            return text == null ? 0 : text.size();
+        }
+
+        @Override
+        public int[] chapters() {
+            int[] at = new int[chapters.size()];
+            for (int n = 0; n < at.length; n++) {
+                at[n] = chapters.get(n).at;
+            }
+            return at;
+        }
+
+        @Override
+        public String chapterName(int n) {
+            return n >= 0 && n < chapters.size() ? chapters.get(n).label : "";
+        }
+
+        @Override
+        public int voiceAt() {
+            return current;
+        }
+
+        @Override
+        public int voice() {
+            return shownReader;
+        }
+
+        @Override
+        public int beside(float y) {
+            int p = ribbon.pointToPosition(ribbon.getWidth() / 2, Math.round(y));
+            if (p != AdapterView.INVALID_POSITION) {
+                return p;
+            }
+            return y < ribbon.getHeight() / 2f ? ribbon.getFirstVisiblePosition() : ribbon.getLastVisiblePosition();
+        }
+
+        @Override
+        public float along() {
+            int n = count();
+            if (n <= 1 || ribbon.getChildCount() == 0) {
+                return 0f;
+            }
+            View top = ribbon.getChildAt(0);
+            float part = top.getHeight() <= 0 ? 0f : -top.getTop() / (float) top.getHeight();
+            return Math.max(0f, Math.min(1f, (ribbon.getFirstVisiblePosition() + part) / (n - 1)));
+        }
+
+        @Override
+        public void bring(int i, float y) {
+            touchedAt = System.currentTimeMillis();
+            ribbon.setSelectionFromTop(i, Math.max(0, Math.round(y) - dp(40)));
+        }
+
+        @Override
+        public void holding(int i) {
+            rulerHeld = true;
+            touchedAt = System.currentTimeMillis();
+            where.setText(placeAt(i));
+        }
+
+        @Override
+        public void released() {
+            rulerHeld = false;
+        }
+
+        @Override
+        public void still() {
+            // A fling under the finger stops, so the ribbon does not slide away from the ruler.
+            ribbon.smoothScrollBy(0, 0);
+        }
+
+        @Override
+        public void tap(float y) {
+            int p = ribbon.pointToPosition(ribbon.getWidth() / 2, Math.round(y));
+            if (p != AdapterView.INVALID_POSITION && text != null) {
+                paragraphSheet(p);
+            }
+        }
+
+        @Override
+        public void letGo(int i) {
+            rulerHeld = false;
+            Diag.log(BookActivity.this, "book screen: ruler let go at paragraph " + i);
+            if (i == current) {
+                // Back where the voice is: nothing to come back from.
+                unpin();
+                return;
+            }
+            pinned = true;
+            if (current >= 0 && shownReader > 0) {
+                Ui.setFace(backFace, shownReader);
+                backFace.setBackground(Ui.oval(Palette.RAISED, Palette.voice(shownReader), 2, BookActivity.this));
+                backFace.setPadding(dp(2), dp(2), dp(2), dp(2));
+                String at = placeAt(current);
+                int dot = at.indexOf(" \u00b7 ");
+                backText.setText(getString(R.string.ruler_back, dot > 0 ? at.substring(0, dot) : at));
+                backToVoice.setVisibility(View.VISIBLE);
+            }
+        }
+    };
+
     /** Brings the heard paragraph into view, near the top, unless the user is looking elsewhere. */
     private void follow(boolean jump) {
-        if (current < 0 || current >= rows.getCount()) {
+        if (current < 0 || current >= rows.getCount() || pinned) {
             return;
         }
         if (jump) {
+            userScroll = false;
             ribbon.setSelectionFromTop(current, dp(48));
             return;
         }
@@ -784,6 +962,7 @@ public final class BookActivity extends Activity {
         chapters = new ArrayList<Book.Chapter>();
         heading = new boolean[0];
         current = -1;
+        unpin();
         final String name = Reading.name(this);
         final android.content.Context app = getApplicationContext();
         new Thread(new Runnable() {
@@ -977,6 +1156,7 @@ public final class BookActivity extends Activity {
                 startForegroundService(BookPlayer.intent(BookActivity.this, BookPlayer.ACTION_FROM)
                         .putExtra(BookPlayer.EXTRA_INDEX, i));
                 touchedAt = 0;
+                unpin();
             }
         }, lesser);
     }
@@ -1129,6 +1309,7 @@ public final class BookActivity extends Activity {
                 // A press on the controls asks to see where the voice is.
                 touchedAt = 0;
                 followOwed = true;
+                unpin();
             }
         };
     }

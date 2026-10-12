@@ -202,7 +202,6 @@ public final class HoraTtsService extends TextToSpeechService {
         }
         CharSequence raw = request.getCharSequenceText();
         String given = raw == null ? "" : raw.toString();
-        Diag.log(this, "engine: raw " + TextPrep.reveal(given.length() > 240 ? given.substring(0, 240) + "..." : given));
         String asked = request.getVoiceName();
         // English is asked for by language or by one of the English voice names.
         boolean english = asked != null && !asked.isEmpty() ? englishVoice(asked) : isEnglish(request.getLanguage());
@@ -213,7 +212,8 @@ public final class HoraTtsService extends TextToSpeechService {
         }
         String text = english ? voice.normalizeEnglish(TextPrep.clean(given))
                 : voice.normalize(Lexicon.get(this).applyRules(TextPrep.clean(given)));
-        Diag.log(this, "engine: text " + (text.length() > 240 ? text.substring(0, 240) + "..." : text));
+        // Other apps' text is theirs and the person's: the journal keeps its length only.
+        Diag.log(this, "engine: text, " + text.length() + " letters");
         // Settings decide; "alt" lends the narrator part to the first dialogue voice,
         // and a numbered name pins that voice as the narrator.
         int narrator = numbered(asked);

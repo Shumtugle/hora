@@ -503,7 +503,8 @@ final class Brain {
             String answer = new String(readAll(in), "UTF-8");
             c.disconnect();
             if (code != 200) {
-                throw new IOException("server answered " + code + ": " + answer);
+                // The code only: the body may hold words of the conversation.
+                throw new IOException("server answered " + code);
             }
             JSONObject json = new JSONObject(answer);
             String text = json.getJSONArray("choices").getJSONObject(0).getJSONObject("message")
@@ -524,7 +525,7 @@ final class Brain {
                     seconds, speed));
             return new Reply(text.trim(), seconds, speed);
         } catch (org.json.JSONException e) {
-            throw new IOException("bad reply: " + e.getMessage());
+            throw new IOException("bad reply, " + answerShape(e));
         } finally {
             sleepLater();
         }
@@ -676,5 +677,10 @@ final class Brain {
         }
         in.close();
         return out.toByteArray();
+    }
+
+    /** What went wrong with a reply, without any of its words. */
+    private static String answerShape(Exception e) {
+        return e.getClass().getSimpleName();
     }
 }

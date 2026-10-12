@@ -17,7 +17,7 @@ import java.util.Random;
 
 /**
  * A quiet background under a book read aloud: noise of a chosen colour, rain,
- * surf, or slow low music. Nothing here is a recording. The noises are made
+ * surf, slow low music, a fire, a record, or a soft beat. Nothing here is a recording. The noises are made
  * sample by sample; the music is a short score written on the spot and played
  * by the phone's own synthesizer, a new one each time the last ends. It starts
  * with the reading, stops with it, and always stays well below the voice.
@@ -30,7 +30,10 @@ final class Bed {
     static final int RAIN = 4;
     static final int SURF = 5;
     static final int MUSIC = 6;
-    static final int KINDS = 7;
+    static final int FIRE = 7;
+    static final int VINYL = 8;
+    static final int BEAT = 9;
+    static final int KINDS = 10;
 
     private static final int RATE = 24000;
     private static final int BLOCK = 2400;
@@ -270,11 +273,16 @@ final class Bed {
         private double phase;
         private double period;
         private long t;
+        /** The fire, the record and the beat are made elsewhere. */
+        private final BedSynth synth;
 
         Noise(int kind, int rate) {
             this.kind = kind;
             this.rate = rate;
             this.period = 8 + random.nextDouble() * 4;
+            this.synth = kind == FIRE ? new BedSynth(BedSynth.FIRE, rate)
+                    : kind == VINYL ? new BedSynth(BedSynth.VINYL, rate)
+                    : kind == BEAT ? new BedSynth(BedSynth.BEAT, rate) : null;
         }
 
         void fill(float[] out) {
@@ -306,6 +314,9 @@ final class Bed {
         }
 
         private double next() {
+            if (synth != null) {
+                return synth.next();
+            }
             double w = white();
             t++;
             switch (kind) {

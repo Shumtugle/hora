@@ -164,7 +164,12 @@ final class Bot {
             return looksLikeQuestion(r, text) ? new Answer(UNKNOWN, line(r, "unknown"), voice)
                     : new Answer(SPEAK_TEXT, text, voice);
         }
-        Diag.log(c, "bot: " + hit.intent + " " + hit.slots);
+        // The intent and how long each slot is: never the words, which may be a search or a question.
+        StringBuilder slotShape = new StringBuilder();
+        for (java.util.Map.Entry<String, String> e : hit.slots.entrySet()) {
+            slotShape.append(' ').append(e.getKey()).append('=').append(e.getValue() == null ? 0 : e.getValue().length());
+        }
+        Diag.log(c, "bot: " + hit.intent + slotShape);
         chapterName(c, "");
         String uri = Reading.uri(c);
         Library.Entry book = uri.isEmpty() ? null : Library.get(c, uri);

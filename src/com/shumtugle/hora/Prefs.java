@@ -150,7 +150,7 @@ final class Prefs {
      * and sit low, the music is soft and sits higher. Each starts where it
      * sounded right under the voice.
      */
-    private static final int[] BED_VOLUME_DEFAULT = {0, 8, 7, 6, 7, 11, 53};
+    private static final int[] BED_VOLUME_DEFAULT = {0, 8, 7, 6, 7, 11, 53, 9, 8, 10};
 
     static int bedVolume(Context c) {
         return bedVolume(c, bed(c));

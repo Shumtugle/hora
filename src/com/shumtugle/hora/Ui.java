@@ -206,7 +206,7 @@ final class Ui {
         v.setImageDrawable(new RoundFace(face(v.getContext(), voice)));
     }
 
-    private static synchronized android.graphics.Bitmap face(Context c, int voice) {
+    static synchronized android.graphics.Bitmap face(Context c, int voice) {
         int i = Math.max(0, Math.min(FACES.length - 1, voice));
         if (FACES[i] == null) {
             FACES[i] = android.graphics.BitmapFactory.decodeResource(c.getResources(), Cast.portrait(voice));

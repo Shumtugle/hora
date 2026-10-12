@@ -465,6 +465,8 @@
     <string name="book_reader">Reading: %1$s</string>
     <string name="book_change_reader">Change</string>
     <string name="book_who_reads">Who reads the book</string>
+    <string name="ruler_tag">%1$d of %2$d</string>
+    <string name="ruler_back">Back to the voice · %1$s</string>
     <string name="book_tune_reader">Tune the voice</string>
     <string name="book_roles">Reading in roles</string>
     <string name="voices_section">Voices</string>
@@ -555,6 +557,9 @@
         <item>Rain</item>
         <item>Surf</item>
         <item>Music</item>
+        <item>Fire</item>
+        <item>Record</item>
+        <item>Beat</item>
     </string-array>
     <string name="bed_volume_near_voice">Background volume</string>
     <string name="bed_volume_low">barely there</string>
@@ -575,6 +580,9 @@
         <item>Rain</item>
         <item>Surf</item>
         <item>Quiet music</item>
+        <item>Fireplace</item>
+        <item>Record</item>
+        <item>Soft beat</item>
     </string-array>
     <string name="kit_cancel">Cancel</string>
     <string name="kit_done">Done</string>

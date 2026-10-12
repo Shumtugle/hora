@@ -431,7 +431,7 @@ final class Voice {
                 best = Math.abs(verdict2) < Math.abs(verdict) ? second : first;
                 float kept = best == second ? verdict2 : verdict;
                 Diag.log(context, "voice: " + (verdict > 0 ? "overlong" : "short") + " chunk, "
-                        + (kept == 0 ? "redrawn clean" : "still off, trimmed") + ": " + text);
+                        + (kept == 0 ? "redrawn clean" : "still off, trimmed") + ", " + letters + " letters");
                 if (kept > 0) {
                     best = trimTo(best, letters < JUDGED_LETTERS
                             ? shortLimit(letters) * MODEL_RATE / SHORT_LOOP
@@ -454,7 +454,8 @@ final class Voice {
             return pace(best, MODEL_RATE, speed, inManner);
         } catch (RuntimeException e) {
             // One unreadable chunk must not end the whole reading, but it is recorded.
-            Diag.log(context, "voice: chunk failed: " + chunk, e);
+            // Never the words themselves: they may be someone's message read aloud.
+            Diag.log(context, "voice: chunk failed, " + chunk.length() + " letters", e);
             return new float[0];
         }
     }
@@ -536,7 +537,7 @@ final class Voice {
             Diag.log(context, "voice: English piece, " + text.length() + " letters, tempo " + tempo);
             return Math.abs(tempo - 1f) < 0.02f ? a : TimeStretch.apply(a, MODEL_RATE, tempo);
         } catch (RuntimeException e) {
-            Diag.log(context, "voice: English piece failed: " + text, e);
+            Diag.log(context, "voice: English piece failed, " + text.length() + " letters", e);
             return new float[0];
         }
     }

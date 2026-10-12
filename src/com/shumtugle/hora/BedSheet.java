@@ -14,10 +14,11 @@ import android.widget.TextView;
  * the background plays on. Every change is heard at once.
  */
 final class BedSheet {
-    /** The two rows of choices: noises, then the rest. Numbers are the kinds of background. */
+    /** The rows of choices: noises, nature and music, then fire, record and beat. Numbers are the kinds of background. */
     private static final int[][] GROUPS = {
         {Bed.BROWN, Bed.PINK, Bed.WHITE},
         {Bed.RAIN, Bed.SURF, Bed.MUSIC},
+        {Bed.FIRE, Bed.VINYL, Bed.BEAT},
     };
 
     private BedSheet() {
