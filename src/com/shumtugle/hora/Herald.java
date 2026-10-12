@@ -223,7 +223,15 @@ public final class Herald extends NotificationListenerService {
     @Override
     public void onNotificationPosted(StatusBarNotification sbn, RankingMap rankings) {
         String pkg = sbn.getPackageName();
-        if (pkg.equals(getPackageName()) || !Prefs.heraldHearsShared(this, pkg)) {
+        if (pkg.equals(getPackageName())) {
+            return;
+        }
+        // A navigator's hint: the route scout looks at it when asked to. A one-off alert of the same
+        // kind ("arriving") is still read as before; the ongoing turn-by-turn one is skipped below.
+        if (NavScout.isRouteHint(sbn) && Prefs.navScoutShared(this)) {
+            NavScout.seen(this, sbn, label(pkg));
+        }
+        if (!Prefs.heraldHearsShared(this, pkg)) {
             return;
         }
         Notification n = sbn.getNotification();
@@ -292,6 +300,9 @@ public final class Herald extends NotificationListenerService {
      */
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn, RankingMap rankings, int reason) {
+        if (NavScout.isRouteHint(sbn)) {
+            NavScout.gone(this, sbn);
+        }
         String key = sbn.getKey();
         gone.add(key);
         if (key.equals(readingKey)) {

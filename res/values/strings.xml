@@ -1191,6 +1191,8 @@
     <string name="battery_low">Battery at %1$d percent. Time to charge.</string>
     <string name="battery_very_low">Battery at only %1$d percent. The phone will switch off soon.</string>
     <string name="battery_switch">Warn about the battery</string>
+    <string name="nav_switch">Route hints</string>
+    <string name="nav_switch_sub">for now only noted in the journal, without the streets</string>
     <string name="battery_switch_sub">Into the headphones, at 15 and at 5 percent.</string>
     <string name="folder_books">Books</string>
     <string name="folder_temp">Temporary</string>

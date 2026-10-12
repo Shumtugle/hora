@@ -14,6 +14,9 @@ import android.media.AudioFocusRequest;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.media.MediaMetadata;
+import android.media.session.MediaSession;
+import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.SystemClock;
@@ -89,6 +92,29 @@ public final class BookPlayer extends Service {
     private volatile List<String> paragraphs;
     private String uri = "";
     private String title = "";
+    /**
+     * The book's own media session: the headphones' button and the phone's media controls
+     * reach the book through it. It lives as long as the player; a voice speaking over the
+     * book takes the button for itself only while it speaks.
+     */
+    private volatile MediaSession session;
+    /** A book left paused this long gives the headphones' button back to other players. */
+    private static final long BUTTON_KEPT_MS = 10 * 60 * 1000L;
+    private final android.os.Handler main = new android.os.Handler(android.os.Looper.getMainLooper());
+    private final Runnable letButtonGo = new Runnable() {
+        @Override
+        public void run() {
+            MediaSession s = session;
+            if (s != null && !playing && !bedOnly) {
+                try {
+                    s.setActive(false);
+                    Diag.log(BookPlayer.this, "book: the headphone button is given back");
+                } catch (RuntimeException ignored) {
+                    // Gone with the service.
+                }
+            }
+        }
+    };
     private int rate;
     private Thread maker;
     private Thread player;
@@ -197,6 +223,51 @@ public final class BookPlayer extends Service {
         }, "book-player");
         maker.start();
         player.start();
+        try {
+            session = new MediaSession(this, "hora-book");
+            session.setCallback(new MediaSession.Callback() {
+                @Override
+                public void onPlay() {
+                    heldForNews = false;
+                    if (paragraphs == null) {
+                        ensureLoaded(true);
+                    } else {
+                        play("headphone button");
+                    }
+                }
+
+                @Override
+                public void onPause() {
+                    heldForNews = false;
+                    pause("headphone button");
+                }
+
+                @Override
+                public void onStop() {
+                    heldForNews = false;
+                    pause("headphone button");
+                }
+
+                @Override
+                public void onSkipToNext() {
+                    if (paragraphs != null) {
+                        seek(playIndex + 1);
+                    }
+                }
+
+                @Override
+                public void onSkipToPrevious() {
+                    if (paragraphs != null) {
+                        seek(Math.max(0, playIndex - 1));
+                    }
+                }
+            }, new android.os.Handler(android.os.Looper.getMainLooper()));
+            // Not active yet: the button is taken only once the book is read, never just by opening it.
+        } catch (RuntimeException e) {
+            // Without the session the screen, the notification and the tile still work.
+            Diag.log(this, "book: no media session", e);
+            session = null;
+        }
     }
 
     @Override
@@ -273,6 +344,17 @@ public final class BookPlayer extends Service {
 
     @Override
     public void onDestroy() {
+        main.removeCallbacks(letButtonGo);
+        MediaSession s = session;
+        session = null;
+        if (s != null) {
+            try {
+                s.setActive(false);
+                s.release();
+            } catch (RuntimeException ignored) {
+                // Already gone.
+            }
+        }
         Bed.stop();
         if (live == this) {
             live = null;
@@ -797,12 +879,47 @@ public final class BookPlayer extends Service {
         if (Demo.kept(this, uri)) {
             Library.progress(this, uri, i, Prefs.roleShared(this, Cast.NARRATOR));
         }
+        tellSession();
         NotificationManager nm = getSystemService(NotificationManager.class);
         nm.notify(NOTE, note());
         if (!playing && !bedOnly) {
             stopForeground(STOP_FOREGROUND_DETACH);
         } else {
             startForeground(NOTE, note());
+        }
+    }
+
+    /** The session says what the headphones' button would do now, and what is being read. */
+    private void tellSession() {
+        MediaSession s = session;
+        if (s == null) {
+            return;
+        }
+        // Reading: the button is the book's. Paused: it stays so for a while, then goes back.
+        main.removeCallbacks(letButtonGo);
+        if (playing || bedOnly) {
+            try {
+                s.setActive(true);
+            } catch (RuntimeException ignored) {
+                // Gone with the service.
+            }
+        } else {
+            main.postDelayed(letButtonGo, BUTTON_KEPT_MS);
+        }
+        try {
+            s.setPlaybackState(new PlaybackState.Builder()
+                    .setActions(PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE
+                            | PlaybackState.ACTION_PLAY_PAUSE | PlaybackState.ACTION_STOP
+                            | PlaybackState.ACTION_SKIP_TO_NEXT | PlaybackState.ACTION_SKIP_TO_PREVIOUS)
+                    .setState(playing || bedOnly ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED,
+                            PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1f)
+                    .build());
+            s.setMetadata(new MediaMetadata.Builder()
+                    .putString(MediaMetadata.METADATA_KEY_TITLE, title.isEmpty() ? getString(R.string.nav_book) : title)
+                    .putString(MediaMetadata.METADATA_KEY_ARTIST, Cast.name(this, Prefs.roleShared(this, Cast.NARRATOR)))
+                    .build());
+        } catch (RuntimeException ignored) {
+            // A session gone with the process: nothing to tell.
         }
     }
 
@@ -823,11 +940,21 @@ public final class BookPlayer extends Service {
                         playing ? R.string.book_pause : R.string.book_play, ACTION_TOGGLE, 2))
                 .addAction(action(R.drawable.ic_next, R.string.book_next, ACTION_NEXT, 3))
                 .setLargeIcon(Demo.is(this, uri) ? Demo.coverBitmap(this, 200) : null)
-                .setStyle(new Notification.MediaStyle().setShowActionsInCompactView(0, 1, 2))
+                .setStyle(style())
                 .setOngoing(playing)
                 .setShowWhen(false)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .build();
+    }
+
+    /** The notification's media look, tied to the book's session while it has one. */
+    private Notification.MediaStyle style() {
+        Notification.MediaStyle st = new Notification.MediaStyle().setShowActionsInCompactView(0, 1, 2);
+        MediaSession s = session;
+        if (s != null) {
+            st.setMediaSession(s.getSessionToken());
+        }
+        return st;
     }
 
     private Notification.Action action(int icon, int label, String what, int request) {

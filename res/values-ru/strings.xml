@@ -2269,6 +2269,8 @@
     <string name="battery_low">Заряд %1$d процентов. Пора на зарядку.</string>
     <string name="battery_very_low">Заряд всего %1$d процентов. Телефон скоро выключится.</string>
     <string name="battery_switch">Предупреждать о заряде</string>
+    <string name="nav_switch">Подсказки маршрута</string>
+    <string name="nav_switch_sub">пока только запись в журнал, без улиц</string>
     <string name="battery_switch_sub">В наушники, при 15 и при 5 процентах.</string>
     <string name="folder_books">Книги</string>
     <string name="folder_temp">Временные</string>

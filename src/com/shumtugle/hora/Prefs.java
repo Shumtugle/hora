@@ -435,6 +435,16 @@ final class Prefs {
 
     private static final String INTRO_SEEN = "intro_seen";
     private static final String BATTERY_WARN = "battery_warn";
+    private static final String NAV_SCOUT = "nav_scout";
+
+    /** Whether the route scout notes how a navigator's hints live; read from the voice process. */
+    static boolean navScoutShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(NAV_SCOUT, false);
+    }
+
+    static void setNavScout(Context c, boolean on) {
+        sp(c).edit().putBoolean(NAV_SCOUT, on).commit();
+    }
 
     /** Whether the reader says so when the battery runs low; read from the voice process too. */
     static boolean batteryWarnShared(Context c) {

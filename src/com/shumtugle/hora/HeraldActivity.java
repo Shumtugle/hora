@@ -142,6 +142,20 @@ public final class HeraldActivity extends Activity {
         pp.topMargin = Ui.dp(this, 12);
         list.addView(power, pp);
 
+        // Route hints from a navigator: for now only noted in the journal, without the streets.
+        LinearLayout route = Kit.plate(this);
+        route.addView(Kit.rowToggle(this, getString(R.string.nav_switch), getString(R.string.nav_switch_sub),
+                Prefs.navScoutShared(this), new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Prefs.setNavScout(HeraldActivity.this, on);
+                        Diag.mark(HeraldActivity.this, "nav: scout " + (on ? "on" : "off"));
+                    }
+                }));
+        LinearLayout.LayoutParams rp = Kit.wide();
+        rp.topMargin = Ui.dp(this, 12);
+        list.addView(route, rp);
+
         appsTitle = Kit.section(this, "");
         list.addView(appsTitle);
         search = new EditText(this);
