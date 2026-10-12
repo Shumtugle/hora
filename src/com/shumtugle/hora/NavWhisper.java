@@ -27,38 +27,24 @@ import java.util.regex.Pattern;
  * A navigator marks its turn-by-turn notification as navigation. Its lines
  * carry the distance and the street, but the turn itself is only in the
  * picture beside them, an arrow, which {@link NavArrow} reads by its shape.
- * Each manoeuvre is said twice: early, once the distance falls to about a
- * minute's way (never nearer than 100 m nor farther than 800 m), and again at
- * the turn itself (about eight seconds' way, 15 to 150 m). The speed is told by
- * how fast the distance melts. Straight on, and hints without an arrow, stay
- * silent. A shape the reader does not know is said as just "a turn", and its
- * picture is kept for later, if it is plain (a colourful picture might be a
- * piece of map and is never kept).
+ * When to speak is {@link NavPlan}'s: twice per manoeuvre, early and at the
+ * turn, and never twice the same while the card flicks between arrows.
+ * Straight on, and hints without an arrow, stay silent. A shape the reader
+ * does not know is said as just "a turn", and its picture is kept for later,
+ * if it is plain (a colourful picture might be a piece of map and is never
+ * kept).
  *
  * Nothing of the route is written down: the journal gets the kind of turn and
  * whether it was said, never a street or a distance.
  */
 final class NavWhisper {
-    /** On foot, until the distance shows otherwise; metres a second. */
-    private static final float WALK = 1.4f;
-    private static final float SLOWEST = 0.5f;
-    private static final float FASTEST = 40f;
-    /**
-     * A distance that grows by more than this, or by more than a quarter of itself (a rounded
-     * "0.8 km" may read "0.9 km" next), is a new manoeuvre, even with the same arrow.
-     */
-    private static final float JUMP_M = 30f;
-    private static final float JUMP_SHARE = 0.25f;
-    /** The speed is judged over at most this much of the latest way, and no less than the shortest. */
-    private static final long SPEED_WINDOW_MS = 30_000;
-    private static final long SPEED_SHORTEST_MS = 4_000;
-    private static final int SAMPLES = 32;
     private static final int KINDS_KEPT = 64;
 
     /** A phrase to be said, and what it belongs to, so a late one can be dropped. */
     static final class Said {
         final String text;
         final String key;
+        /** The manoeuvre it belongs to, as the route's plan numbers them. */
         final int generation;
         final boolean early;
         final int kind;
@@ -79,17 +65,8 @@ final class NavWhisper {
     /** One route hint, by its notification's key. */
     private static final class Route {
         long firstAt;
-        int generation;
-        String picture = "";
-        /** The text line without its distance, only to notice a new manoeuvre; never written anywhere. */
-        String words;
-        float lastDistance = -1;
-        boolean saidEarly;
-        boolean saidNow;
+        final NavPlan plan = new NavPlan();
         boolean toldNoDistance;
-        final long[] times = new long[SAMPLES];
-        final float[] distances = new float[SAMPLES];
-        int count;
     }
 
     private static final Map<String, Route> routes = new HashMap<String, Route>();
@@ -102,7 +79,6 @@ final class NavWhisper {
     };
     /** Unknown arrows already kept in the folder. */
     private static final Set<String> kept = new HashSet<String>();
-    private static float speed = WALK;
     private static List<Object[]> units;
     private static final Pattern DISTANCE = Pattern.compile("(\\d+(?:[.,]\\d+)?)[\\s\\u00a0\\u202f]*(\\p{L}+)");
 
@@ -167,46 +143,22 @@ final class NavWhisper {
         if (distance < 0) {
             distance = distance(c, line);
         }
-        // The line is compared without its distance: a distance running down is the same manoeuvre.
+        // The street, if it is ever said, is taken from the line without its distance.
         String words = withoutDistance(c, line);
-        boolean fresh = !picture.equals(r.picture)
-                || !same(words, r.words)
-                || distance >= 0 && r.lastDistance >= 0
-                && distance > r.lastDistance + Math.max(JUMP_M, JUMP_SHARE * r.lastDistance);
-        if (fresh) {
-            r.generation++;
-            r.saidEarly = false;
-            r.saidNow = false;
-            r.count = 0;
+        int say = r.plan.update(now, picture, kind, distance);
+        if (r.plan.fresh) {
             Diag.log(c, "nav: new manoeuvre, " + NavArrow.NAMES[kind]);
         }
-        r.picture = picture;
-        r.words = words;
-        if (distance >= 0) {
-            learnSpeed(r, now, distance);
-            r.lastDistance = distance;
+        if (say == NavPlan.NO_DISTANCE && !r.toldNoDistance) {
+            r.toldNoDistance = true;
+            Diag.mark(c, "nav: no distance in the hint");
         }
-        if (!NavArrow.spoken(kind)) {
-            return null;
-        }
-        if (distance < 0) {
-            if (!r.toldNoDistance) {
-                r.toldNoDistance = true;
-                Diag.mark(c, "nav: no distance in the hint");
-            }
-            return null;
-        }
-        float nowAt = clamp(speed * 8f, 15f, 150f);
-        float earlyAt = clamp(speed * 60f, 100f, 800f);
         Resources res = SpeechLanguage.resources(c);
-        if (!r.saidNow && distance <= nowAt) {
-            r.saidNow = true;
-            r.saidEarly = true;
-            return new Said(nowPhrase(c, res, kind, words), sbn.getKey(), r.generation, false, kind, false);
+        if (say == NavPlan.NOW) {
+            return new Said(nowPhrase(c, res, kind, words), sbn.getKey(), r.plan.id, false, kind, false);
         }
-        if (!r.saidEarly && distance <= earlyAt) {
-            r.saidEarly = true;
-            return new Said(earlyPhrase(res, kind, round(distance)), sbn.getKey(), r.generation, true, kind, false);
+        if (say == NavPlan.EARLY) {
+            return new Said(earlyPhrase(res, kind, r.plan.metres), sbn.getKey(), r.plan.id, true, kind, false);
         }
         return null;
     }
@@ -225,7 +177,15 @@ final class NavWhisper {
             return true;
         }
         Route r = routes.get(s.key);
-        return r != null && r.generation == s.generation;
+        return r != null && r.plan.current(s.generation);
+    }
+
+    /** A phrase dropped as late may be said when its arrow comes back. */
+    static synchronized void unsay(Said s) {
+        Route r = s.sample ? null : routes.get(s.key);
+        if (r != null) {
+            r.plan.unsay(s.generation, s.early);
+        }
     }
 
     /** The phrase "Hear an example" plays: an early hint for a right turn. */
@@ -262,40 +222,6 @@ final class NavWhisper {
             }
         }
         return s;
-    }
-
-    /** Up to 100 m by tens, up to 300 m by fifties, then by hundreds. */
-    static int round(float m) {
-        if (m < 95) {
-            return Math.max(10, Math.round(m / 10f) * 10);
-        }
-        if (m < 300) {
-            return Math.max(100, Math.round(m / 50f) * 50);
-        }
-        return Math.round(m / 100f) * 100;
-    }
-
-    /** The speed, from how fast the distance to the turn melted over the last half minute. */
-    private static void learnSpeed(Route r, long now, float distance) {
-        int i = r.count % SAMPLES;
-        r.times[i] = now;
-        r.distances[i] = distance;
-        r.count++;
-        int n = Math.min(r.count, SAMPLES);
-        long oldestAt = now;
-        float oldest = distance;
-        for (int k = 0; k < n; k++) {
-            if (now - r.times[k] <= SPEED_WINDOW_MS && r.times[k] < oldestAt) {
-                oldestAt = r.times[k];
-                oldest = r.distances[k];
-            }
-        }
-        long span = now - oldestAt;
-        if (span < SPEED_SHORTEST_MS || oldest <= distance) {
-            return;
-        }
-        float v = (oldest - distance) / (span / 1000f);
-        speed = clamp(0.7f * speed + 0.3f * v, SLOWEST, FASTEST);
     }
 
     /** The distance written in a line ("170 m", "1,2 km", "1,000 ft"), in metres; -1 when there is none. */
@@ -458,19 +384,11 @@ final class NavWhisper {
         }, "nav-picture").start();
     }
 
-    private static boolean same(String a, String b) {
-        return a == null ? b == null : a.equals(b);
-    }
-
     private static String str(CharSequence cs) {
         if (cs == null) {
             return null;
         }
         String s = cs.toString().replace('\n', ' ').trim();
         return s.isEmpty() ? null : s;
-    }
-
-    private static float clamp(float v, float lo, float hi) {
-        return Math.max(lo, Math.min(hi, v));
     }
 }

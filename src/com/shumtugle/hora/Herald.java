@@ -426,6 +426,7 @@ public final class Herald extends NotificationListenerService {
     private void routeSoon(NavWhisper.Said s) {
         NavWhisper.Said before = route.getAndSet(s);
         if (before != null && !before.sample) {
+            NavWhisper.unsay(before);
             Diag.mark(this, "nav: replaced by a newer hint, " + NavArrow.NAMES[before.kind]);
         }
         if (newsSpeaking) {
@@ -451,6 +452,7 @@ public final class Herald extends NotificationListenerService {
         String what = (s.early ? "early, " : "now, ") + NavArrow.NAMES[s.kind] + (s.sample ? ", example" : "");
         if (!s.sample && (android.os.SystemClock.elapsedRealtime() - s.at > ROUTE_STALE_MS
                 || !NavWhisper.current(s))) {
+            NavWhisper.unsay(s);
             Diag.mark(this, "nav: dropped stale, " + what);
             return;
         }
@@ -470,6 +472,7 @@ public final class Herald extends NotificationListenerService {
         BookPlayer.duck(true);
         try {
             if (audio.requestAudioFocus(focus) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                NavWhisper.unsay(s);
                 Diag.mark(this, "nav: quiet, no focus, " + what);
                 return;
             }
