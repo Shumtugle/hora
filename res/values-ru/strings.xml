@@ -2371,6 +2371,7 @@
     <string name="export_done_title">«%1$s» готова</string>
     <string name="export_chapters_file">главы.txt</string>
     <string name="folder_audiobooks">Аудиокниги</string>
+    <string name="folder_scout">Разведка</string>
     <plurals name="export_done_text">
         <item quantity="one">%d глава, можно слушать</item>
         <item quantity="few">%d главы, можно слушать</item>

@@ -1291,6 +1291,7 @@
     <string name="export_done_title">“%1$s” is ready</string>
     <string name="export_chapters_file">chapters.txt</string>
     <string name="folder_audiobooks">Audiobooks</string>
+    <string name="folder_scout">Scout</string>
     <plurals name="export_done_text">
         <item quantity="one">%d chapter, ready to listen</item>
         <item quantity="other">%d chapters, ready to listen</item>

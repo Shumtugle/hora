@@ -16,6 +16,11 @@ import java.util.Map;
  * notes words or numbers: a route is where a person goes. Every word becomes
  * "w" and every number "n", so a line reads like "w n w w w w". Nothing is
  * spoken yet.
+ *
+ * The turn itself may be told only by the picture beside the line, an arrow.
+ * Each new picture is described by a short fingerprint, and a plain one (few
+ * colours, as arrows are) is kept in Hora's folder under "scout", so the arrows
+ * can be learned; a colourful one, which might be a piece of map, is never kept.
  */
 final class NavScout {
     /** Counts are told once a minute, not update by update. */
@@ -32,7 +37,11 @@ final class NavScout {
         int updates;
         int newWords;
         int newNumbers;
+        String pictures = "";
     }
+
+    /** Pictures already described or kept, by fingerprint. */
+    private static final java.util.Set<String> knownPictures = new java.util.HashSet<String>();
 
     private static final Map<String, Route> routes = new HashMap<String, Route>();
 
@@ -52,6 +61,7 @@ final class NavScout {
             x == null ? null : x.getCharSequence(Notification.EXTRA_TEXT),
             x == null ? null : x.getCharSequence(Notification.EXTRA_SUB_TEXT),
             x == null ? null : x.getCharSequence(Notification.EXTRA_BIG_TEXT),
+            n.tickerText,
         };
         StringBuilder shape = new StringBuilder();
         StringBuilder words = new StringBuilder();
@@ -80,10 +90,13 @@ final class NavScout {
         } else if (r.lastAt != 0 && num != r.numbersHash) {
             r.newNumbers++;
         }
-        if (r.lastAt == 0 || wordsChanged || !sh.equals(r.shape)) {
-            Diag.mark(c, String.format(java.util.Locale.ROOT, "nav: after %.1f s, %s, %s",
-                    r.lastAt == 0 ? 0f : (now - r.lastAt) / 1000f, wordsChanged ? "new words" : "same words", sh));
+        String pics = pictures(c, n);
+        boolean newPicture = !pics.equals(r.pictures);
+        if (r.lastAt == 0 || wordsChanged || newPicture || !sh.equals(r.shape)) {
+            Diag.mark(c, String.format(java.util.Locale.ROOT, "nav: after %.1f s, %s, %s, pictures %s",
+                    r.lastAt == 0 ? 0f : (now - r.lastAt) / 1000f, wordsChanged ? "new words" : "same words", sh, pics));
         }
+        r.pictures = pics;
         r.shape = sh;
         r.wordsHash = w;
         r.numbersHash = num;
@@ -105,6 +118,88 @@ final class NavScout {
         }
         Diag.mark(c, String.format(java.util.Locale.ROOT, "nav: the route hint is gone after %.1f min",
                 (System.currentTimeMillis() - r.firstAt) / 60000f));
+    }
+
+    /** Fingerprints of the large and the small picture, "-" for none: "large ab12cd34 small 9f00e1aa". */
+    private static String pictures(android.content.Context c, Notification n) {
+        android.graphics.drawable.Icon large = n.getLargeIcon();
+        Object extra = n.extras == null ? null : n.extras.get(Notification.EXTRA_LARGE_ICON);
+        android.graphics.Bitmap big = null;
+        if (large == null && extra instanceof android.graphics.drawable.Icon) {
+            large = (android.graphics.drawable.Icon) extra;
+        } else if (large == null && extra instanceof android.graphics.Bitmap) {
+            big = (android.graphics.Bitmap) extra;
+        }
+        return "large " + print(c, "large", big != null ? big : render(c, large))
+                + " small " + print(c, "small", render(c, n.getSmallIcon()));
+    }
+
+    private static android.graphics.Bitmap render(android.content.Context c, android.graphics.drawable.Icon icon) {
+        if (icon == null) {
+            return null;
+        }
+        try {
+            android.graphics.drawable.Drawable d = icon.loadDrawable(c);
+            if (d == null) {
+                return null;
+            }
+            android.graphics.Bitmap b = android.graphics.Bitmap.createBitmap(96, 96, android.graphics.Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas k = new android.graphics.Canvas(b);
+            d.setBounds(0, 0, 96, 96);
+            d.draw(k);
+            return b;
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /**
+     * A short fingerprint of a picture's shape; the first time a plain picture is seen it is
+     * kept in the folder. Colourful pictures are only fingerprinted.
+     */
+    private static String print(final android.content.Context c, final String kind, android.graphics.Bitmap b) {
+        if (b == null) {
+            return "-";
+        }
+        final android.graphics.Bitmap s = android.graphics.Bitmap.createScaledBitmap(b, 12, 12, true);
+        java.util.zip.CRC32 crc = new java.util.zip.CRC32();
+        int coloured = 0;
+        int seen = 0;
+        float[] hsv = new float[3];
+        for (int y = 0; y < 12; y++) {
+            for (int x = 0; x < 12; x++) {
+                int p = s.getPixel(x, y);
+                int alpha = p >>> 24;
+                int lum = ((p >> 16 & 255) + (p >> 8 & 255) + (p & 255)) / 3;
+                crc.update(alpha > 96 && lum > 64 ? 1 : 0);
+                if (alpha > 96) {
+                    seen++;
+                    android.graphics.Color.colorToHSV(p, hsv);
+                    if (hsv[1] > 0.35f && hsv[2] > 0.2f) {
+                        coloured++;
+                    }
+                }
+            }
+        }
+        final String id = String.format(java.util.Locale.ROOT, "%08x", crc.getValue());
+        boolean plain = seen == 0 || coloured * 5 < seen;
+        if (knownPictures.add(kind + id) && plain) {
+            final android.graphics.Bitmap keep = b.copy(android.graphics.Bitmap.Config.ARGB_8888, false);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+                        keep.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out);
+                        HoraFolder.writeBytes(c, c.getString(R.string.folder_scout), "nav-" + kind + "-" + id + ".png",
+                                "image/png", out.toByteArray());
+                    } catch (Exception e) {
+                        Diag.log(c, "nav: a picture not kept", e);
+                    }
+                }
+            }, "nav-picture").start();
+        }
+        return id + (plain ? "" : " colourful");
     }
 
     /** Every word "w", every number "n"; spaces and a few signs stay. Empty for none. */
