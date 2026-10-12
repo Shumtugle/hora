@@ -518,6 +518,12 @@ public final class BookPlayer extends Service {
                 if (Demo.is(BookPlayer.this, u) && Library.get(BookPlayer.this, u) != null) {
                     // Already on the shelf: only its place moves, it does not jump before other books.
                     Library.demoPlace(BookPlayer.this, u, at);
+                } else if (Demo.is(BookPlayer.this, u)) {
+                    // A demo opened before the shelf put it up: it stands where a found book does.
+                    if (Demo.kept(BookPlayer.this, u)) {
+                        Library.found(BookPlayer.this, u, name, book);
+                        Library.demoPlace(BookPlayer.this, u, at);
+                    }
                 } else if (Demo.kept(BookPlayer.this, u)) {
                     Library.opened(BookPlayer.this, u, name, book, at, Prefs.roleShared(BookPlayer.this, Cast.NARRATOR));
                 }
@@ -995,7 +1001,7 @@ public final class BookPlayer extends Service {
                 .addAction(action(playing ? R.drawable.ic_pause : R.drawable.ic_play_small,
                         playing ? R.string.book_pause : R.string.book_play, ACTION_TOGGLE, 2))
                 .addAction(action(R.drawable.ic_next, R.string.book_next, ACTION_NEXT, 3))
-                .setLargeIcon(Demo.is(this, uri) ? Demo.coverBitmap(this, 200) : null)
+                .setLargeIcon(Demo.coverBitmap(this, uri, 200))
                 .setStyle(style())
                 .setOngoing(playing)
                 .setShowWhen(false)

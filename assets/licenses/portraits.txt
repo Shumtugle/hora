@@ -1,4 +1,4 @@
 Voice portraits and scene cards: fictional images, made for this app with image generators. They do not depict real people.
 The portraits stand on one plain background, cut out for this app.
 App icon: a picture made for this app.
-Cover of the demo book: a picture made for this app.
+Covers of the demo books: pictures made for this app.

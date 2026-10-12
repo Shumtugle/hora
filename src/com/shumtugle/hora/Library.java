@@ -193,7 +193,7 @@ final class Library {
      * one's own, nor write a reader that only tried it. Nothing when it was taken off the shelf.
      */
     static synchronized void demoPlace(Context c, String uri, int index) {
-        if (!Demo.shelved(c)) {
+        if (!Demo.shelved(c, uri)) {
             return;
         }
         List<Entry> list = all(c);

@@ -53,6 +53,9 @@ public final class VoicesActivity extends Activity {
     private boolean flung;
     /** Whether the demo is being read here; a swipe hands it to the next voice. */
     private boolean listening;
+    /** On the voice in front: what "listen" reads, and the way to the other example. */
+    private TextView demoNote;
+    private TextView demoOther;
     /** The tuning sheet while it is open, and its own listen button. */
     private android.app.Dialog tuneSheet;
     private TextView sheetListen;
@@ -91,6 +94,7 @@ public final class VoicesActivity extends Activity {
             beforeDemoVoice = state.getInt("beforeDemoVoice", -1);
         }
         // The demo may already be reading when the voices open: the button says so, and a swipe hands it on.
+        followOpenDemo();
         listening = Demo.is(this, Reading.uri(this)) && Reading.playing(this);
         if (state != null) {
             startedHere = state.getBoolean("startedHere");
@@ -200,8 +204,10 @@ public final class VoicesActivity extends Activity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        // Back from elsewhere: the button tells the truth again.
+        // Back from elsewhere: the button and the book line tell the truth again.
+        followOpenDemo();
         listening = Demo.is(this, Reading.uri(this)) && Reading.playing(this);
+        showDemo();
         showListen();
     }
 
@@ -370,11 +376,23 @@ public final class VoicesActivity extends Activity {
         pp.topMargin = dp(18);
         below.addView(pair, pp);
         // What "listen" reads, said once: without it the button promises nothing.
-        TextView what = Ui.text(this, getString(R.string.voices_demo_note, Demo.title(this)), 12, Palette.HINT);
-        what.setGravity(Gravity.CENTER);
+        demoNote = Ui.text(this, "", 12, Palette.HINT);
+        demoNote.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams wp = Ui.lp(Ui.MATCH, Ui.WRAP);
         wp.topMargin = dp(8);
-        below.addView(what, wp);
+        below.addView(demoNote, wp);
+        // The other example, a touch away: the voice goes on reading in it, from its own place.
+        demoOther = Kit.link(this, "", new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                otherDemo();
+            }
+        });
+        demoOther.setGravity(Gravity.CENTER);
+        demoOther.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14);
+        demoOther.setPadding(0, dp(6), 0, dp(6));
+        below.addView(demoOther, Ui.lp(Ui.MATCH, Ui.WRAP));
+        showDemo();
         showListen();
 
         // The whole row of voices, this one in its ring: there are several, and a touch goes there.
@@ -432,6 +450,42 @@ public final class VoicesActivity extends Activity {
         return card;
     }
 
+    /** What "listen" reads, and the other example, as things stand. */
+    private void showDemo() {
+        if (demoNote == null) {
+            return;
+        }
+        demoNote.setText(getString(R.string.voices_demo_note, Demo.title(this)));
+        int other = (Demo.chosen(this) + 1) % Demo.COUNT;
+        demoOther.setText(getString(R.string.voices_demo_other, Demo.title(this, other)));
+    }
+
+    /** A demo open in the book is the chosen one: the line names what would really be heard. */
+    private void followOpenDemo() {
+        int open = Demo.which(this, Reading.uri(this));
+        if (open >= 0 && open != Demo.chosen(this)) {
+            Demo.setChosen(this, open);
+        }
+    }
+
+    /**
+     * Takes the other example; a voice reading goes on in it, the same voice, from where that
+     * book was left. A demo found reading stays one found reading: leaving does not stop it.
+     */
+    private void otherDemo() {
+        if (moving) {
+            return;
+        }
+        Demo.setChosen(this, (Demo.chosen(this) + 1) % Demo.COUNT);
+        showDemo();
+        if (listening) {
+            boolean mine = startedHere;
+            int reader = Demo.voice(this);
+            startDemo(reader > 0 ? reader : Cast.at(place));
+            startedHere = mine;
+        }
+    }
+
     /** The listen button and the line under it, as things stand. */
     private void showListen() {
         if (listenButton == null) {
@@ -482,10 +536,10 @@ public final class VoicesActivity extends Activity {
                         }
                         Demo.setVoice(app, v);
                         Diag.mark(app, "voices: demo read by " + v);
-                        if (Demo.is(app, Reading.uri(app))) {
+                        if (Demo.uri(app).equals(Reading.uri(app))) {
                             startForegroundService(BookPlayer.intent(app, BookPlayer.ACTION_PLAY));
                         } else {
-                            BookActivity.open(app, Demo.uri(app), "book.txt", true);
+                            BookActivity.open(app, Demo.uri(app), Demo.name(Demo.chosen(app)), true);
                         }
                     }
                 });

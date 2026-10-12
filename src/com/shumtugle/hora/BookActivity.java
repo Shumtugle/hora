@@ -164,7 +164,7 @@ public final class BookActivity extends Activity {
 
     private void openDemoIfNothing() {
         resumedNow = true;
-        if (!Reading.uri(this).isEmpty() || !Demo.shelved(this)) {
+        if (!Reading.uri(this).isEmpty() || !Demo.anyShelved(this)) {
             return;
         }
         final android.content.Context app = getApplicationContext();
@@ -173,7 +173,18 @@ public final class BookActivity extends Activity {
             public void run() {
                 Demo.ensureOnShelf(app);
                 java.util.List<Library.Entry> all = Library.all(app);
-                if (all.size() == 1 && Demo.is(app, all.get(0).uri) && Reading.uri(app).isEmpty()) {
+                // Only demos on the shelf: the chosen one opens, or the first there if it was taken off.
+                String first = null;
+                for (Library.Entry e : all) {
+                    if (!Demo.is(app, e.uri)) {
+                        return;
+                    }
+                    if (first == null || e.uri.equals(Demo.uri(app))) {
+                        first = e.uri;
+                    }
+                }
+                final String demoUri = first;
+                if (demoUri != null && Reading.uri(app).isEmpty()) {
                     // Started from the screen's thread, and only while the screen is in front.
                     runOnUiThread(new Runnable() {
                         @Override
@@ -182,7 +193,7 @@ public final class BookActivity extends Activity {
                                 return;
                             }
                             try {
-                                open(app, Demo.uri(app), "book.txt", false);
+                                open(app, demoUri, Demo.name(Demo.which(app, demoUri)), false);
                                 Diag.mark(app, "book: nothing open, the demo is");
                             } catch (RuntimeException e) {
                                 Diag.log(app, "book: the demo could not be opened", e);
@@ -659,13 +670,13 @@ public final class BookActivity extends Activity {
     private void setBackdrop(int voice) {
         // The demo has its own cover: it stands behind the screen instead of the reader's scene.
         boolean demo = Demo.is(this, Reading.uri(this));
-        int key = demo ? DEMO_BACKDROP : voice;
+        int key = demo ? DEMO_BACKDROP - Demo.which(this, Reading.uri(this)) : voice;
         if (key == backdropVoice) {
             return;
         }
         backdropVoice = key;
         if (demo) {
-            Kit.backdrop(this, backdrop, Demo.coverBitmap(this, 270));
+            Kit.backdrop(this, backdrop, Demo.coverBitmap(this, Reading.uri(this), 270));
         } else {
             Kit.backdrop(this, backdrop, voice);
         }

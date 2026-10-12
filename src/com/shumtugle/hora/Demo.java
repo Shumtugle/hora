@@ -10,24 +10,49 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * The built-in demo book. It stands on the shelf like any other, with its own
+ * The built-in demo books. Each stands on the shelf like any other, with its own
  * cover, marked as an example from the app, until it is taken off; it comes back
- * from "Add a book". Any voice may read it in place of the narrator.
+ * from "Add a book". One of them is the chosen one, read when a voice is listened
+ * to; any voice may read the demos in place of the narrator.
  */
 final class Demo {
-    private static final String ASSET = "demo/book.txt";
+    /** The demos as they ship: text and cover, by number. */
+    private static final String[] TEXTS = {"demo/book.txt", "demo/book2.txt"};
+    private static final String[] COVERS = {"demo/cover.jpg", "demo/cover2.jpg"};
+    /** The file each is copied to, and the name it goes by on the shelf. */
+    private static final String[] FILES = {"book.txt", "book2.txt"};
+    static final int COUNT = TEXTS.length;
     private static final String PREFS = "demo";
     private static final String VOICE = "voice";
+    private static final String CHOSEN = "chosen";
 
     private Demo() {
     }
 
-    /** The book, copied once out of the app so it can be opened like a file. */
+    /** The chosen demo's number. */
+    @SuppressWarnings("deprecation")
+    static int chosen(Context c) {
+        int i = c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).getInt(CHOSEN, 0);
+        return i >= 0 && i < COUNT ? i : 0;
+    }
+
+    @SuppressWarnings("deprecation")
+    static void setChosen(Context c, int i) {
+        c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).edit()
+                .putInt(CHOSEN, Math.max(0, Math.min(COUNT - 1, i))).commit();
+        Diag.mark(c, "demo: chosen " + i);
+    }
+
+    /** The chosen demo, copied once out of the app so it can be opened like a file. */
     static File book(Context c) throws IOException {
-        File f = new File(new File(c.getFilesDir(), "demo"), "book.txt");
-        if (!f.isFile() || f.length() != size(c)) {
+        return book(c, chosen(c));
+    }
+
+    static File book(Context c, int i) throws IOException {
+        File f = file(c, i);
+        if (!f.isFile() || f.length() != size(c, i)) {
             f.getParentFile().mkdirs();
-            try (InputStream in = c.getAssets().open(ASSET); OutputStream out = new FileOutputStream(f)) {
+            try (InputStream in = c.getAssets().open(TEXTS[i]); OutputStream out = new FileOutputStream(f)) {
                 byte[] buf = new byte[1 << 16];
                 int r;
                 while ((r = in.read(buf)) > 0) {
@@ -38,8 +63,17 @@ final class Demo {
         return f;
     }
 
-    private static long size(Context c) {
-        try (InputStream in = c.getAssets().open(ASSET)) {
+    private static File file(Context c, int i) {
+        return new File(new File(c.getFilesDir(), "demo"), FILES[i]);
+    }
+
+    /** The name a demo goes by on the shelf. */
+    static String name(int i) {
+        return FILES[i];
+    }
+
+    private static long size(Context c, int i) {
+        try (InputStream in = c.getAssets().open(TEXTS[i])) {
             long n = 0;
             byte[] buf = new byte[1 << 16];
             int r;
@@ -52,34 +86,49 @@ final class Demo {
         }
     }
 
-    private static final String COVER = "demo/cover.jpg";
-    /** The demo's author, as the person who made the app named it. */
-    static final String AUTHOR = "Hora";
+    /** The demos' author: the app, by its name in the language of the screen. */
+    static String author(Context c) {
+        return c.getString(R.string.app_name);
+    }
 
-    /** The demo's cover as it ships, or null if it cannot be read. */
-    static byte[] cover(Context c) {
-        try (InputStream in = c.getAssets().open(COVER)) {
+    /** A demo's cover as it ships, or null if it cannot be read or the address is no demo's. */
+    static byte[] cover(Context c, String uri) {
+        int i = which(c, uri);
+        if (i < 0) {
+            return null;
+        }
+        try (InputStream in = c.getAssets().open(COVERS[i])) {
             return LanguagePack.readAll(in);
         } catch (IOException e) {
             return null;
         }
     }
 
-    /** The cover as a picture, scaled down to about the given width; null if unreadable. A few sizes are kept. */
-    private static final java.util.Map<Integer, android.graphics.Bitmap> shown =
-            new java.util.LinkedHashMap<Integer, android.graphics.Bitmap>(4, 0.75f, true) {
+    /** The cover as a picture, scaled down to about the given width; null if unreadable. A few are kept. */
+    private static final java.util.Map<String, android.graphics.Bitmap> shown =
+            new java.util.LinkedHashMap<String, android.graphics.Bitmap>(4, 0.75f, true) {
                 @Override
-                protected boolean removeEldestEntry(java.util.Map.Entry<Integer, android.graphics.Bitmap> e) {
-                    return size() > 3;
+                protected boolean removeEldestEntry(java.util.Map.Entry<String, android.graphics.Bitmap> e) {
+                    return size() > 4;
                 }
             };
 
-    static synchronized android.graphics.Bitmap coverBitmap(Context c, int width) {
+    static synchronized android.graphics.Bitmap coverBitmap(Context c, String uri, int width) {
+        int i = which(c, uri);
+        if (i < 0) {
+            return null;
+        }
         // Sizes close to each other share one picture: the decoder only halves anyway.
-        int key = Math.max(1, 800 / Math.max(1, width));
+        int sample = Math.max(1, 800 / Math.max(1, width));
+        String key = i + "/" + sample;
         android.graphics.Bitmap b = shown.get(key);
         if (b == null) {
-            b = decode(c, width);
+            byte[] bytes = cover(c, uri);
+            if (bytes != null) {
+                android.graphics.BitmapFactory.Options o = new android.graphics.BitmapFactory.Options();
+                o.inSampleSize = sample;
+                b = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length, o);
+            }
             if (b != null) {
                 shown.put(key, b);
             }
@@ -87,53 +136,66 @@ final class Demo {
         return b;
     }
 
-    private static android.graphics.Bitmap decode(Context c, int width) {
-        byte[] b = cover(c);
-        if (b == null) {
-            return null;
-        }
-        android.graphics.BitmapFactory.Options o = new android.graphics.BitmapFactory.Options();
-        o.inSampleSize = Math.max(1, 800 / Math.max(1, width));
-        return android.graphics.BitmapFactory.decodeByteArray(b, 0, b.length, o);
+    private static final String[] titles = new String[COUNT];
+
+    /** The chosen demo's title. */
+    static String title(Context c) {
+        return title(c, chosen(c));
     }
 
-    private static String title;
-
-    /** The demo's title, its first line without the closing full stop. */
-    static synchronized String title(Context c) {
-        if (title == null) {
-            title = "";
+    /** A demo's title, its first line without the closing full stop. */
+    static synchronized String title(Context c, int i) {
+        if (titles[i] == null) {
+            titles[i] = "";
             try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.InputStreamReader(
-                    c.getAssets().open(ASSET), java.nio.charset.StandardCharsets.UTF_8))) {
+                    c.getAssets().open(TEXTS[i]), java.nio.charset.StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = r.readLine()) != null) {
                     line = line.trim();
                     if (!line.isEmpty()) {
-                        title = line.endsWith(".") ? line.substring(0, line.length() - 1) : line;
+                        titles[i] = line.endsWith(".") ? line.substring(0, line.length() - 1) : line;
                         break;
                     }
                 }
             } catch (IOException e) {
-                title = "";
+                titles[i] = "";
             }
         }
-        return title;
+        return titles[i];
     }
 
+    /** The chosen demo's address. */
     static String uri(Context c) {
-        return Uri.fromFile(new File(new File(c.getFilesDir(), "demo"), "book.txt")).toString();
+        return uri(c, chosen(c));
     }
 
-    /** Whether a book address is the demo's. */
+    static String uri(Context c, int i) {
+        return Uri.fromFile(file(c, i)).toString();
+    }
+
+    /** Which demo a book address is: its number, or -1 for a book that is no demo. */
+    static int which(Context c, String uri) {
+        if (uri == null) {
+            return -1;
+        }
+        for (int i = 0; i < COUNT; i++) {
+            if (uri.equals(uri(c, i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** Whether a book address is a demo's. */
     static boolean is(Context c, String uri) {
-        return uri != null && uri.equals(uri(c));
+        return which(c, uri) >= 0;
     }
 
-    /** The voice the demo is read with, in place of the narrator; 0 when none was chosen. */
+    /** The voice the demos are read with, in place of the narrator; 0 when none was chosen. */
     @SuppressWarnings("deprecation")
     static int voice(Context c) {
         int v = c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).getInt(VOICE, 0);
-        // A voice that left the row (the ninth, when the developer section closes) gives the book back.
+        // A voice that left the row (a beta one, when the developer section closes) gives the book back.
         return v > 0 && Cast.available(c, v) ? v : 0;
     }
 
@@ -143,37 +205,71 @@ final class Demo {
         BookPlayer.revoice(c);
     }
 
+    /** Whether the first demo stands on the shelf; later ones have keys of their own. */
     private static final String SHELVED = "shelved";
 
-    /** Whether the demo stands on the shelf; it does until it is taken off. */
+    private static String shelvedKey(int i) {
+        return i == 0 ? SHELVED : SHELVED + "_" + i;
+    }
+
+    /** Whether a demo stands on the shelf; each does until it is taken off. */
     @SuppressWarnings("deprecation")
-    static boolean shelved(Context c) {
-        return c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).getBoolean(SHELVED, true);
+    static boolean shelved(Context c, int i) {
+        return c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).getBoolean(shelvedKey(i), true);
     }
 
-    @SuppressWarnings("deprecation")
-    static void setShelved(Context c, boolean on) {
-        c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).edit().putBoolean(SHELVED, on).commit();
-        Diag.mark(c, on ? "demo: back on the shelf" : "demo: taken off the shelf");
+    /** Whether the demo at this address stands on the shelf; false for a book that is no demo. */
+    static boolean shelved(Context c, String uri) {
+        int i = which(c, uri);
+        return i >= 0 && shelved(c, i);
     }
 
-    /** Whether a book's place and reading are kept in the library: every book's, and the demo's while shelved. */
-    static boolean kept(Context c, String uri) {
-        return !is(c, uri) || shelved(c);
-    }
-
-    /** Puts the demo on the shelf if it should stand there and does not yet. Slow: not on the main thread. */
-    static void ensureOnShelf(Context c) {
-        if (!shelved(c) || Library.get(c, uri(c)) != null) {
-            return;
+    /** Whether every demo stands on the shelf. */
+    static boolean allShelved(Context c) {
+        for (int i = 0; i < COUNT; i++) {
+            if (!shelved(c, i)) {
+                return false;
+            }
         }
-        try {
-            book(c);
-            Book b = Export.load(c, uri(c), "book.txt");
-            Library.found(c, uri(c), "book.txt", b);
-            Diag.mark(c, "demo: on the shelf");
-        } catch (Exception e) {
-            Diag.log(c, "demo: not put on the shelf", e);
+        return true;
+    }
+
+    /** Whether some demo stands on the shelf. */
+    static boolean anyShelved(Context c) {
+        for (int i = 0; i < COUNT; i++) {
+            if (shelved(c, i)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @SuppressWarnings("deprecation")
+    static void setShelved(Context c, int i, boolean on) {
+        c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).edit().putBoolean(shelvedKey(i), on).commit();
+        Diag.mark(c, on ? "demo " + i + ": back on the shelf" : "demo " + i + ": taken off the shelf");
+    }
+
+    /** Whether a book's place and reading are kept in the library: every book's, and a demo's while shelved. */
+    static boolean kept(Context c, String uri) {
+        int i = which(c, uri);
+        return i < 0 || shelved(c, i);
+    }
+
+    /** Puts every demo on the shelf that should stand there and does not yet. Slow: not on the main thread. */
+    static void ensureOnShelf(Context c) {
+        for (int i = 0; i < COUNT; i++) {
+            if (!shelved(c, i) || Library.get(c, uri(c, i)) != null) {
+                continue;
+            }
+            try {
+                book(c, i);
+                Book b = Export.load(c, uri(c, i), FILES[i]);
+                Library.found(c, uri(c, i), FILES[i], b);
+                Diag.mark(c, "demo " + i + ": on the shelf");
+            } catch (Exception e) {
+                Diag.log(c, "demo " + i + ": not put on the shelf", e);
+            }
         }
     }
 

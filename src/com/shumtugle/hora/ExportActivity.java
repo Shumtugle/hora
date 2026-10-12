@@ -138,7 +138,7 @@ public final class ExportActivity extends Activity {
                         book = got;
                         bookCover = own;
                         coverMode = own != null ? Export.COVER_BOOK : Export.COVER_NONE;
-                        author = Demo.is(ExportActivity.this, uri) ? Demo.AUTHOR
+                        author = Demo.is(ExportActivity.this, uri) ? Demo.author(ExportActivity.this)
                                 : got == null || got.author == null ? "" : got.author.trim();
                         showOffer(uri, name);
                     }

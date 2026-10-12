@@ -272,18 +272,25 @@ public final class ShelfActivity extends Activity {
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (Demo.shelved(ShelfActivity.this)) {
+                if (Demo.allShelved(ShelfActivity.this)) {
                     pickBook();
                     return;
                 }
-                // The demo was taken off: the sheet offers it back beside a file of one's own.
+                // A demo was taken off: the sheet offers each such one back beside a file of one's own.
                 final Dialog[] sheet = new Dialog[1];
-                TextView demo = Kit.secondary(ShelfActivity.this, getString(R.string.shelf_demo_back, Demo.title(ShelfActivity.this)),
+                LinearLayout demos = Ui.column(ShelfActivity.this);
+                for (int i = 0; i < Demo.COUNT; i++) {
+                    if (Demo.shelved(ShelfActivity.this, i)) {
+                        continue;
+                    }
+                    final int which = i;
+                    TextView demo = Kit.secondary(ShelfActivity.this,
+                            getString(R.string.shelf_demo_back, Demo.title(ShelfActivity.this, i)),
                         new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 sheet[0].dismiss();
-                                Demo.setShelved(ShelfActivity.this, true);
+                                Demo.setShelved(ShelfActivity.this, which, true);
                                 final android.content.Context app = getApplicationContext();
                                 new Thread(new Runnable() {
                                     @Override
@@ -300,13 +307,15 @@ public final class ShelfActivity extends Activity {
                                 }, "demo-back").start();
                             }
                         });
+                    demos.addView(demo, demos.getChildCount() == 0 ? Kit.wide() : Kit.below(ShelfActivity.this, 10));
+                }
                 sheet[0] = Kit.sheet(ShelfActivity.this, getString(R.string.shelf_add), null,
                         getString(R.string.shelf_pick_file), new Runnable() {
                             @Override
                             public void run() {
                                 pickBook();
                             }
-                        }, demo);
+                        }, demos);
             }
         });
         return add;
@@ -324,7 +333,7 @@ public final class ShelfActivity extends Activity {
         Cover c = new Cover(this);
         c.set(titleOf(e), e.author);
         if (Demo.is(this, e.uri)) {
-            c.setPicture(Demo.coverBitmap(this, dp(widthDp)));
+            c.setPicture(Demo.coverBitmap(this, e.uri, dp(widthDp)));
         }
         return c;
     }
@@ -672,7 +681,7 @@ public final class ShelfActivity extends Activity {
                 }
                 if (Demo.is(ShelfActivity.this, e.uri)) {
                     // The demo leaves the shelf; it comes back from "Add a book".
-                    Demo.setShelved(ShelfActivity.this, false);
+                    Demo.setShelved(ShelfActivity.this, Demo.which(ShelfActivity.this, e.uri), false);
                 }
                 Library.remove(ShelfActivity.this, e.uri);
                 drawn = "";
