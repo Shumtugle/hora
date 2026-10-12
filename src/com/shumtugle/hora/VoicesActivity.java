@@ -366,13 +366,27 @@ public final class VoicesActivity extends Activity {
         showListen();
 
         // The whole row of voices, this one in its ring: there are several, and a touch goes there.
-        LinearLayout strip = Ui.row(this);
-        strip.setGravity(Gravity.CENTER);
+        // A long row breaks into lines of equal length rather than shrink the faces to dots.
+        LinearLayout strip = Ui.column(this);
+        strip.setGravity(Gravity.CENTER_HORIZONTAL);
         int n = Cast.size(this);
         float width = getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density;
-        int cell = Math.max(24, Math.min(44, (int) ((width - 72) / n)));
+        // A dp short of the room: each face's size and margins are rounded to pixels on their own.
+        float room = width - 73;
+        int perRow = Ui.fitPerRow(n, room, 32);
+        int cell = Math.min(44, (int) (room / perRow));
         int side = cell - 8;
+        LinearLayout stripLine = null;
         for (int i = 0; i < n; i++) {
+            if (i % perRow == 0) {
+                stripLine = Ui.row(this);
+                stripLine.setGravity(Gravity.CENTER);
+                LinearLayout.LayoutParams lp = Ui.lp(Ui.WRAP, Ui.WRAP);
+                if (i > 0) {
+                    lp.topMargin = dp(6);
+                }
+                strip.addView(stripLine, lp);
+            }
             final int at = i;
             int fv = Cast.at(i);
             boolean on = fv == v;
@@ -392,7 +406,7 @@ public final class VoicesActivity extends Activity {
             LinearLayout.LayoutParams fp = new LinearLayout.LayoutParams(dp(side), dp(side));
             fp.leftMargin = dp(4);
             fp.rightMargin = dp(4);
-            strip.addView(f, fp);
+            stripLine.addView(f, fp);
         }
         LinearLayout.LayoutParams sp = Ui.lp(Ui.MATCH, Ui.WRAP);
         sp.topMargin = dp(22);

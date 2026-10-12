@@ -129,13 +129,26 @@ public final class RolesActivity extends Activity {
         });
         line.addView(chosen[i]);
         box.addView(line, Ui.lp(Ui.MATCH, Ui.WRAP));
-        LinearLayout faceRow = Ui.row(this);
-        // Five faces at full size; a larger cast shares the width of the screen, inside the margins.
+        // Five faces at full size; a larger cast shares the width of the screen, inside the margins,
+        // and breaks into lines of equal length before a face gets too small to touch.
+        LinearLayout faceRows = Ui.column(this);
+        LinearLayout faceRow = null;
         int count = Cast.size(this);
         int gap = count > Cast.COUNT ? 4 : 8;
         float width = getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density;
-        int side = Math.max(22, Math.min(54, (int) ((width - 40 - gap * (count - 1)) / count)));
+        // A dp short of the room: each face's size and gap are rounded to pixels on their own.
+        float room = width - 41;
+        int perRow = Ui.fitPerRow(count, room, 30 + gap);
+        int side = Math.min(54, (int) ((room - gap * (perRow - 1)) / perRow));
         for (int place = 0; place < count; place++) {
+            if (place % perRow == 0) {
+                faceRow = Ui.row(this);
+                LinearLayout.LayoutParams lp = Ui.lp(Ui.WRAP, Ui.WRAP);
+                if (place > 0) {
+                    lp.topMargin = dp(gap);
+                }
+                faceRows.addView(faceRow, lp);
+            }
             final int v = Cast.at(place);
             final int voice = v;
             ImageView f = Ui.portrait(this, v);
@@ -151,14 +164,14 @@ public final class RolesActivity extends Activity {
             });
             faces[i][v] = f;
             LinearLayout.LayoutParams fp = Ui.lp(dp(side), dp(side));
-            if (place > 0) {
+            if (place % perRow > 0) {
                 fp.leftMargin = dp(gap);
             }
             faceRow.addView(f, fp);
         }
         LinearLayout.LayoutParams rp = Ui.lp(Ui.WRAP, Ui.WRAP);
         rp.topMargin = dp(8);
-        box.addView(faceRow, rp);
+        box.addView(faceRows, rp);
         return box;
     }
 

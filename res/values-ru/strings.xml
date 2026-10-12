@@ -360,6 +360,13 @@
         <item>Марк</item>
         <item>Северин</item>
         <item>Клер</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>София Негрете</item>
+        <item>Томирис</item>
+        <item>Орлов</item>
     </string-array>
     <string name="slow_by_pauses">Замедлять паузами, а не растяжкой</string>
     <string name="journal">Журнал</string>
@@ -821,6 +828,13 @@
         <item>помощник</item>
         <item>помощник</item>
         <item>помощница</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>помощница</item>
+        <item>помощница</item>
+        <item>помощник</item>
     </string-array>
     <string-array name="voice_kinds">
         <item>женский · главный</item>
@@ -832,6 +846,13 @@
         <item>мужской · бета</item>
         <item>мужской · бета</item>
         <item>женский · бета</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>женский · бета</item>
+        <item>женский · бета</item>
+        <item>мужской · бета</item>
     </string-array>
     <string name="tools">Инструменты</string>
     <string-array name="respell_untouched">
@@ -1663,6 +1684,13 @@
         <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты спокойный, внимательный и доброжелательный.</item>
         <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты низкоголосый, неторопливый, говоришь просто.</item>
         <item>Ты женщина (она): глаголы о себе в прошедшем времени у тебя кончаются на -ла. Ты ровная, ясная и неспешная.</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>Ты женщина (она): глаголы о себе в прошедшем времени у тебя кончаются на -ла. Ты низкоголосая, тёплая, говоришь прямо и с лёгкой усмешкой.</item>
+        <item>Ты женщина (она): глаголы о себе в прошедшем времени у тебя кончаются на -ла. Ты молодая, звонкая, собранная и деловая.</item>
+        <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты учтивый, старомодный, говоришь обстоятельно и с достоинством.</item>
     </string-array>
     <string name="brain_trial_question">Я сегодня устал.</string>
     <string name="lab_brain_none">не выбрана</string>
@@ -1932,6 +1960,13 @@
         <item>Внизу время, погода и книга. Или напиши.</item>
         <item>Кнопки внизу. Или пиши.</item>
         <item>Внизу время, погода и книга. Можно написать.</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>Время, погода и книга — внизу. Остальное можно написать.</item>
+        <item>Внизу время, погода и книга. Или напиши.</item>
+        <item>Время, погода, книга — кнопки внизу. Можно и словами.</item>
     </string-array>
     <string-array name="voice_step_forward">
         <item>%1$s. Теперь отвечаю я.</item>
@@ -1942,6 +1977,13 @@
         <item>%1$s. Теперь отвечаю я.</item>
         <item>%1$s. Теперь отвечаю я.</item>
         <item>%1$s. Теперь отвечаю я.</item>
+        <item>%1$s. Теперь отвечаю я.</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>%1$s. Теперь отвечаю я.</item>
+        <item>%1$s. Теперь говорю я.</item>
         <item>%1$s. Теперь отвечаю я.</item>
     </string-array>
     <string name="lang_title">Языки</string>
@@ -2028,6 +2070,13 @@
         <item>Ты готов к работе?</item>
         <item>Ты готов к работе?</item>
         <item>Ты готова к работе?</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>Ты готова к работе?</item>
+        <item>Ты готова к работе?</item>
+        <item>Ты готов к работе?</item>
     </string-array>
     <string name="brain_look_rules">Сейчас тебе показали картинку, и для ответа о ней правила выше меняются. Говори о том, что на ней видно сейчас, в настоящем времени, начиная со слов «На фото» или «На картинке», а не о себе. Назови главное и обстановку; если на картинке есть крупные надписи, прочитай их как есть. Если узнаёшь место или вещь точно, назови; если нет, не гадай. Два-три предложения.</string>
     <string name="brain_wiki_rules">Сейчас тебя спросили о мире, и правила выше меняются: ниже текст статьи «%1$s» из Википедии. Ответь на вопрос только по этому тексту, одним-тремя предложениями, своими словами и по-русски. Даты, числа и имена бери только из текста. Если ответа в тексте нет, так и скажи: «В статье об этом не сказано».</string>

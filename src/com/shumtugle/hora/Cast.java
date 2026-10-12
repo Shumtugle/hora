@@ -27,8 +27,15 @@ final class Cast {
     static final int ECHO_HOST = COUNT + 5;
     static final int ECHO_FOURTH = COUNT + 6;
     static final int ECHO_SECOND = COUNT + 7;
+    /**
+     * Three more voices, made the way the four trial voices were: two female and one male.
+     * They stand in the row only while the developer room is open.
+     */
+    static final int BETA_F3 = COUNT + 8;
+    static final int BETA_F4 = COUNT + 9;
+    static final int BETA_M3 = COUNT + 10;
     /** The highest voice number, trial voices and echoes included. */
-    static final int LAST = ECHO_SECOND;
+    static final int LAST = BETA_M3;
     /** How many voices stand in the row while the developer room is closed. */
     private static final int STANDING = 8;
     /** Roles: who reads outside dialogue, and the two sides of a dialogue. */
@@ -121,7 +128,8 @@ final class Cast {
      * female voice, the main male one, then the rest. Numbers stay what they
      * were, so samples, portraits and saved choices keep their places.
      */
-    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_F2, BETA_M, BETA_M2, ECHO_HOST, ECHO_SECOND, ECHO_FOURTH};
+    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_F2, BETA_M, BETA_M2, BETA_F3, BETA_F4, BETA_M3,
+        ECHO_HOST, ECHO_SECOND, ECHO_FOURTH};
 
     /** The voice standing at a place in the row, counted from 0. */
     static int at(int place) {
@@ -138,7 +146,7 @@ final class Cast {
     }
 
     /** The voices that speak of themselves as women; the rest as men. */
-    private static final int[] FEMALE = {1, 2, BETA_F, BETA_F2};
+    private static final int[] FEMALE = {1, 2, BETA_F, BETA_F2, BETA_F3, BETA_F4};
 
     static boolean female(int voice) {
         int v = origin(voice);
@@ -150,7 +158,7 @@ final class Cast {
         return false;
     }
 
-    /** Whether a voice came after the first five: the four made later and the echoes. */
+    /** Whether a voice came after the first five: the ones made later and the echoes. */
     static boolean trial(int voice) {
         return voice > COUNT && voice <= LAST;
     }
@@ -180,6 +188,9 @@ final class Cast {
         R.drawable.portrait_1, R.drawable.portrait_2, R.drawable.portrait_3,
         R.drawable.portrait_4, R.drawable.portrait_5, R.drawable.portrait_6, R.drawable.portrait_7,
         R.drawable.portrait_8, R.drawable.portrait_9,
+        // The echoes have their source's portrait, so their places stay empty.
+        0, 0, 0,
+        R.drawable.portrait_13, R.drawable.portrait_14, R.drawable.portrait_15,
     };
 
     static int portrait(int voice) {

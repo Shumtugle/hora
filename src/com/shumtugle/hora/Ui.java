@@ -159,6 +159,20 @@ final class Ui {
         return new int[] {side, margin};
     }
 
+    /**
+     * How many faces go on a line so that none is narrower than the least width (unless one
+     * face alone is wider than the room): the fewest lines that fit, and lines of equal length.
+     */
+    static int fitPerRow(int count, float room, float least) {
+        int rows = Math.max(1, (int) Math.ceil(count * least / Math.max(1f, room)));
+        int per = Math.max(1, (count + rows - 1) / rows);
+        while (per > 1 && per * least > room) {
+            rows++;
+            per = (count + rows - 1) / rows;
+        }
+        return per;
+    }
+
     /** Faces to a line so that the lines come out even: eight as four and four, nine as five and four. */
     static int perRow(int count) {
         int rows = Math.max(1, (count + Cast.COUNT - 1) / Cast.COUNT);

@@ -1,10 +1,12 @@
-Voice samples 6 to 9
+Voice samples 6 to 9 and 13 to 15
 
-Four short samples, one per voice (6 female, 7 male, 8 male, 9 female), used
-as voice reference samples. Voices 6, 7 and 9 stand with the other voices;
-voice 8 appears only while the developer room of the app is open.
+Seven short samples, one per voice (6 female, 7 male, 8 male, 9 female,
+13 female, 14 female, 15 male), used as voice reference samples. Voices 6, 7
+and 9 stand with the other voices; voices 8 and 13 to 15 appear only while the
+developer room of the app is open.
 
-Origin. Each sample is cut from speech generated on 11 October 2026 by the
+Origin. Each sample is cut from speech generated (samples 6 to 9 on 11 October,
+samples 13 to 15 on 12 October 2026) by the
 voice design model Qwen3-TTS-12Hz-1.7B-VoiceDesign (Qwen team, Alibaba Cloud),
 https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign
 The speech was made in the model's official public demo,
@@ -23,7 +25,8 @@ by the model card or the demo. The Qwen team has not given a separate
 written confirmation for generated voices used inside an app.
 
 Changes: each sample was cut to whole sentences, trimmed at the edges with
-short fades, and its level set to a common peak. Nothing else was altered.
+short fades, and its level set to a common peak; in sample 14 long pauses
+between sentences were shortened. Nothing else was altered.
 
 The app has no voice cloning, and these samples must not be used to
 impersonate people, to mislead, or for any harmful or unlawful purpose.

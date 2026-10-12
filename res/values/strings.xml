@@ -317,6 +317,13 @@
         <item>Mark</item>
         <item>Severin</item>
         <item>Claire</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>Sofia Negrete</item>
+        <item>Tomiris</item>
+        <item>Orlov</item>
     </string-array>
     <string name="slow_by_pauses">Slow down with pauses, not stretching</string>
     <string name="journal">Journal</string>
@@ -404,6 +411,13 @@
         <item>assistant</item>
         <item>assistant</item>
         <item>assistant</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>assistant</item>
+        <item>assistant</item>
+        <item>assistant</item>
     </string-array>
     <string-array name="voice_kinds">
         <item>female · main</item>
@@ -415,6 +429,13 @@
         <item>male · beta</item>
         <item>male · beta</item>
         <item>female · beta</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>female · beta</item>
+        <item>female · beta</item>
+        <item>male · beta</item>
     </string-array>
     <string name="fonts_license">Cormorant, Manrope · OFL 1.1</string>
     <string name="tools">Tools</string>
@@ -761,6 +782,13 @@
         <item>You are calm, attentive and kind.</item>
         <item>You are low-voiced, unhurried and plain-spoken.</item>
         <item>You are even, clear and unhurried.</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>You are low-voiced and warm; you speak plainly, with a light smile.</item>
+        <item>You are young, clear-voiced, focused and businesslike.</item>
+        <item>You are courteous and old-fashioned; you speak thoroughly and with dignity.</item>
     </string-array>
     <string name="brain_trial_question">I am tired today.</string>
     <string name="lab_brain_none">not chosen</string>
@@ -931,6 +959,13 @@
         <item>Time, weather and the book are below. Or type.</item>
         <item>Buttons below. Or type.</item>
         <item>Time, weather and the book are below. You can type too.</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>Time, weather and the book are below. Anything else, just type.</item>
+        <item>Time, weather and the book are below. Or type.</item>
+        <item>Time, weather, the book: the buttons below. Or say it in words.</item>
     </string-array>
     <string-array name="voice_step_forward">
         <item>%1$s. I\'m answering now.</item>
@@ -941,6 +976,13 @@
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m answering now.</item>
+        <item>%1$s. I\'m answering now.</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>%1$s. I\'m answering now.</item>
+        <item>%1$s. I\'m talking now.</item>
         <item>%1$s. I\'m answering now.</item>
     </string-array>
     <string name="lang_title">Languages</string>
@@ -1024,6 +1066,13 @@
         <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>
+        <item>Are you ready to work?</item>
+        <item>Are you ready to work?</item>
+        <item>Are you ready to work?</item>
+        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item></item>
+        <item></item>
+        <item></item>
         <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>

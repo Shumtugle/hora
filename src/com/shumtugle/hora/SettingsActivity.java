@@ -507,7 +507,18 @@ public final class SettingsActivity extends Activity {
         }
         // Nothing to tune here: while the room is open, the beta voices stand in the row like the others.
         beta.addView(Kit.section(this, getString(R.string.dev_section)));
-        TextView note = Ui.text(this, getString(R.string.dev_note, Cast.name(this, Cast.BETA_M2)), 13, Palette.MUTED);
+        // The beta voices that are voices of their own, by name; the echoes are told of in the note itself.
+        StringBuilder own = new StringBuilder();
+        for (int place = 0; place < Cast.size(this); place++) {
+            int v = Cast.at(place);
+            if (Cast.beta(v) && !Cast.echo(v)) {
+                if (own.length() > 0) {
+                    own.append(", ");
+                }
+                own.append(Cast.name(this, v));
+            }
+        }
+        TextView note = Ui.text(this, getString(R.string.dev_note, own.toString()), 13, Palette.MUTED);
         note.setLineSpacing(0, 1.3f);
         note.setPadding(dp(4), 0, dp(4), 0);
         beta.addView(note, Kit.wide());
