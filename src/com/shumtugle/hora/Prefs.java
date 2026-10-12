@@ -310,9 +310,10 @@ final class Prefs {
     /** The voice process picks it up with the next sample it reads. */
     // Starting makeup per voice, measured on the bench against good human readers (breathiness
     // and top band): the smooth, dark samples get a little brightness and air; the voices whose
-    // samples are already breathy or rough are left as they are.
-    private static final int[] TIMBRE_DEFAULT = {0, 5, 5, 0, 5, 0, 0, 0, 0, 0};
-    private static final int[] AIR_DEFAULT = {0, 3, 3, 0, 3, 0, 1, 0, 0, 0};
+    // samples are already breathy or rough are left as they are. The first voice's sample was
+    // made anew and is bright by itself, so it needs none.
+    private static final int[] TIMBRE_DEFAULT = {0, 0, 5, 0, 5, 0, 0, 0, 0, 0};
+    private static final int[] AIR_DEFAULT = {0, 0, 3, 0, 3, 0, 1, 0, 0, 0};
     /** Pitch makeup by voice: the trial voices were set by ear on the phone. */
     private static final int[] PITCH_DEFAULT = {0, 0, 0, 0, 0, 0, 4, -1, 0, 1};
 
