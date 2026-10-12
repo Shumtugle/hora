@@ -47,6 +47,15 @@ final class NavArrow {
         {-1, 1, 3}, {-1, 0, 2}};
     private static final int FAR = 1 << 30;
     private static final int MAX_ENDS = 12;
+    /**
+     * The circle the head's symmetry is judged in, as a share of the gap between its barbs,
+     * and the share of it that must match its mirror image.
+     */
+    private static final double SYM_RADIUS = 0.45;
+    private static final double SYM_ENOUGH = 0.8;
+    /** Opaque enough to be a stroke's body; its see-through rim reaches a pixel per this many of the picture. */
+    private static final int OPAQUE = 200;
+    private static final int RIM_PER = 48;
 
     private NavArrow() {
     }
@@ -58,6 +67,29 @@ final class NavArrow {
      * done here rather than by the platform, so the phone sees what the desk test saw.
      */
     static boolean[] mask(int[] argb, int w, int h) {
+        // A stroke is opaque in its body and see-through only at its rim; a navigator draws the
+        // roads not taken (a roundabout's ring, the other branch of a fork) see-through all over.
+        // So a see-through pixel belongs to the stroke only next to an opaque one.
+        int rim = Math.max(1, Math.round(Math.max(w, h) / (float) RIM_PER));
+        int[] kept = new int[argb.length];
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int p = argb[y * w + x];
+                if (p >>> 24 == 0) {
+                    continue;
+                }
+                boolean body = false;
+                for (int dy = -rim; dy <= rim && !body; dy++) {
+                    for (int dx = -rim; dx <= rim && !body; dx++) {
+                        int qx = x + dx;
+                        int qy = y + dy;
+                        body = qx >= 0 && qy >= 0 && qx < w && qy < h && argb[qy * w + qx] >>> 24 >= OPAQUE;
+                    }
+                }
+                kept[y * w + x] = body ? p : 0;
+            }
+        }
+        argb = kept;
         boolean[] m = new boolean[G * G];
         double sx = w / (double) G;
         double sy = h / (double) G;
@@ -228,13 +260,15 @@ final class NavArrow {
                 if (Double.isNaN(bulge) || bulge <= 0) {
                     continue;
                 }
-                // A head is its own mirror image across its axis; a wrong pair is not.
+                // A head is its own mirror image across its axis; a wrong pair is not. Only the head
+                // itself is looked at: a curved or slanting shaft nearby is not a mirror image of
+                // anything, and a wider circle would count it against a true head.
                 double ux = (x(e2) - x(e1)) / gap;
                 double uy = (y(e2) - y(e1)) / gap;
                 int near = 0;
                 int hit = 0;
                 for (int q = 0; q < G * G; q++) {
-                    if (!body[q] || Math.hypot(x(q) - mx, y(q) - my) >= gap * 0.6) {
+                    if (!body[q] || Math.hypot(x(q) - mx, y(q) - my) >= gap * SYM_RADIUS) {
                         continue;
                     }
                     near++;
@@ -246,7 +280,7 @@ final class NavArrow {
                     }
                 }
                 double sym = near == 0 ? 0 : hit / (double) near;
-                if (sym < 0.85) {
+                if (sym < SYM_ENOUGH) {
                     continue;
                 }
                 if (sym > bestSym) {
