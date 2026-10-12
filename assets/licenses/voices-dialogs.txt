@@ -7,6 +7,7 @@ They are distributed under the license below. Anyone who receives them must comp
 Sample 1 is a derivative of the same speaker's excerpt: the excerpt was given as the voice
 to an open speech model (Qwen3-TTS, Apache-2.0), which read a calm passage with it; the first
 two sentences of that reading are the sample. The voice is the speaker's; the reading is calmer.
+Sample 10 is sample 1 as it was before: the speaker's own excerpt, kept to compare with.
 
 This dataset ("the Dataset"), and any models or other works trained on or derived
 from it together with their outputs ("Derivatives"), are licensed under an Open

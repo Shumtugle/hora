@@ -276,7 +276,7 @@ final class Bot {
                 if (v <= 0) {
                     return new Answer(SAY, line(r, "no_voice", "names", troupe(c, r)), voice);
                 }
-                return new Answer(VOICE, line(r, "voice", "voice", Cast.name(c, v)), v);
+                return new Answer(VOICE, line(r, "voice", "voice", Cast.spokenName(c, v)), v);
             }
             default:
                 return new Answer(SAY, line(r, "unknown"), voice);
@@ -301,12 +301,19 @@ final class Bot {
 
     /** The five names as they stand now, in the troupe's order: "A, B, C, D and E". */
     private static String troupe(Context c, Resources r) {
-        StringBuilder out = new StringBuilder();
+        // Echoes are earlier samples of voices already named: they are not named twice.
+        java.util.List<String> names = new java.util.ArrayList<String>();
         for (int i = 0; i < Cast.size(c); i++) {
-            if (i > 0) {
-                out.append(i == Cast.size(c) - 1 ? " " + r.getString(R.string.bot_and) + " " : ", ");
+            if (!Cast.echo(Cast.at(i))) {
+                names.add(Cast.name(c, Cast.at(i)));
             }
-            out.append(Cast.name(c, Cast.at(i)));
+        }
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < names.size(); i++) {
+            if (i > 0) {
+                out.append(i == names.size() - 1 ? " " + r.getString(R.string.bot_and) + " " : ", ");
+            }
+            out.append(names.get(i));
         }
         return out.toString();
     }

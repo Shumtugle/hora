@@ -129,6 +129,7 @@ final class Palette {
     }
 
     static int voice(int v) {
+        v = Cast.origin(v);
         int c = v >= 1 && v <= VOICE.length ? VOICE[v - 1] : ACCENT;
         return look == CONTRAST ? lighten(c, 0.55f) : c;
     }

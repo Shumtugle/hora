@@ -120,7 +120,7 @@ final class Widgets {
 
     private static int sceneCount(Context c, int voice) {
         try {
-            String[] all = c.getAssets().list("cards/" + voice);
+            String[] all = c.getAssets().list("cards/" + Cast.origin(voice));
             return all == null ? 0 : all.length;
         } catch (IOException e) {
             return 0;
@@ -132,7 +132,7 @@ final class Widgets {
         if (number <= 0) {
             return null;
         }
-        String path = "cards/" + voice + "/" + number + ".jpg";
+        String path = "cards/" + Cast.origin(voice) + "/" + number + ".jpg";
         try {
             BitmapFactory.Options bounds = new BitmapFactory.Options();
             bounds.inJustDecodeBounds = true;

@@ -207,7 +207,7 @@ final class Ui {
     }
 
     static synchronized android.graphics.Bitmap face(Context c, int voice) {
-        int i = Math.max(0, Math.min(FACES.length - 1, voice));
+        int i = Math.max(0, Math.min(FACES.length - 1, Cast.origin(voice)));
         if (FACES[i] == null) {
             FACES[i] = android.graphics.BitmapFactory.decodeResource(c.getResources(), Cast.portrait(voice));
         }

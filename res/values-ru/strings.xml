@@ -1827,7 +1827,10 @@
     <string name="dev_already">Раздел уже открыт</string>
     <string name="dev_steps">Ещё %1$d — и откроется раздел для разработчиков</string>
     <string name="dev_close">Закрыть раздел</string>
-    <string name="dev_note">Пока раздел открыт, %1$s стоит в ряду лиц девятым и берёт роли, как все.</string>
+    <string name="dev_note">Пока раздел открыт, в ряду лиц стоят и бета-голоса: %1$s и прежние образцы Хоры и Порфирия. Они берут роли, как все.</string>
+    <string name="voices_beta">бета</string>
+    <string name="voice_echo_name">%1$s · %2$s</string>
+    <string name="app_name">Хора</string>
     <string name="folder_samples">Образцы</string>
     <string name="folder_talks">Разговоры</string>
     <string name="talk_folder_ask">Покажи папку Hora — один раз, и разговоры будут ложиться туда.</string>

@@ -609,11 +609,15 @@ final class Brain {
     /** A voice's manner as written by the user, or the built-in one. */
     static String manner(Context c, int voice) {
         String own = prefs(c).getString("brain_manner_" + voice, null);
+        if (own == null && Cast.echo(voice)) {
+            own = prefs(c).getString("brain_manner_" + Cast.origin(voice), null);
+        }
         if (own != null) {
             return own;
         }
         String[] all = SpeechLanguage.resources(c).getStringArray(R.array.brain_manner);
-        return voice >= 1 && voice <= all.length ? all[voice - 1] : "";
+        int v = Cast.origin(voice);
+        return v >= 1 && v <= all.length ? all[v - 1] : "";
     }
 
     static boolean mannerOwn(Context c, int voice) {

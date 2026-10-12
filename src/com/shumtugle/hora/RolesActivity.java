@@ -134,7 +134,7 @@ public final class RolesActivity extends Activity {
         int count = Cast.size(this);
         int gap = count > Cast.COUNT ? 4 : 8;
         float width = getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density;
-        int side = Math.max(30, Math.min(54, (int) ((width - 40 - gap * (count - 1)) / count)));
+        int side = Math.max(22, Math.min(54, (int) ((width - 40 - gap * (count - 1)) / count)));
         for (int place = 0; place < count; place++) {
             final int v = Cast.at(place);
             final int voice = v;

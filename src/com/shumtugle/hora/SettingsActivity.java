@@ -505,7 +505,7 @@ public final class SettingsActivity extends Activity {
         if (!Beta.open(this)) {
             return;
         }
-        // Nothing to tune here: while the room is open, the ninth voice stands in the row like the others.
+        // Nothing to tune here: while the room is open, the beta voices stand in the row like the others.
         beta.addView(Kit.section(this, getString(R.string.dev_section)));
         TextView note = Ui.text(this, getString(R.string.dev_note, Cast.name(this, Cast.BETA_M2)), 13, Palette.MUTED);
         note.setLineSpacing(0, 1.3f);

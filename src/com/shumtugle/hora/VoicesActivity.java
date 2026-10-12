@@ -309,6 +309,13 @@ public final class VoicesActivity extends Activity {
         name.setTypeface(Palette.display(this));
         name.setGravity(Gravity.CENTER);
         below.addView(name, Ui.lp(Ui.MATCH, Ui.WRAP));
+        if (Cast.beta(v) && !Cast.echo(v)) {
+            // A voice from the developer room says so in a word, in the accent colour, as
+            // temporary things do elsewhere.
+            TextView beta = Ui.text(this, getString(R.string.voices_beta), 13, Palette.ACCENT_TEXT);
+            beta.setGravity(Gravity.CENTER);
+            below.addView(beta, Ui.lp(Ui.MATCH, Ui.WRAP));
+        }
 
         // What the voice does: three duties as chips. A lit one is this voice's; a touch on a dark
         // one gives the duty to this voice, taking it from whoever had it.
@@ -363,7 +370,7 @@ public final class VoicesActivity extends Activity {
         strip.setGravity(Gravity.CENTER);
         int n = Cast.size(this);
         float width = getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density;
-        int cell = Math.max(30, Math.min(44, (int) ((width - 72) / n)));
+        int cell = Math.max(26, Math.min(44, (int) ((width - 72) / n)));
         int side = cell - 8;
         for (int i = 0; i < n; i++) {
             final int at = i;
@@ -589,7 +596,7 @@ public final class VoicesActivity extends Activity {
 
     private int sceneCount(int v) {
         try {
-            String[] all = getAssets().list("cards/" + v);
+            String[] all = getAssets().list("cards/" + Cast.origin(v));
             int n = 0;
             while (all != null && java.util.Arrays.asList(all).contains((n + 1) + ".jpg")) {
                 n++;
@@ -601,7 +608,7 @@ public final class VoicesActivity extends Activity {
     }
 
     private Bitmap scene(int v, int n) {
-        try (InputStream in = getAssets().open("cards/" + v + "/" + n + ".jpg")) {
+        try (InputStream in = getAssets().open("cards/" + Cast.origin(v) + "/" + n + ".jpg")) {
             // Half the memory of full colour; a photograph does not lose to it on a phone screen.
             BitmapFactory.Options o = new BitmapFactory.Options();
             o.inPreferredConfig = Bitmap.Config.RGB_565;

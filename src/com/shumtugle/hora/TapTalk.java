@@ -204,7 +204,7 @@ final class TapTalk {
      * one; a different pick from last time when there is a choice.
      */
     private static String pick(Context c, String lang, String cell, int voice) {
-        String key = lang + "." + cell + "." + voice;
+        String key = lang + "." + cell + "." + Cast.origin(voice);
         List<String> own = load(c).get(key);
         if (own == null || own.isEmpty()) {
             key = lang + "." + cell;

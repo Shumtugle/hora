@@ -19,8 +19,17 @@ final class Cast {
     static final int BETA_M = COUNT + 2;
     static final int BETA_M2 = COUNT + 3;
     static final int BETA_F2 = COUNT + 4;
-    /** The highest voice number, trial voices included. */
-    static final int LAST = BETA_F2;
+    /**
+     * Earlier samples of two voices, kept to compare with: each speaks as the voice it
+     * came from, with that voice's face, scenes and manner, only from its old sample.
+     * They stand in the row only while the developer room is open.
+     */
+    static final int ECHO_HOST = COUNT + 5;
+    static final int ECHO_FOURTH = COUNT + 6;
+    /** The highest voice number, trial voices and echoes included. */
+    static final int LAST = ECHO_FOURTH;
+    /** How many voices stand in the row while the developer room is closed. */
+    private static final int STANDING = 8;
     /** Roles: who reads outside dialogue, and the two sides of a dialogue. */
     static final int NARRATOR = 0;
     static final int SPEAKER_A = 1;
@@ -38,13 +47,24 @@ final class Cast {
         return "voice" + voice + ".wav";
     }
 
+    /**
+     * The name on screen. An echo shows its voice's name, as given or as renamed, marked
+     * as a beta, so the two never look like one voice in a list.
+     */
     static String name(Context c, int voice) {
         String own = Prefs.voiceName(c, voice);
         if (!own.isEmpty()) {
             return own;
         }
-        String[] names = c.getResources().getStringArray(R.array.voice_names);
-        return voice >= 1 && voice <= names.length ? names[voice - 1] : String.valueOf(voice);
+        if (echo(voice)) {
+            return c.getString(R.string.voice_echo_name, name(c, origin(voice)), c.getString(R.string.voices_beta));
+        }
+        return givenName(c, voice);
+    }
+
+    /** Whether a voice is an earlier sample of another one. */
+    static boolean echo(int voice) {
+        return origin(voice) != voice;
     }
 
     /** The name as the voice says it: the person's own name for it, or the one in the speech language. */
@@ -53,13 +73,27 @@ final class Cast {
         if (!own.isEmpty()) {
             return own;
         }
+        if (echo(voice)) {
+            return spokenName(c, origin(voice));
+        }
         return say(c, R.array.voice_names, voice);
     }
 
-    /** The name a voice came with, before anyone renamed it. */
+    /** The name a voice came with, before anyone renamed it; an echo has its voice's name. */
     static String givenName(Context c, int voice) {
         String[] names = c.getResources().getStringArray(R.array.voice_names);
-        return voice >= 1 && voice <= names.length ? names[voice - 1] : String.valueOf(voice);
+        int v = origin(voice);
+        return v >= 1 && v <= names.length ? names[v - 1] : String.valueOf(voice);
+    }
+
+    /** The voice whose face, scenes, lines and manner a voice has: an echo's source, else itself. */
+    static int origin(int voice) {
+        return voice == ECHO_HOST ? HOST : voice == ECHO_FOURTH ? 4 : voice;
+    }
+
+    /** Whether a voice stands in the row only while the developer room is open. */
+    static boolean beta(int voice) {
+        return place(voice) >= STANDING;
     }
 
     /** The voice that came with a plain label for a name; it asks for a name when first chosen. */
@@ -77,7 +111,7 @@ final class Cast {
      * female voice, the main male one, then the rest. Numbers stay what they
      * were, so samples, portraits and saved choices keep their places.
      */
-    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_F2, BETA_M, BETA_M2};
+    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_F2, BETA_M, BETA_M2, ECHO_HOST, ECHO_FOURTH};
 
     /** The voice standing at a place in the row, counted from 0. */
     static int at(int place) {
@@ -85,27 +119,28 @@ final class Cast {
     }
 
     /**
-     * How many voices stand in the row now: all but the last of the order, and the
-     * last one too while the developer room is open. The row is always a prefix of
-     * the order, so a place in the row and a voice number are not the same thing.
+     * How many voices stand in the row now: the standing ones, and the rest of the
+     * order too while the developer room is open. The row is always a prefix of the
+     * order, so a place in the row and a voice number are not the same thing.
      */
     static int size(Context c) {
-        return Beta.open(c) ? LAST : LAST - 1;
+        return Beta.open(c) ? LAST : STANDING;
     }
 
     /** The voices that speak of themselves as women; the rest as men. */
     private static final int[] FEMALE = {1, 2, BETA_F, BETA_F2};
 
     static boolean female(int voice) {
+        int v = origin(voice);
         for (int f : FEMALE) {
-            if (f == voice) {
+            if (f == v) {
                 return true;
             }
         }
         return false;
     }
 
-    /** Whether a voice is one of the four made after the first five. */
+    /** Whether a voice came after the first five: the four made later and the two echoes. */
     static boolean trial(int voice) {
         return voice > COUNT && voice <= LAST;
     }
@@ -138,7 +173,7 @@ final class Cast {
     };
 
     static int portrait(int voice) {
-        return PORTRAITS[Math.max(1, Math.min(LAST, voice)) - 1];
+        return PORTRAITS[Math.max(1, Math.min(PORTRAITS.length, origin(voice))) - 1];
     }
 
     /** What a voice is, as a noun: the word that follows its name when it introduces itself. */
@@ -154,12 +189,14 @@ final class Cast {
     /** A voice's own line from a list of five, in the language it speaks. */
     static String say(Context c, int array, int voice) {
         String[] all = SpeechLanguage.resources(c).getStringArray(array);
-        return voice >= 1 && voice <= all.length ? all[voice - 1] : "";
+        int v = origin(voice);
+        return v >= 1 && v <= all.length ? all[v - 1] : "";
     }
 
     private static String item(Context c, int array, int voice) {
         String[] all = c.getResources().getStringArray(array);
-        return voice >= 1 && voice <= all.length ? all[voice - 1] : "";
+        int v = origin(voice);
+        return v >= 1 && v <= all.length ? all[v - 1] : "";
     }
 
     /** Where earlier builds kept samples brought in from outside. */
@@ -190,7 +227,7 @@ final class Cast {
      * face and hands; null when none is bundled for it.
      */
     static android.graphics.Bitmap card(Context c, int voice, java.util.Random pick) {
-        String dir = "cards/" + voice;
+        String dir = "cards/" + origin(voice);
         try {
             String[] all = c.getAssets().list(dir);
             if (all == null || all.length == 0) {
@@ -225,7 +262,7 @@ final class Cast {
             return made;
         }
         try {
-            java.io.InputStream in = c.getAssets().open("cards/" + voice + "/1.jpg");
+            java.io.InputStream in = c.getAssets().open("cards/" + origin(voice) + "/1.jpg");
             android.graphics.Bitmap whole;
             try {
                 android.graphics.BitmapFactory.Options o = new android.graphics.BitmapFactory.Options();
