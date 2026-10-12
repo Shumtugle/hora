@@ -51,6 +51,27 @@ public final class Herald extends NotificationListenerService {
     private static final int USAGE_ASSISTANT = 16;
 
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
+    /** Makes route phrases into sound ahead of their turn, apart from the reading worker. */
+    private final ExecutorService maker = Executors.newSingleThreadExecutor();
+    /** Route phrases made into sound, by voice, pace, pause, decoder and words. */
+    private final Map<String, Made> made = java.util.Collections.synchronizedMap(
+            new LinkedHashMap<String, Made>(16, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, Made> e) {
+                    return size() > 16;
+                }
+            });
+
+    /** A phrase made into sound, with the rate it was made at. */
+    private static final class Made {
+        final float[] pcm;
+        final int rate;
+
+        Made(float[] pcm, int rate) {
+            this.pcm = pcm;
+            this.rate = rate;
+        }
+    }
     private final Handler main = new Handler(Looper.getMainLooper());
     private final AtomicInteger waiting = new AtomicInteger();
     /** Recently read texts and notification keys, with the time they were seen. */
@@ -226,6 +247,7 @@ public final class Herald extends NotificationListenerService {
         cutNow();
         stopListening();
         worker.shutdownNow();
+        maker.shutdownNow();
         super.onDestroy();
     }
 
@@ -254,6 +276,9 @@ public final class Herald extends NotificationListenerService {
                 NavWhisper.Said s = NavWhisper.seen(this, sbn, label(pkg));
                 if (s != null) {
                     routeSoon(s);
+                }
+                for (String ahead : NavWhisper.takeToMake()) {
+                    makeAhead(ahead);
                 }
             } catch (RuntimeException | OutOfMemoryError e) {
                 // A hint that cannot be read is not worth the book and the reader in this process.
@@ -464,6 +489,28 @@ public final class Herald extends NotificationListenerService {
             Diag.mark(this, "nav: quiet, no headphones, " + what);
             return;
         }
+        // Made ahead, the hint is heard at once; made now, the book steps aside for it.
+        String key = madeKey(s.text);
+        Made pcm = made.get(key);
+        boolean ahead = pcm != null;
+        if (pcm == null) {
+            Voice.urgent(true);
+            try {
+                pcm = make(s.text);
+            } finally {
+                Voice.urgent(false);
+            }
+            if (pcm != null) {
+                made.put(key, pcm);
+            }
+        }
+        long age = android.os.SystemClock.elapsedRealtime() - s.at;
+        if (!s.sample && (age > ROUTE_STALE_MS || !NavWhisper.current(s))) {
+            // Silence is better than a turn told after it is passed.
+            NavWhisper.unsay(s);
+            Diag.mark(this, String.format(java.util.Locale.ROOT, "nav: dropped late, %s, %.1f s", what, age / 1000f));
+            return;
+        }
         AudioFocusRequest focus = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
                 .setAudioAttributes(attributes())
                 .setOnAudioFocusChangeListener(yield, main)
@@ -477,12 +524,124 @@ public final class Herald extends NotificationListenerService {
                 return;
             }
             why = "headphones gone";
-            boolean whole = speak(s.text);
-            Diag.mark(this, (whole ? "nav: said " : "nav: cut, " + why + ", ") + what);
+            boolean whole = pcm != null ? playMade(pcm.pcm, pcm.rate) : speak(s.text);
+            Diag.mark(this, String.format(java.util.Locale.ROOT, "%s%s, %s, %.1f s after",
+                    whole ? "nav: said " : "nav: cut, " + why + ", ", what, ahead ? "made ahead" : "made now",
+                    age / 1000f));
         } finally {
             audio.abandonAudioFocusRequest(focus);
             BookPlayer.duck(false);
             Awake.let(this);
+        }
+    }
+
+    /** The key a made phrase is kept under: the same words with another voice or pace are another sound. */
+    private String madeKey(String text) {
+        return Prefs.roleShared(this, Cast.HERALD) + "|" + Prefs.speedShared(this) + "|"
+                + Prefs.pauseMsShared(this) + "|" + Prefs.fullDecoderShared(this) + "|" + text;
+    }
+
+    /** Makes a route phrase into sound in the background, unless it is made already. */
+    private void makeAhead(final String text) {
+        maker.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String key = madeKey(text);
+                    if (made.containsKey(key) || !NavWhisper.wanted(text)) {
+                        return;
+                    }
+                    // A phrase wanted now goes first; this one can wait a little.
+                    for (int i = 0; i < 400 && Voice.urgentNow(); i++) {
+                        Thread.sleep(20);
+                    }
+                    // The urgent one may have been this very phrase, or it is no longer wanted.
+                    if (made.containsKey(key) || !NavWhisper.wanted(text)) {
+                        return;
+                    }
+                    Made m = make(text);
+                    if (m != null) {
+                        made.put(key, m);
+                    }
+                } catch (Throwable t) {
+                    Diag.log(Herald.this, "nav: a phrase not made ahead, " + t.getClass().getSimpleName());
+                }
+            }
+        });
+    }
+
+    /** A short phrase in the reader's voice, whole; null when there is no voice yet or no sound came. */
+    private Made make(String said) throws Exception {
+        Voice voice = Voice.get(this);
+        try {
+            voice.prepare();
+        } catch (Voice.Missing m) {
+            return null;
+        }
+        String spoken = voice.normalize(Lexicon.get(this).applyRules(TextPrep.clean(said)));
+        int rate = voice.sampleRate();
+        float speed = Prefs.speedShared(this);
+        int pauseMs = Prefs.pauseMsShared(this);
+        int reader = Prefs.roleShared(this, Cast.HERALD);
+        java.util.List<float[]> pieces = new java.util.ArrayList<float[]>();
+        int total = 0;
+        boolean[] inside = {false};
+        for (String piece : Voice.chunks(spoken, SpeechLanguage.locale())) {
+            float[] samples = voice.synthesizeVoice(Foreign.seal(piece, inside), speed, reader);
+            pieces.add(samples);
+            total += samples.length;
+            if (pauseMs > 0) {
+                float[] gap = new float[rate * pauseMs / 1000];
+                pieces.add(gap);
+                total += gap.length;
+            }
+        }
+        if (total == 0) {
+            return null;
+        }
+        float[] out = new float[total];
+        int at = 0;
+        for (float[] p : pieces) {
+            System.arraycopy(p, 0, out, at, p.length);
+            at += p.length;
+        }
+        return new Made(out, rate);
+    }
+
+    /** Plays a made phrase into the headphones; false when cut short. */
+    private boolean playMade(float[] pcm, int rate) throws InterruptedException {
+        AudioDeviceInfo ear = Earpiece.find(audio);
+        if (ear == null || rate <= 0) {
+            return false;
+        }
+        AudioTrack out = openTrack(rate);
+        out.setPreferredDevice(ear);
+        cut = false;
+        current = out;
+        try {
+            out.play();
+            write(out, pcm);
+            if (stopped(out)) {
+                return false;
+            }
+            long deadline = System.currentTimeMillis() + written * 1000L / rate + 1000;
+            while (out.getPlaybackHeadPosition() < written && System.currentTimeMillis() < deadline) {
+                if (stopped(out)) {
+                    return false;
+                }
+                Thread.sleep(40);
+            }
+            return true;
+        } finally {
+            current = null;
+            try {
+                out.pause();
+                out.flush();
+            } catch (IllegalStateException ignored) {
+                // Already released by a cut.
+            }
+            out.release();
+            written = 0;
         }
     }
 

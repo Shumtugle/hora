@@ -79,6 +79,16 @@ final class NavWhisper {
     };
     /** Unknown arrows already kept in the folder. */
     private static final Set<String> kept = new HashSet<String>();
+    /**
+     * Phrases are made into sound ahead, as soon as a turn shows on the card, so that at the
+     * turn the hint is heard at once and does not wait for the voice to finish a piece of the
+     * book. Waiting here to be made; and, by manoeuvre, the distance of the early phrase made
+     * ahead and the phrase made for the turn itself.
+     */
+    private static final List<String> toMake = new ArrayList<String>();
+    private static final Map<Integer, Integer> earlyMade = lru();
+    private static final Map<Integer, String> earlyText = lru();
+    private static final Map<Integer, String> nowMade = lru();
     private static List<Object[]> units;
     private static final Pattern DISTANCE = Pattern.compile("(\\d+(?:[.,]\\d+)?)[\\s\\u00a0\\u202f]*(\\p{L}+)");
 
@@ -154,13 +164,59 @@ final class NavWhisper {
             Diag.mark(c, "nav: no distance in the hint");
         }
         Resources res = SpeechLanguage.resources(c);
+        int id = r.plan.id;
+        String nowText = NavArrow.spoken(kind) ? nowPhrase(c, res, kind, words) : null;
+        if (nowText != null && say != NavPlan.NOW && !nowText.equals(nowMade.get(id))) {
+            // Made again only if the words change (the street, when it is named).
+            nowMade.put(id, nowText);
+            toMake.add(nowText);
+        }
+        if (NavArrow.spoken(kind) && distance >= 0) {
+            // The early phrase says the distance where it is due; that moves with the speed.
+            int ahead = NavPlan.round(NavPlan.earlyAt());
+            Integer made = earlyMade.get(id);
+            if (say != NavPlan.EARLY && !r.plan.saidEarly() && distance > NavPlan.earlyAt()
+                    && (made == null || made != ahead)) {
+                String text = earlyPhrase(res, kind, ahead);
+                earlyMade.put(id, ahead);
+                earlyText.put(id, text);
+                toMake.add(text);
+            }
+        }
         if (say == NavPlan.NOW) {
-            return new Said(nowPhrase(c, res, kind, words), sbn.getKey(), r.plan.id, false, kind, false);
+            return new Said(nowText, sbn.getKey(), id, false, kind, false);
         }
         if (say == NavPlan.EARLY) {
-            return new Said(earlyPhrase(res, kind, r.plan.metres), sbn.getKey(), r.plan.id, true, kind, false);
+            // The phrase made ahead is taken when its distance is near enough the true one.
+            int metres = r.plan.metres;
+            Integer made = earlyMade.get(id);
+            if (made != null && Math.abs(made - metres) <= Math.max(10, metres / 5)) {
+                metres = made;
+            }
+            return new Said(earlyPhrase(res, kind, metres), sbn.getKey(), id, true, kind, false);
         }
         return null;
+    }
+
+    /** Whether a phrase queued for making ahead is still the one a turn on the way will need. */
+    static synchronized boolean wanted(String text) {
+        return nowMade.containsValue(text) || earlyText.containsValue(text);
+    }
+
+    /** The phrases to make into sound ahead, taken once. */
+    static synchronized List<String> takeToMake() {
+        List<String> out = new ArrayList<String>(toMake);
+        toMake.clear();
+        return out;
+    }
+
+    private static <V> Map<Integer, V> lru() {
+        return new LinkedHashMap<Integer, V>(16, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<Integer, V> e) {
+                return size() > 32;
+            }
+        };
     }
 
     static synchronized void gone(Context c, StatusBarNotification sbn) {

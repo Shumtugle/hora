@@ -713,6 +713,10 @@ final class Voice {
             if (cancel.cancelled()) {
                 break;
             }
+            yieldToUrgent();
+            if (cancel.cancelled()) {
+                break;
+            }
             write(out, breathe(part, speed, voice, pauseMs, cancel), cancel);
         }
         if (cancel.cancelled()) {
@@ -787,6 +791,10 @@ final class Voice {
             if (cancel.cancelled()) {
                 break;
             }
+            yieldToUrgent();
+            if (cancel.cancelled()) {
+                break;
+            }
             float[] samples = breathe(part, speed, narratorOverride, pauseMs, cancel);
             if (sink != null) {
                 if (samples.length > 0 && !cancel.cancelled()) {
@@ -804,6 +812,45 @@ final class Voice {
             at += piece.length;
         }
         return out;
+    }
+
+    /** Short phrases that must be heard soon (a turn on the way) and are being made now. */
+    private static final java.util.concurrent.atomic.AtomicInteger URGENT = new java.util.concurrent.atomic.AtomicInteger();
+    /** The longest a reading waits for an urgent phrase before going on anyway. */
+    private static final long URGENT_WAIT_MS = 8000;
+
+    /** Marks the start and the end of making an urgent phrase; long readings let it go first. */
+    static void urgent(boolean on) {
+        if (on) {
+            URGENT.incrementAndGet();
+        } else {
+            URGENT.decrementAndGet();
+        }
+    }
+
+    /** Whether an urgent phrase is being made now; work that can wait waits for it. */
+    static boolean urgentNow() {
+        return URGENT.get() > 0;
+    }
+
+    /**
+     * Between its pieces, a long reading (a book, an answer read aloud) steps aside while an
+     * urgent phrase is made: the voice is one, and a piece of a book can take seconds. A piece
+     * already being made is finished first: the engine cannot be stopped inside one.
+     */
+    private void yieldToUrgent() {
+        if (URGENT.get() <= 0 || Thread.holdsLock(this)) {
+            return;
+        }
+        long until = android.os.SystemClock.elapsedRealtime() + URGENT_WAIT_MS;
+        while (URGENT.get() > 0 && android.os.SystemClock.elapsedRealtime() < until) {
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
     }
 
     void play(float[] samples, Cancel cancel) {

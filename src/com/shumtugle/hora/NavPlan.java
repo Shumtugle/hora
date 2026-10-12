@@ -124,8 +124,8 @@ final class NavPlan {
         if (distance < 0) {
             return NO_DISTANCE;
         }
-        float nowAt = clamp(speed * 8f, 15f, 150f);
-        float earlyAt = clamp(speed * 60f, 100f, 800f);
+        float nowAt = nowAt();
+        float earlyAt = earlyAt();
         if (!m.now && distance <= nowAt) {
             m.now = true;
             m.early = true;
@@ -137,6 +137,21 @@ final class NavPlan {
             return EARLY;
         }
         return QUIET;
+    }
+
+    /** How near the turn is said at the turn: about eight seconds' way, 15 to 150 m. */
+    static float nowAt() {
+        return clamp(speed * 8f, 15f, 150f);
+    }
+
+    /** How near the turn is said early: about a minute's way, 100 to 800 m. */
+    static float earlyAt() {
+        return clamp(speed * 60f, 100f, 800f);
+    }
+
+    /** Whether the manoeuvre on the card has had its early phrase (or its last one). */
+    boolean saidEarly() {
+        return current != null && current.early;
     }
 
     /** Whether the manoeuvre is the one on the card now. */
