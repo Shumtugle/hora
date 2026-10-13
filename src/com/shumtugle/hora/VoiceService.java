@@ -69,8 +69,8 @@ public final class VoiceService extends Service {
                 .putExtra(EXTRA_ANSWER, answer)
                 .setAction(ACTION_SPEAK)
                 .putExtra(EXTRA_TEXT, text)
-                .putExtra(EXTRA_SPEED, Math.max(Prefs.SPEED_MIN, Prefs.speed(c) * pace))
-                .putExtra(EXTRA_PAUSE, Prefs.pauseMs(c))
+                .putExtra(EXTRA_SPEED, Math.max(Prefs.SPEED_MIN, Prefs.speedShared(c) * pace))
+                .putExtra(EXTRA_PAUSE, Prefs.pauseMsShared(c))
                 .putExtra(EXTRA_VOICE, voice);
         c.startForegroundService(i);
     }
@@ -195,6 +195,8 @@ public final class VoiceService extends Service {
                             return gen != generation.get();
                         }
                     };
+                    // A book reading meanwhile is lowered under the answer, not stopped.
+                    BookPlayer.duck(true);
                     try {
                         if (phone) {
                             SpareVoice.say(VoiceService.this, spoken, stop);
@@ -202,6 +204,7 @@ public final class VoiceService extends Service {
                             voice.speak(spoken, SpeechLanguage.locale(), speed, pauseMs, stop, voiceNo);
                         }
                     } finally {
+                        BookPlayer.duck(false);
                         Hush.end(VoiceService.this);
                         audio.abandonAudioFocusRequest(focus);
                     }

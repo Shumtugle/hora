@@ -192,17 +192,8 @@ final class Bot {
             case "weather":
                 return new Answer(WEATHER, "", voice);
             case "date": {
-                Calendar now = Calendar.getInstance();
-                String[] days = r.getStringArray(R.array.bot_days);
-                String[] months = r.getStringArray(R.array.months_genitive);
-                String[] week = r.getStringArray(R.array.bot_weekdays);
-                int d = now.get(Calendar.DAY_OF_MONTH);
-                int m = now.get(Calendar.MONTH);
-                int w = now.get(Calendar.DAY_OF_WEEK) - 1;
-                if (days.length < d || months.length <= m || week.length <= w) {
-                    return new Answer(SAY, line(r, "unknown"), voice);
-                }
-                return new Answer(SAY, r.getString(R.string.bot_date, week[w], days[d - 1] + " " + months[m]), voice);
+                String date = TimePhrase.date(r, Calendar.getInstance());
+                return new Answer(SAY, date == null ? line(r, "unknown") : date, voice);
             }
             case "save_talk":
                 return new Answer(SAVE, "", voice);

@@ -20,6 +20,7 @@ import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.view.KeyEvent;
 
 import java.io.InputStream;
 import java.util.ArrayDeque;
@@ -170,6 +171,8 @@ public final class BookPlayer extends Service {
     private static final long DUCK_STEP_MS = 30;
     /** Where the book's loudness is heading, and where it is now (1 is full). */
     private static volatile float duckTarget = 1f;
+    /** How many voices are speaking over the book now; it comes back up only when all are done. */
+    private static int ducks;
     private volatile float gain = duckTarget;
     /** The track that plays right now, so the loudness can be set from outside the play loop. */
     private volatile AudioTrack out;
@@ -194,8 +197,9 @@ public final class BookPlayer extends Service {
      * that stops the story. The system's own ducking is not relied on, as the book and the
      * hint are the same app.
      */
-    static void duck(boolean on) {
-        duckTarget = on ? DUCKED : 1f;
+    static synchronized void duck(boolean on) {
+        ducks = on ? ducks + 1 : Math.max(0, ducks - 1);
+        duckTarget = ducks > 0 ? DUCKED : 1f;
         BookPlayer p = live;
         if (p != null) {
             p.main.removeCallbacks(p.ramp);
@@ -299,9 +303,38 @@ public final class BookPlayer extends Service {
                     pause("headphone button");
                 }
 
+                /** True while a key from the headphones is being handled, so onSkipToNext knows where it came from. */
+                private boolean fromKey;
+
+                /**
+                 * Keys from the headphones. The framework turns a double press of the one button
+                 * into onSkipToNext, and headphones that have a next key send it on a double
+                 * press themselves; both mean the date and the time here. The next arrow on the
+                 * screen or in the system panel comes without a key and still moves the book on.
+                 */
+                @Override
+                public boolean onMediaButtonEvent(Intent i) {
+                    KeyEvent k = i.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                    int code = k == null ? 0 : k.getKeyCode();
+                    boolean ours = code == KeyEvent.KEYCODE_MEDIA_NEXT
+                            || code == KeyEvent.KEYCODE_HEADSETHOOK
+                            || code == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE;
+                    fromKey = ours;
+                    try {
+                        return super.onMediaButtonEvent(i);
+                    } finally {
+                        fromKey = false;
+                    }
+                }
+
                 @Override
                 public void onSkipToNext() {
-                    if (paragraphs != null) {
+                    if (fromKey) {
+                        Diag.mark(BookPlayer.this, "book: date and time asked, headphone button");
+                        VoiceService.answer(BookPlayer.this,
+                                TimePhrase.dateAndTime(SpeechLanguage.resources(BookPlayer.this)),
+                                Prefs.roleShared(BookPlayer.this, Cast.TALK));
+                    } else if (paragraphs != null) {
                         seek(playIndex + 1);
                     }
                 }
