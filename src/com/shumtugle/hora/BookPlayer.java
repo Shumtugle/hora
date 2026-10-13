@@ -306,6 +306,9 @@ public final class BookPlayer extends Service {
                 /** True while a key from the headphones is being handled, so onSkipToNext knows where it came from. */
                 private boolean fromKey;
 
+                /** The key being handled right now, for the log of the step it leads to; 0 when none. */
+                private int keyNow;
+
                 /**
                  * Keys from the headphones. The framework turns a double press of the one button
                  * into onSkipToNext, and headphones that have a next key send it on a double
@@ -316,19 +319,24 @@ public final class BookPlayer extends Service {
                 public boolean onMediaButtonEvent(Intent i) {
                     KeyEvent k = i.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
                     int code = k == null ? 0 : k.getKeyCode();
+                    // Every key that reaches the book goes to the log as it came, before any meaning is given to it.
+                    Diag.mark(BookPlayer.this, "book: " + Keys.describe(k));
                     boolean ours = code == KeyEvent.KEYCODE_MEDIA_NEXT
                             || code == KeyEvent.KEYCODE_HEADSETHOOK
                             || code == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE;
                     fromKey = ours;
+                    keyNow = code;
                     try {
                         return super.onMediaButtonEvent(i);
                     } finally {
                         fromKey = false;
+                        keyNow = 0;
                     }
                 }
 
                 @Override
                 public void onSkipToNext() {
+                    Diag.mark(BookPlayer.this, "book: skip to next, " + Keys.source(keyNow) + Keys.caller(session));
                     if (fromKey) {
                         Diag.mark(BookPlayer.this, "book: date and time asked, headphone button");
                         VoiceService.answer(BookPlayer.this,
@@ -341,6 +349,7 @@ public final class BookPlayer extends Service {
 
                 @Override
                 public void onSkipToPrevious() {
+                    Diag.mark(BookPlayer.this, "book: skip to previous, " + Keys.source(keyNow) + Keys.caller(session));
                     if (paragraphs != null) {
                         seek(Math.max(0, playIndex - 1));
                     }
