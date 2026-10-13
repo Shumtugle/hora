@@ -517,7 +517,10 @@ public final class BookActivity extends Activity {
                 VoicesActivity.openMakeup(BookActivity.this, now);
             }
         });
-        links.addView(tune, Ui.weight(1));
+        // Tuning the reader belongs to the developer room; outside it only the roles are offered.
+        if (Beta.open(this)) {
+            links.addView(tune, Ui.weight(1));
+        }
         TextView roles = Kit.link(this, getString(R.string.book_roles), new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -525,7 +528,7 @@ public final class BookActivity extends Activity {
                 startActivity(new Intent(BookActivity.this, RolesActivity.class));
             }
         });
-        roles.setGravity(Gravity.END);
+        roles.setGravity(Beta.open(this) ? Gravity.END : Gravity.START);
         links.addView(roles, Ui.weight(1));
         LinearLayout box = Ui.column(this);
         box.addView(grid, Ui.lp(Ui.MATCH, Ui.WRAP));

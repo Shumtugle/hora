@@ -25,6 +25,15 @@ final class Everything {
 
     /** The packs in the set, by id, in the order they start. */
     private static final String[] PACKS = {LanguagePack.NATIVE, LanguagePack.ENGLISH, LanguagePack.DECODER};
+    private static final String[] PACKS_PLAIN = {LanguagePack.NATIVE, LanguagePack.ENGLISH};
+
+    /**
+     * The packs in the set now. The full decoder only while the developer room is open: its
+     * switch lives there, and outside it the pack would only take room without being used.
+     */
+    private static String[] packs(Context c) {
+        return Beta.open(c) ? PACKS : PACKS_PLAIN;
+    }
     /** The model places in the set: the model itself and the part for photos. */
     private static final int[] SLOTS = {0, 1};
     /** Kept free beyond what is fetched, so the phone is never filled to the brim. */
@@ -69,7 +78,7 @@ final class Everything {
 
     /** Whether every item of the set is on the phone. */
     static boolean complete(Context c) {
-        for (String p : PACKS) {
+        for (String p : packs(c)) {
             if (!LanguagePack.installed(c, p)) {
                 return false;
             }
@@ -93,7 +102,7 @@ final class Everything {
         java.util.List<Runnable> starts = new java.util.ArrayList<Runnable>();
         long total = 0;
         SharedPreferences.Editor sizes = sp(c).edit();
-        for (final String p : PACKS) {
+        for (final String p : packs(c)) {
             final Fetch.Entry e = Fetch.entry(index, "packs", "id", p);
             total += e.bytes;
             sizes.putLong(SIZE + p, e.bytes);
@@ -164,7 +173,7 @@ final class Everything {
         State st = new State();
         st.total = sp(c).getLong(TOTAL, 0);
         long known = 0;
-        for (String p : PACKS) {
+        for (String p : packs(c)) {
             if (LanguagePack.installed(c, p)) {
                 // Counted as fetched, not as unpacked, so the bar never runs past its end.
                 long n = sp(c).getLong(SIZE + p, LanguagePack.size(c, p));

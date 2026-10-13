@@ -119,7 +119,7 @@ public final class VoicesActivity extends Activity {
         page = build(Cast.at(place));
         frame.addView(page, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT));
-        if (state == null && getIntent().getBooleanExtra(EXTRA_MAKEUP, false)) {
+        if (state == null && getIntent().getBooleanExtra(EXTRA_MAKEUP, false) && Beta.open(this)) {
             frame.post(new Runnable() {
                 @Override
                 public void run() {
@@ -363,15 +363,18 @@ public final class VoicesActivity extends Activity {
             }
         });
         pair.addView(listenButton, new LinearLayout.LayoutParams(0, dp(48), 1f));
-        TextView tune = Kit.secondary(this, getString(R.string.voices_tune), new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                makeup(v);
-            }
-        });
-        LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(0, dp(48), 1f);
-        tp.leftMargin = dp(10);
-        pair.addView(tune, tp);
+        // Tuning a voice is for the developer room; outside it each voice sounds as it was set.
+        if (Beta.open(this)) {
+            TextView tune = Kit.secondary(this, getString(R.string.voices_tune), new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    makeup(v);
+                }
+            });
+            LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(0, dp(48), 1f);
+            tp.leftMargin = dp(10);
+            pair.addView(tune, tp);
+        }
         LinearLayout.LayoutParams pp = Ui.lp(Ui.MATCH, Ui.WRAP);
         pp.topMargin = dp(18);
         below.addView(pair, pp);

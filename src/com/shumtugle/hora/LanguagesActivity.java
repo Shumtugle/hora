@@ -35,11 +35,14 @@ public final class LanguagesActivity extends Activity {
         english = new PackPanel(this, LanguagePack.ENGLISH, PICK_ENGLISH, 100, R.string.lang_bad_file,
                 R.string.lang_not_yet, true, null);
         list.addView(english.view(), Kit.wide());
-        // The full sound decoder: fetched on its own; the switch for it is in Settings, under Reading.
-        list.addView(Kit.section(this, getString(R.string.lab_decoder)));
+        // The full sound decoder: fetched on its own; the switch for it is in Settings, under Reading,
+        // while the developer room is open. Outside the room neither is offered.
         decoder = new PackPanel(this, LanguagePack.DECODER, PICK_DECODER, 20, R.string.decoder_pack_bad_file,
                 0, true, null);
-        list.addView(decoder.view(), Kit.wide());
+        if (Beta.open(this)) {
+            list.addView(Kit.section(this, getString(R.string.lab_decoder)));
+            list.addView(decoder.view(), Kit.wide());
+        }
     }
 
     @Override

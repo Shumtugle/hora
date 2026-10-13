@@ -77,7 +77,9 @@ public final class SettingsActivity extends Activity {
         voices.addView(Kit.rowNav(this, getString(R.string.intro_herald), null, open(HeraldActivity.class)));
         list.addView(voices);
 
-        // Reading, for every voice: pace and character in sight, the rest folded.
+        // Reading, for every voice: the pace in sight; character and the fine settings only while the
+        // developer room is open. Hora is a helper in the ears, not a voice workshop: what was set
+        // stays in force either way.
         list.addView(Kit.section(this, getString(R.string.reading_all)));
         LinearLayout reading = Kit.plate(this);
         final float spMin = 0.6f;
@@ -94,9 +96,11 @@ public final class SettingsActivity extends Activity {
                         Prefs.setSpeed(SettingsActivity.this, Math.round((spMin + p / 20f) * 100f) / 100f);
                     }
                 }));
-        reading.addView(Kit.divider(this));
+        readingMore = Ui.column(this);
+        reading.addView(readingMore, Ui.lp(Ui.MATCH, Ui.WRAP));
+        readingMore.addView(Kit.divider(this));
         final float exMin = Prefs.EXPRESSION_MIN;
-        reading.addView(Kit.slider(this, getString(R.string.lab_character), getString(R.string.ws_calm),
+        readingMore.addView(Kit.slider(this, getString(R.string.lab_character), getString(R.string.ws_calm),
                 getString(R.string.ws_lively), Math.round((Prefs.EXPRESSION_MAX - exMin) * 20),
                 Math.round((Prefs.expression(this) - exMin) * 20), new Kit.Value() {
                     @Override
@@ -109,7 +113,7 @@ public final class SettingsActivity extends Activity {
                         Prefs.setExpression(SettingsActivity.this, exMin + p / 20f);
                     }
                 }));
-        reading.addView(Kit.divider(this));
+        readingMore.addView(Kit.divider(this));
         LinearLayout fine = Ui.column(this);
         fine.addView(Kit.slider(this, getString(R.string.lab_pause), getString(R.string.lab_shorter),
                 getString(R.string.lab_longer), Prefs.PAUSE_MAX_MS / 25, Prefs.pauseMs(this) / 25, new Kit.Value() {
@@ -166,7 +170,7 @@ public final class SettingsActivity extends Activity {
             dec.addView(fetch);
         }
         fine.addView(dec);
-        reading.addView(Kit.fold(this, "reading_fine", getString(R.string.fine_tuning), fine));
+        readingMore.addView(Kit.fold(this, "reading_fine", getString(R.string.fine_tuning), fine));
         list.addView(reading);
 
         // The look.
@@ -497,7 +501,13 @@ public final class SettingsActivity extends Activity {
         showEverything();
     }
 
+    /** Character and the fine reading settings: in sight only while the developer room is open. */
+    private LinearLayout readingMore;
+
     private void showDeveloper() {
+        if (readingMore != null) {
+            readingMore.setVisibility(Beta.open(this) ? View.VISIBLE : View.GONE);
+        }
         if (beta == null) {
             return;
         }
