@@ -2419,6 +2419,13 @@
     <string name="export_title">Аудиокниги</string>
     <string name="export_make">Сделать аудиокнигу</string>
     <string name="export_lead">Hora озвучит книгу целиком и сложит главы файлами 1.m4a, 2.m4a… в папку книги. Это небыстро; остановилась — продолжит с того же места без потерь.</string>
+    <string name="export_voices">Голоса</string>
+    <string name="export_by_narrator">рассказчик</string>
+    <string name="export_by_narrator_button">Голосом рассказчика</string>
+    <string name="export_cast_note">Только для этой книги: роли и живое чтение остаются как есть.</string>
+    <string name="export_bed">Фон</string>
+    <string name="export_bed_title">Фон в файлах</string>
+    <string name="export_bed_note">Громкость — как у этого фона в живом чтении.</string>
     <string name="export_about">«%1$s»: %2$s, читает %3$s. Звука выйдет примерно %4$s, работы — около %5$s.</string>
     <string name="export_files_section">В файлах глав</string>
     <string name="export_cover">Обложка</string>

@@ -1336,6 +1336,13 @@
     <string name="export_title">Audiobooks</string>
     <string name="export_make">Make an audiobook</string>
     <string name="export_lead">Hora reads the whole book aloud and lays the chapters out as 1.m4a, 2.m4a… in the book\'s folder. It takes a while; stopped, it goes on from the same place without loss.</string>
+    <string name="export_voices">Voices</string>
+    <string name="export_by_narrator">narrator</string>
+    <string name="export_by_narrator_button">In the narrator’s voice</string>
+    <string name="export_cast_note">For this book only: the roles and live reading stay as they are.</string>
+    <string name="export_bed">Background</string>
+    <string name="export_bed_title">Background in the files</string>
+    <string name="export_bed_note">The volume is this background’s volume in live reading.</string>
     <string name="export_about">“%1$s”: %2$s, read by %3$s. About %4$s of sound, around %5$s of work.</string>
     <string name="export_files_section">In the chapter files</string>
     <string name="export_cover">Cover</string>

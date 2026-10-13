@@ -392,8 +392,34 @@ final class Voice {
         return synthesizeVoice(chunk, speed, voiceFor(role, narratorOverride));
     }
 
+    /**
+     * A cast of a book's own, for the thread that reads it: narrator, first and second speaker
+     * (zero for a speaker read by the narrator). An audiobook keeps the voices it was queued with,
+     * whatever the roles are changed to while it is being made.
+     */
+    private static final ThreadLocal<int[]> CAST = new ThreadLocal<int[]>();
+
+    /** Sets the cast for the calling thread; null goes back to the roles. */
+    static void useCast(int[] cast) {
+        if (cast == null) {
+            CAST.remove();
+        } else {
+            CAST.set(cast);
+        }
+    }
+
     /** The voice a role is read with; a non-zero override replaces the chosen narrator. */
     private int voiceFor(int role, int narratorOverride) {
+        int[] cast = CAST.get();
+        if (cast != null) {
+            if (role == Cast.SPEAKER_A && cast[1] > 0) {
+                return cast[1];
+            }
+            if (role == Cast.SPEAKER_B && cast[2] > 0) {
+                return cast[2];
+            }
+            return cast[0];
+        }
         if (role != Cast.NARRATOR && Prefs.dialogueVoiceShared(context)) {
             return Prefs.roleShared(context, role);
         }

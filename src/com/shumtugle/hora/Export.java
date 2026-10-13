@@ -102,13 +102,21 @@ final class Export {
         return false;
     }
 
-    /** Puts a book in the queue, read by the given voice, and sees that the work will be done. */
-    static void add(Context c, String uri, String name, String title, int reader, int chapters,
-            String author, String cover) {
+    /**
+     * Puts a book in the queue with its own cast (narrator, first and second speaker, zero for a
+     * speaker the narrator reads) and background (a kind and its volume, none when off), and sees
+     * that the work will be done.
+     */
+    static void add(Context c, String uri, String name, String title, int reader, int speakerA, int speakerB,
+            int chapters, String author, String cover, int bed, float bedLevel) {
         JSONArray q = queue(c);
         try {
             JSONObject j = new JSONObject();
             j.put("author", author == null ? "" : author).put("cover", cover);
+            j.put("speakerA", speakerA).put("speakerB", speakerB);
+            if (Bed.recordable(bed)) {
+                j.put("bed", bed).put("bedLevel", (double) bedLevel);
+            }
             j.put("uri", uri).put("name", name).put("title", title).put("reader", reader)
                     .put("chapters", chapters).put("chapter", 0).put("paragraph", -1).put("added", System.currentTimeMillis());
             q.put(j);
@@ -558,6 +566,18 @@ final class Export {
         voice.prepare();
         int rate = voice.sampleRate();
         int reader = job.optInt("reader", 1);
+        // A book queued with its own cast keeps it; older queues read their speakers by the roles.
+        Voice.useCast(job.has("speakerA")
+                ? new int[] {reader, job.optInt("speakerA"), job.optInt("speakerB")} : null);
+        try {
+            return chapters(c, job, b, parts, voice, rate, reader, until, stop);
+        } finally {
+            Voice.useCast(null);
+        }
+    }
+
+    private static boolean chapters(Context c, JSONObject job, Book b, List<int[]> parts, Voice voice, int rate,
+            int reader, long until, Voice.Cancel stop) throws Exception {
         while (job.getInt("chapter") < parts.size()) {
             int ch = job.getInt("chapter");
             int[] range = parts.get(ch);
@@ -631,7 +651,11 @@ final class Export {
     /** A finished chapter: packed into a small file and put in the book's folder. */
     private static void pack(Context c, JSONObject job, Book b, int chapter, int rate) throws Exception {
         File m4a = new File(c.getCacheDir(), "export-chapter.m4a");
-        encode(pcm(c), m4a, rate);
+        int bed = job.optInt("bed", Bed.OFF);
+        // The background goes under the voice as it is packed: the voice's own sound stays as it is,
+        // to pack again if need be, and nothing more is written to the phone.
+        encode(pcm(c), m4a, rate, Bed.recordable(bed)
+                ? new Bed.Mixer(bed, (float) job.optDouble("bedLevel", 0), rate, pcm(c).length() / 2) : null);
         String title = job.getString("title");
         String label = b.chapters.isEmpty() || chapter >= b.chapters.size() ? title : b.chapters.get(chapter).label;
         try {
@@ -744,6 +768,10 @@ final class Export {
 
     /** Raw 16-bit single-channel sound into a two-channel AAC file, with the platform's own encoder. */
     static void encode(File pcm, File out, int rate) throws IOException {
+        encode(pcm, out, rate, null);
+    }
+
+    static void encode(File pcm, File out, int rate, Bed.Mixer mixer) throws IOException {
         MediaFormat f = MediaFormat.createAudioFormat(MediaFormat.MIMETYPE_AUDIO_AAC, rate, CHANNELS);
         f.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
         f.setInteger(MediaFormat.KEY_BIT_RATE, BITRATE);
@@ -772,6 +800,9 @@ final class Export {
                             codec.queueInputBuffer(i, 0, 0, pts, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
                             inputDone = true;
                         } else {
+                            if (mixer != null) {
+                                mixer.mix(chunk, r);
+                            }
                             for (int k = 0; k < r; k += 2) {
                                 both[2 * k] = chunk[k];
                                 both[2 * k + 1] = chunk[k + 1];

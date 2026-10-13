@@ -6,7 +6,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -39,6 +41,11 @@ public final class ExportActivity extends Activity {
     private byte[] chosenCover;
     /** The author written into the chapters; empty means none. */
     private String author;
+    /** The book's own cast: narrator, first and second speaker (zero: read by the narrator). */
+    private final int[] cast = new int[3];
+    private boolean castSet;
+    /** The background mixed into the chapters; off by default. */
+    private int bed = Bed.OFF;
     private LinearLayout when;
     private LinearLayout offerAction;
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -217,7 +224,15 @@ public final class ExportActivity extends Activity {
             return;
         }
         final String title = getIntent().getStringExtra(EXTRA_TITLE);
-        final int reader = getIntent().getIntExtra(EXTRA_READER, Prefs.role(this, Cast.NARRATOR));
+        if (!castSet) {
+            // The cast starts as the roles are now: the dialogue voices only when they are on.
+            castSet = true;
+            cast[0] = getIntent().getIntExtra(EXTRA_READER, Prefs.role(this, Cast.NARRATOR));
+            boolean dialogue = Prefs.dialogueVoice(this);
+            cast[1] = dialogue ? Prefs.role(this, Cast.SPEAKER_A) : 0;
+            cast[2] = dialogue ? Prefs.role(this, Cast.SPEAKER_B) : 0;
+        }
+        final int reader = cast[0];
         final int chapters = Export.parts(book).size();
         int[] est = Export.estimate(book);
         LinearLayout plate = Kit.plate(this);
@@ -228,6 +243,14 @@ public final class ExportActivity extends Activity {
         t.setPadding(Ui.dp(this, 16), Ui.dp(this, 14), Ui.dp(this, 16), Ui.dp(this, 14));
         plate.addView(t);
         offer.addView(plate, Kit.wide());
+
+        // Who reads this book: its own cast, kept with it in the queue; the roles stay as they are.
+        offer.addView(Kit.section(this, getString(R.string.export_voices)));
+        LinearLayout voices = Kit.plate(this);
+        for (int i = 0; i < 3; i++) {
+            voices.addView(castRow(uri, name, i));
+        }
+        offer.addView(voices, Kit.wide());
 
         // What the files will say about the book: only what the book itself says, or what the person adds.
         offer.addView(Kit.section(this, getString(R.string.export_files_section)));
@@ -247,6 +270,13 @@ public final class ExportActivity extends Activity {
                         authorSheet(uri, name);
                     }
                 }));
+        tags.addView(Kit.rowNav(this, getString(R.string.export_bed),
+                bedName(bed), new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        bedSheet(uri, name);
+                    }
+                }));
         offer.addView(tags, Kit.wide());
         TextView note = Ui.text(this, getString(R.string.export_files_note), 13, Palette.MUTED);
         note.setPadding(Ui.dp(this, 4), Ui.dp(this, 8), Ui.dp(this, 4), 0);
@@ -260,12 +290,145 @@ public final class ExportActivity extends Activity {
                     HoraFolder.ask(ExportActivity.this);
                     return;
                 }
-                Export.add(ExportActivity.this, uri, name, title, reader, chapters, author, coverMode);
+                Export.add(ExportActivity.this, uri, name, title, cast[0], cast[1], cast[2], chapters, author, coverMode,
+                        bed, Bed.levelOf(ExportActivity.this, bed));
+                Diag.mark(ExportActivity.this, "export: cast " + cast[0] + "/" + cast[1] + "/" + cast[2] + ", bed " + bed);
                 offer.removeAllViews();
                 offerAction.removeAllViews();
                 showQueue();
             }
         }), Kit.below(this, 16));
+    }
+
+    /** One role of the book's cast: its name, and the face and name of who reads it. */
+    private View castRow(final String uri, final String name, final int role) {
+        int v = cast[role];
+        String who = v > 0 ? Cast.name(this, v) : getString(R.string.export_by_narrator);
+        LinearLayout row = Kit.rowNav(this, getString(title(role)), who, new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                castSheet(uri, name, role, title(role));
+            }
+        });
+        if (v > 0) {
+            ImageView face = Ui.portrait(this, v);
+            face.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+            LinearLayout.LayoutParams fp = new LinearLayout.LayoutParams(Ui.dp(this, 28), Ui.dp(this, 28));
+            fp.leftMargin = Ui.dp(this, 8);
+            row.addView(face, 1, fp);
+        }
+        return row;
+    }
+
+    private int title(int role) {
+        return role == 0 ? R.string.role_narrator : role == 1 ? R.string.role_speaker_a : R.string.role_speaker_b;
+    }
+
+    /** The troupe as faces for one role of this book; a speaker may also be left to the narrator. */
+    private void castSheet(final String uri, final String name, final int role, int title) {
+        final android.app.Dialog[] sheet = new android.app.Dialog[1];
+        LinearLayout grid = Ui.column(this);
+        grid.setGravity(Gravity.CENTER_HORIZONTAL);
+        int count = Cast.size(this);
+        int perRow = Ui.perRow(count);
+        float width = getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density;
+        int cellDp = Math.max(44, Math.min(84, (int) ((width - 24 - 2 * Kit.PAD) / perRow)));
+        LinearLayout line = null;
+        for (int i = 0; i < count; i++) {
+            final int v = Cast.at(i);
+            if (i % perRow == 0) {
+                line = Ui.row(this);
+                line.setGravity(Gravity.CENTER);
+                LinearLayout.LayoutParams lp = Ui.lp(Ui.WRAP, Ui.WRAP);
+                if (i > 0) {
+                    lp.topMargin = Ui.dp(this, 10);
+                }
+                grid.addView(line, lp);
+            }
+            LinearLayout cell = Ui.column(this);
+            cell.setGravity(Gravity.CENTER_HORIZONTAL);
+            ImageView face = Ui.portrait(this, v);
+            boolean on = v == cast[role];
+            face.setPadding(Ui.dp(this, 3), Ui.dp(this, 3), Ui.dp(this, 3), Ui.dp(this, 3));
+            face.setBackground(on ? Ui.oval(Palette.SURFACE, Palette.voice(v), 2, this)
+                    : Ui.oval(android.graphics.Color.TRANSPARENT, Palette.LINE, 1, this));
+            face.setAlpha(on ? 1f : 0.75f);
+            int side = Math.min(56, cellDp - 4);
+            cell.addView(face, Ui.lp(Ui.dp(this, side), Ui.dp(this, side)));
+            TextView label = Ui.text(this, Cast.name(this, v), 13, on ? Palette.INK : Palette.MUTED);
+            if (on) {
+                label.setTypeface(Palette.bodyStrong(this));
+            }
+            label.setGravity(Gravity.CENTER);
+            label.setMaxLines(1);
+            label.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            LinearLayout.LayoutParams np = Ui.lp(Ui.MATCH, Ui.WRAP);
+            np.topMargin = Ui.dp(this, 4);
+            cell.addView(label, np);
+            cell.setContentDescription(Cast.name(this, v));
+            cell.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    cast[role] = v;
+                    sheet[0].dismiss();
+                    showOffer(uri, name);
+                }
+            });
+            line.addView(cell, Ui.lp(Ui.dp(this, cellDp), Ui.WRAP));
+        }
+        LinearLayout box = Ui.column(this);
+        box.addView(Kit.lead(this, getString(R.string.export_cast_note)));
+        box.addView(grid, Kit.below(this, 12));
+        if (role > 0) {
+            // Chosen now, it says so as a face would by its ring.
+            String sameLabel = (cast[role] == 0 ? "\u2713  " : "") + getString(R.string.export_by_narrator_button);
+            TextView same = Kit.secondary(this, sameLabel, new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    cast[role] = 0;
+                    sheet[0].dismiss();
+                    showOffer(uri, name);
+                }
+            });
+            box.addView(same, Kit.below(this, 18));
+        }
+        sheet[0] = Kit.liveSheet(this, getString(title), box);
+    }
+
+    private String bedName(int kind) {
+        String[] names = getResources().getStringArray(R.array.bed_kinds);
+        return kind >= 0 && kind < names.length ? names[kind] : "";
+    }
+
+    /** The background under the voice in the files: silence, or one of the kinds made here. */
+    private void bedSheet(final String uri, final String name) {
+        final android.app.Dialog[] sheet = new android.app.Dialog[1];
+        LinearLayout box = Ui.column(this);
+        box.addView(Kit.lead(this, getString(R.string.export_bed_note)));
+        for (int k = 0; k < Bed.KINDS; k++) {
+            if (k != Bed.OFF && !Bed.recordable(k)) {
+                continue;
+            }
+            final int kind = k;
+            boolean on = kind == bed;
+            TextView item = Ui.text(this, (on ? "\u2713  " : "") + bedName(kind), 17, on ? Palette.INK : Palette.MUTED);
+            if (on) {
+                item.setTypeface(Palette.bodyStrong(this));
+            }
+            item.setPadding(Ui.dp(this, 16), Ui.dp(this, 12), Ui.dp(this, 16), Ui.dp(this, 12));
+            item.setBackground(on ? Ui.round(Palette.RAISED, 22, this)
+                    : Ui.pressable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)));
+            item.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    bed = kind;
+                    sheet[0].dismiss();
+                    showOffer(uri, name);
+                }
+            });
+            box.addView(item, Kit.below(this, 2));
+        }
+        sheet[0] = Kit.liveSheet(this, getString(R.string.export_bed_title), box);
     }
 
     /** The cover: what it is now, and the ways to change it. */

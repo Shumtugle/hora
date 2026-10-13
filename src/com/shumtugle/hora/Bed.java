@@ -171,8 +171,61 @@ final class Bed {
 
     /** Volume from the setting, 0..1, curved so the low half of the slider stays truly quiet. */
     static float level(Context c) {
-        float v = Prefs.bedVolume(c) / 100f;
+        return curve(Prefs.bedVolume(c));
+    }
+
+    /** The volume one kind plays at, as its own setting says. */
+    static float levelOf(Context c, int kind) {
+        return curve(Prefs.bedVolume(c, kind));
+    }
+
+    private static float curve(int percent) {
+        float v = percent / 100f;
         return CEILING * v * (float) Math.sqrt(v);
+    }
+
+    /** Whether a kind can go into a file: everything made here, not the music the phone plays. */
+    static boolean recordable(int kind) {
+        return kind > OFF && kind < KINDS && kind != MUSIC;
+    }
+
+    /**
+     * Mixes a background into a chapter's sound (16-bit mono at the given rate) as it is read for
+     * packing, rising over the first seconds and falling away over the last, so chapters join
+     * without a click. Nothing is written beside the voice's own sound.
+     */
+    static final class Mixer {
+        private final Noise noise;
+        private final float gain;
+        private final long total;
+        private final long fade;
+        private long at;
+        private float[] buf = new float[0];
+
+        Mixer(int kind, float gain, int rate, long totalSamples) {
+            this.noise = new Noise(kind, rate);
+            this.gain = gain;
+            this.total = totalSamples;
+            this.fade = Math.max(1, (long) (FADE_IN_S * rate));
+        }
+
+        /** Mixes into the given bytes in place: the next samples of the chapter, in order. */
+        void mix(byte[] pcm, int bytes) {
+            int samples = bytes / 2;
+            if (buf.length < samples) {
+                buf = new float[samples];
+            }
+            noise.fill(buf);
+            for (int i = 0; i < samples; i++) {
+                long k = at + i;
+                float edge = Math.max(0f, Math.min(1f, Math.min(k, total - 1 - k) / (float) fade));
+                float v = (short) ((pcm[2 * i] & 0xff) | (pcm[2 * i + 1] << 8)) / 32768f + buf[i] * gain * edge * edge;
+                int s = Math.round(Math.max(-1f, Math.min(1f, v)) * 32767f);
+                pcm[2 * i] = (byte) s;
+                pcm[2 * i + 1] = (byte) (s >> 8);
+            }
+            at += samples;
+        }
     }
 
     private void begin() {
