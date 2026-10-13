@@ -114,6 +114,8 @@ public final class LexiconActivity extends Activity {
         editor.setTypeface(Typeface.MONOSPACE);
         editor.setGravity(Gravity.TOP | Gravity.START);
         editor.setBackground(Ui.round(Palette.SURFACE, 18, this));
+        // The plate keeps its own colour; the field's underline tint is not for it.
+        editor.setBackgroundTintList(null);
         editor.setHint(R.string.lexicon_example);
         editor.setHintTextColor(Palette.HINT);
         editor.setPadding(dp(14), dp(12), dp(14), dp(12));

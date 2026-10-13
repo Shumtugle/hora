@@ -738,6 +738,8 @@ public final class BrainActivity extends Activity {
         edit.setTextSize(15);
         edit.setTypeface(Palette.body(this));
         edit.setBackground(Ui.round(Palette.RAISED, 16, this));
+        // The plate keeps its own colour; the field's underline tint is not for it.
+        edit.setBackgroundTintList(null);
         edit.setPadding(dp(14), dp(12), dp(14), dp(12));
         edit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE
                 | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
