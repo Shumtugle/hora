@@ -755,6 +755,9 @@
     <string name="voice_own_tempo">Own pace</string>
     <string name="voice_own_slower">slower</string>
     <string name="voice_own_faster">faster</string>
+    <string name="phone_voice">The phone’s voice</string>
+    <string name="phone_voice_sub">For talk and notifications: quicker, but not Hora’s voice. Books are read by Hora’s voices.</string>
+    <string name="phone_voice_none">The phone has no other speech engine: Hora’s voices speak.</string>
     <string name="voices_demo_other">Another book: “%1$s”</string>
     <string name="voices_demo_note">reads “%1$s” from where it stopped</string>
     <string name="lab_character">Character</string>

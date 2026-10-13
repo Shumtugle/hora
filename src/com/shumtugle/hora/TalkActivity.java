@@ -726,7 +726,7 @@ public final class TalkActivity extends Activity {
                                 source == null ? "" : getString(R.string.wiki_source, source.title));
                         l.link = source == null ? null : source.link;
                         add(l);
-                        VoiceService.speak(TalkActivity.this, text, v);
+                        VoiceService.answer(TalkActivity.this, text, v);
                     }
                 });
             }
@@ -928,7 +928,7 @@ public final class TalkActivity extends Activity {
                         Line done = new Line(false, getString(R.string.talk_saved, shownTitle), name);
                         done.file = file.toString();
                         add(done);
-                        VoiceService.speak(TalkActivity.this, done.text, voice);
+                        VoiceService.answer(TalkActivity.this, done.text, voice);
                     }
                 });
             }
@@ -1003,7 +1003,7 @@ public final class TalkActivity extends Activity {
 
     private void answer(String text, String trace) {
         add(new Line(false, Ui.plain(text).toString(), trace));
-        VoiceService.speak(this, text, voice);
+        VoiceService.answer(this, text, voice);
     }
 
     /** Says what is missing and offers to fetch it, on the line itself. */
@@ -1011,7 +1011,7 @@ public final class TalkActivity extends Activity {
         Line l = new Line(false, Ui.plain(text).toString(), "");
         l.needsModel = true;
         add(l);
-        VoiceService.speak(this, text, voice);
+        VoiceService.answer(this, text, voice);
     }
 
     private void add(Line l) {
@@ -1096,7 +1096,7 @@ public final class TalkActivity extends Activity {
             t.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    VoiceService.speak(TalkActivity.this, said, voice);
+                    VoiceService.answer(TalkActivity.this, said, voice);
                 }
             });
         }

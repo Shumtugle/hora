@@ -126,7 +126,7 @@ public final class MainActivity extends Activity {
         spoken.setText(Ui.plain(phrase));
         shown = phrase;
         card = false;
-        VoiceService.speak(this, phrase, voice);
+        VoiceService.answer(this, phrase, voice);
     }
 
     private void askTime() {
@@ -367,7 +367,7 @@ public final class MainActivity extends Activity {
                 VoiceService.speak(this, r.text, voice, r.flat ? TapTalk.FLAT_PACE : 1f);
             }
         } else {
-            VoiceService.speak(this, shown, voice);
+            VoiceService.answer(this, shown, voice);
         }
     }
 

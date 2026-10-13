@@ -30,6 +30,8 @@ public final class VoiceService extends Service {
     private static final String EXTRA_SPEED = "speed";
     private static final String EXTRA_PAUSE = "pause";
     private static final String EXTRA_VOICE = "voice";
+    /** The bot speaking for itself: the phone's voice may say it, when asked for. */
+    private static final String EXTRA_ANSWER = "answer";
     private static final String CHANNEL = "speech";
     private static final int NOTE_ID = 1;
     private static final int PREVIEW_CHARS = 80;
@@ -50,7 +52,21 @@ public final class VoiceService extends Service {
 
     /** The same, with the voice's own pace scaled for this phrase only. */
     static void speak(Context c, String text, int voice, float pace) {
+        speak(c, text, voice, pace, false);
+    }
+
+    /**
+     * The bot's own words (an answer, the time, the weather), with the given voice; said by the
+     * phone's voice instead when the person asked for it. A voice introducing itself, or a text
+     * read aloud, is never handed over: that is speak().
+     */
+    static void answer(Context c, String text, int voice) {
+        speak(c, text, voice, 1f, true);
+    }
+
+    private static void speak(Context c, String text, int voice, float pace, boolean answer) {
         Intent i = new Intent(c, VoiceService.class)
+                .putExtra(EXTRA_ANSWER, answer)
                 .setAction(ACTION_SPEAK)
                 .putExtra(EXTRA_TEXT, text)
                 .putExtra(EXTRA_SPEED, Math.max(Prefs.SPEED_MIN, Prefs.speed(c) * pace))
@@ -96,7 +112,8 @@ public final class VoiceService extends Service {
                 enqueue(text,
                         intent.getFloatExtra(EXTRA_SPEED, 1.0f),
                         intent.getIntExtra(EXTRA_PAUSE, 0),
-                        intent.getIntExtra(EXTRA_VOICE, 0));
+                        intent.getIntExtra(EXTRA_VOICE, 0),
+                        intent.getBooleanExtra(EXTRA_ANSWER, false));
                 return START_NOT_STICKY;
             }
         } else {
@@ -115,7 +132,8 @@ public final class VoiceService extends Service {
         super.onDestroy();
     }
 
-    private void enqueue(final String text, final float speed, final int pauseMs, final int voiceNo) {
+    private void enqueue(final String text, final float speed, final int pauseMs, final int voiceNo,
+            final boolean answer) {
         final int gen = generation.incrementAndGet();
         pending.incrementAndGet();
         worker.execute(new Runnable() {
@@ -126,20 +144,20 @@ public final class VoiceService extends Service {
                     if (gen != generation.get()) {
                         return;
                     }
-                    Voice voice = Voice.get(VoiceService.this);
-                    try {
-                        voice.prepare();
-                    } catch (Voice.Missing m) {
-                        // No voice pack yet: the phone's own voice says it, so the answer is not lost.
-                        SpareVoice.say(VoiceService.this, TextPrep.clean(text), new Voice.Cancel() {
-                            @Override
-                            public boolean cancelled() {
-                                return gen != generation.get();
-                            }
-                        });
-                        return;
+                    // The bot's words go to the phone's voice when asked for; with no voice pack yet,
+                    // every phrase does, so that it is not lost.
+                    boolean phone = answer && SpareVoice.wanted(VoiceService.this);
+                    Voice voice = null;
+                    if (!phone) {
+                        voice = Voice.get(VoiceService.this);
+                        try {
+                            voice.prepare();
+                        } catch (Voice.Missing m) {
+                            phone = true;
+                        }
                     }
-                    String spoken = voice.normalize(Lexicon.get(VoiceService.this).applyRules(TextPrep.clean(text)));
+                    String spoken = phone ? TextPrep.clean(text)
+                            : voice.normalize(Lexicon.get(VoiceService.this).applyRules(TextPrep.clean(text)));
                     // Speech asks for the floor and gives way when another sound takes it.
                     android.media.AudioManager audio = (android.media.AudioManager) getSystemService(AUDIO_SERVICE);
                     android.media.AudioFocusRequest focus = new android.media.AudioFocusRequest.Builder(
@@ -171,21 +189,27 @@ public final class VoiceService extends Service {
                             }
                         }
                     });
+                    Voice.Cancel stop = new Voice.Cancel() {
+                        @Override
+                        public boolean cancelled() {
+                            return gen != generation.get();
+                        }
+                    };
                     try {
-                        voice.speak(spoken, SpeechLanguage.locale(), speed, pauseMs,
-                                new Voice.Cancel() {
-                                    @Override
-                                    public boolean cancelled() {
-                                        return gen != generation.get();
-                                    }
-                                }, voiceNo);
+                        if (phone) {
+                            SpareVoice.say(VoiceService.this, spoken, stop);
+                        } else {
+                            voice.speak(spoken, SpeechLanguage.locale(), speed, pauseMs, stop, voiceNo);
+                        }
                     } finally {
                         Hush.end(VoiceService.this);
                         audio.abandonAudioFocusRequest(focus);
                     }
-                    float r = voice.takeRatio();
-                    if (r > 0) {
-                        Prefs.setLastRatio(VoiceService.this, r);
+                    if (!phone) {
+                        float r = voice.takeRatio();
+                        if (r > 0) {
+                            Prefs.setLastRatio(VoiceService.this, r);
+                        }
                     }
                 } catch (Throwable t) {
                     // Nothing to report to: the request is dropped.

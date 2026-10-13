@@ -75,6 +75,19 @@ public final class SettingsActivity extends Activity {
         voices.addView(Kit.rowNav(this, getString(R.string.settings_voices_roles), null, open(RolesActivity.class)));
         voices.addView(Kit.divider(this));
         voices.addView(Kit.rowNav(this, getString(R.string.intro_herald), null, open(HeraldActivity.class)));
+        voices.addView(Kit.divider(this));
+        // The phone's own voice for the bot's words and the headphones: quicker, not Hora's voice.
+        // Books keep Hora's voices. With no other engine on the phone the switch changes nothing.
+        boolean other = SpareVoice.engine(this) != null;
+        voices.addView(Kit.rowToggle(this, getString(R.string.phone_voice),
+                getString(other ? R.string.phone_voice_sub : R.string.phone_voice_none), Prefs.phoneVoice(this),
+                new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Prefs.setPhoneVoice(SettingsActivity.this, on);
+                        Diag.mark(SettingsActivity.this, "settings: phone voice " + (on ? "on" : "off"));
+                    }
+                }));
         list.addView(voices);
 
         // Reading, for every voice: the pace in sight; character and the fine settings only while the

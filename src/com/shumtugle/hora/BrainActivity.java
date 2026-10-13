@@ -954,7 +954,7 @@ public final class BrainActivity extends Activity {
                             refresh();
                             stateLine.setText(getString(R.string.lab_brain_result, reply.text, woke, reply.seconds,
                                     reply.tokensPerSecond));
-                            VoiceService.speak(BrainActivity.this, reply.text, v);
+                            VoiceService.answer(BrainActivity.this, reply.text, v);
                         }
                     });
                 } catch (final Exception e) {

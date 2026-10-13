@@ -332,6 +332,21 @@ final class Prefs {
 
     private static final String GRIM_AIR = "grim_air_";
     private static final String OWN_TEMPO = "own_tempo_";
+    private static final String PHONE_VOICE = "phone_voice";
+
+    /** Whether the bot's replies and the words in the headphones are said by the phone's own engine. */
+    static boolean phoneVoice(Context c) {
+        return sp(c).getBoolean(PHONE_VOICE, false);
+    }
+
+    @SuppressWarnings("deprecation")
+    static boolean phoneVoiceShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(PHONE_VOICE, false);
+    }
+
+    static void setPhoneVoice(Context c, boolean on) {
+        sp(c).edit().putBoolean(PHONE_VOICE, on).commit();
+    }
     /** A voice's own pace on top of the common tempo, in steps of five per cent. */
     static final int OWN_TEMPO_MIN = -6;
     static final int OWN_TEMPO_MAX = 6;

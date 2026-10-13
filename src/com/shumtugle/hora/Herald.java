@@ -489,11 +489,17 @@ public final class Herald extends NotificationListenerService {
             Diag.mark(this, "nav: quiet, no headphones, " + what);
             return;
         }
-        // Made ahead, the hint is heard at once; made now, the book steps aside for it.
+        // Made ahead, the hint is heard at once; made now, the book steps aside for it. With the
+        // phone's voice nothing is made here: the phone's engine says it at once.
+        boolean phone = SpareVoice.wanted(this);
+        if (phone) {
+            // A route hint comes first: a reply of the bot being said in the phone's voice gives way.
+            SpareVoice.stopNow();
+        }
         String key = madeKey(s.text);
-        Made pcm = made.get(key);
+        Made pcm = phone ? null : made.get(key);
         boolean ahead = pcm != null;
-        if (pcm == null) {
+        if (pcm == null && !phone) {
             Voice.urgent(true);
             try {
                 pcm = make(s.text);
@@ -526,7 +532,7 @@ public final class Herald extends NotificationListenerService {
             why = "headphones gone";
             boolean whole = pcm != null ? playMade(pcm.pcm, pcm.rate) : speak(s.text);
             Diag.mark(this, String.format(java.util.Locale.ROOT, "%s%s, %s, %.1f s after",
-                    whole ? "nav: said " : "nav: cut, " + why + ", ", what, ahead ? "made ahead" : "made now",
+                    whole ? "nav: said " : "nav: cut, " + why + ", ", what, ahead ? "made ahead" : phone ? "phone voice" : "made now",
                     age / 1000f));
         } finally {
             audio.abandonAudioFocusRequest(focus);
@@ -551,7 +557,7 @@ public final class Herald extends NotificationListenerService {
             public void run() {
                 try {
                     String key = madeKey(text);
-                    if (made.containsKey(key) || !NavWhisper.wanted(text)) {
+                    if (made.containsKey(key) || !NavWhisper.wanted(text) || SpareVoice.wanted(Herald.this)) {
                         return;
                     }
                     // A phrase wanted now goes first; this one can wait a little.
@@ -750,15 +756,28 @@ public final class Herald extends NotificationListenerService {
 
     /** Returns true when everything was said, false when cut short. */
     private boolean speak(String said) throws Exception {
+        if (SpareVoice.wanted(this)) {
+            // Asked for: the phone's own voice says it, quickly, still only into the headphones.
+            return speakByPhone(said);
+        }
         Voice voice = Voice.get(this);
         try {
             voice.prepare();
         } catch (Voice.Missing m) {
             // No voice pack yet: the phone's own voice reads it, still only into the headphones.
-            if (Earpiece.find(audio) == null) {
-                return false;
-            }
-            cut = false;
+            return speakByPhone(said);
+        }
+        return speakOwn(voice, said);
+    }
+
+    /** The phone's own engine says it, only while the headphones are on. */
+    private boolean speakByPhone(String said) {
+        if (Earpiece.find(audio) == null) {
+            return false;
+        }
+        cut = false;
+        phoneSpeaking = true;
+        try {
             return SpareVoice.say(this, TextPrep.clean(said), new Voice.Cancel() {
                 @Override
                 public boolean cancelled() {
@@ -769,7 +788,16 @@ public final class Herald extends NotificationListenerService {
                     return cut || !Earpiece.present(audio);
                 }
             });
+        } finally {
+            phoneSpeaking = false;
         }
+    }
+
+    /** Whether the phone's voice is saying this service's words now. */
+    private volatile boolean phoneSpeaking;
+
+    /** Hora's own voice says it into the headphones. */
+    private boolean speakOwn(Voice voice, String said) throws Exception {
         String spoken = voice.normalize(Lexicon.get(this).applyRules(TextPrep.clean(said)));
         int rate = voice.sampleRate();
         float speed = Prefs.speedShared(this);
@@ -865,6 +893,10 @@ public final class Herald extends NotificationListenerService {
     private void cutNow(String reason) {
         why = reason;
         cut = true;
+        // The phone's voice, if it is saying this service's words, stops at once too.
+        if (phoneSpeaking) {
+            SpareVoice.stopNow();
+        }
         AudioTrack t = current;
         if (t != null) {
             try {
