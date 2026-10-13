@@ -37,7 +37,7 @@ final class Hush {
                 public boolean onMediaButtonEvent(Intent i) {
                     KeyEvent k = i.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
                     // A key taken by speech never reaches the book: the log has to say so.
-                    Diag.mark(app, "speech: " + Keys.describe(k));
+                    Diag.log(app, "speech: " + Keys.describe(k));
                     if (k != null && k.getAction() == KeyEvent.ACTION_DOWN && stops(k.getKeyCode())) {
                         stop.run();
                         return true;

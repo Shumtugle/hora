@@ -303,9 +303,6 @@ public final class BookPlayer extends Service {
                     pause("headphone button");
                 }
 
-                /** True while a key from the headphones is being handled, so onSkipToNext knows where it came from. */
-                private boolean fromKey;
-
                 /** The key being handled right now, for the log of the step it leads to; 0 when none. */
                 private int keyNow;
 
@@ -313,31 +310,19 @@ public final class BookPlayer extends Service {
                 private boolean heldKey;
 
                 /**
-                 * Keys from the headphones. Wireless headphones decide for themselves what a
-                 * press means and send a play, pause, next or previous key; the framework turns a
-                 * double press of a play-pause or hook key into onSkipToNext. A next key means the
-                 * date and the time here. A previous key keeps its meaning and steps back a
-                 * paragraph: some headphones send it for their only spare gesture, and going back
-                 * is what that gesture is wanted for. The arrows on the screen and in the system
-                 * panel come without a key and move the book either way.
+                 * Keys from the headphones mean what they mean in any player: play, pause, a
+                 * paragraph forward or back. Headphones differ in which key a gesture sends, so
+                 * no gesture is given a meaning of its own here. Each key goes to the detailed log.
                  */
                 @Override
                 public boolean onMediaButtonEvent(Intent i) {
                     KeyEvent k = i.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-                    int code = k == null ? 0 : k.getKeyCode();
-                    // Every key that reaches the book goes to the log as it came, before any meaning is given to it.
-                    Diag.mark(BookPlayer.this, "book: " + Keys.describe(k));
-                    boolean ours = code == KeyEvent.KEYCODE_MEDIA_NEXT
-                            || code == KeyEvent.KEYCODE_HEADSETHOOK
-                            || code == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE;
-                    // A held key repeats its down; only the first press asks, so holding never says it twice.
-                    fromKey = ours && k.getRepeatCount() == 0;
+                    Diag.log(BookPlayer.this, "book: " + Keys.describe(k));
                     heldKey = k != null && k.getRepeatCount() > 0;
-                    keyNow = code;
+                    keyNow = k == null ? 0 : k.getKeyCode();
                     try {
                         return super.onMediaButtonEvent(i);
                     } finally {
-                        fromKey = false;
                         heldKey = false;
                         keyNow = 0;
                     }
@@ -345,27 +330,16 @@ public final class BookPlayer extends Service {
 
                 @Override
                 public void onSkipToNext() {
-                    Diag.mark(BookPlayer.this, "book: skip to next, " + Keys.source(keyNow) + Keys.caller(session));
-                    if (keyNow != 0) {
-                        if (fromKey) {
-                            tellDateAndTime();
-                        }
-                    } else if (paragraphs != null) {
+                    Diag.log(BookPlayer.this, "book: skip to next, " + Keys.source(keyNow) + Keys.caller(session));
+                    // A held key repeats its down; it steps once, not once per repeat.
+                    if (!heldKey && paragraphs != null) {
                         seek(playIndex + 1);
                     }
                 }
 
-                private void tellDateAndTime() {
-                    Diag.mark(BookPlayer.this, "book: date and time asked, headphone button");
-                    VoiceService.answer(BookPlayer.this,
-                            TimePhrase.dateAndTime(SpeechLanguage.resources(BookPlayer.this)),
-                            Prefs.roleShared(BookPlayer.this, Cast.TALK));
-                }
-
                 @Override
                 public void onSkipToPrevious() {
-                    Diag.mark(BookPlayer.this, "book: skip to previous, " + Keys.source(keyNow) + Keys.caller(session));
-                    // A held key repeats its down; it steps back once, not once per repeat.
+                    Diag.log(BookPlayer.this, "book: skip to previous, " + Keys.source(keyNow) + Keys.caller(session));
                     if (!heldKey && paragraphs != null) {
                         seek(Math.max(0, playIndex - 1));
                     }
