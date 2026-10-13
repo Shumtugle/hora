@@ -310,10 +310,13 @@ public final class BookPlayer extends Service {
                 private int keyNow;
 
                 /**
-                 * Keys from the headphones. The framework turns a double press of the one button
-                 * into onSkipToNext, and headphones that have a next key send it on a double
-                 * press themselves; both mean the date and the time here. The next arrow on the
-                 * screen or in the system panel comes without a key and still moves the book on.
+                 * Keys from the headphones. Wireless headphones decide for themselves what a
+                 * press means and send a play, pause, next or previous key; some send previous
+                 * for a double press. The framework turns a double press of a play-pause or hook
+                 * key into onSkipToNext. A step either way that comes from a key means the date and
+                 * the time here: the headphones have one gesture for it, whichever key it sends.
+                 * The arrows on the screen and in the system panel come without a key and still
+                 * move the book by a paragraph.
                  */
                 @Override
                 public boolean onMediaButtonEvent(Intent i) {
@@ -322,9 +325,11 @@ public final class BookPlayer extends Service {
                     // Every key that reaches the book goes to the log as it came, before any meaning is given to it.
                     Diag.mark(BookPlayer.this, "book: " + Keys.describe(k));
                     boolean ours = code == KeyEvent.KEYCODE_MEDIA_NEXT
+                            || code == KeyEvent.KEYCODE_MEDIA_PREVIOUS
                             || code == KeyEvent.KEYCODE_HEADSETHOOK
                             || code == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE;
-                    fromKey = ours;
+                    // A held key repeats its down; only the first press asks, so holding never says it twice.
+                    fromKey = ours && k.getRepeatCount() == 0;
                     keyNow = code;
                     try {
                         return super.onMediaButtonEvent(i);
@@ -337,20 +342,30 @@ public final class BookPlayer extends Service {
                 @Override
                 public void onSkipToNext() {
                     Diag.mark(BookPlayer.this, "book: skip to next, " + Keys.source(keyNow) + Keys.caller(session));
-                    if (fromKey) {
-                        Diag.mark(BookPlayer.this, "book: date and time asked, headphone button");
-                        VoiceService.answer(BookPlayer.this,
-                                TimePhrase.dateAndTime(SpeechLanguage.resources(BookPlayer.this)),
-                                Prefs.roleShared(BookPlayer.this, Cast.TALK));
+                    if (keyNow != 0) {
+                        if (fromKey) {
+                            tellDateAndTime();
+                        }
                     } else if (paragraphs != null) {
                         seek(playIndex + 1);
                     }
                 }
 
+                private void tellDateAndTime() {
+                    Diag.mark(BookPlayer.this, "book: date and time asked, headphone button");
+                    VoiceService.answer(BookPlayer.this,
+                            TimePhrase.dateAndTime(SpeechLanguage.resources(BookPlayer.this)),
+                            Prefs.roleShared(BookPlayer.this, Cast.TALK));
+                }
+
                 @Override
                 public void onSkipToPrevious() {
                     Diag.mark(BookPlayer.this, "book: skip to previous, " + Keys.source(keyNow) + Keys.caller(session));
-                    if (paragraphs != null) {
+                    if (keyNow != 0) {
+                        if (fromKey) {
+                            tellDateAndTime();
+                        }
+                    } else if (paragraphs != null) {
                         seek(Math.max(0, playIndex - 1));
                     }
                 }
