@@ -313,8 +313,8 @@ final class Prefs {
     // samples are already breathy or rough are left as they are. The first voice's sample was
     // made anew and is bright by itself, so it needs none; so was the second voice's.
     // The echoes keep the makeup their old samples had. The last three were set by ear on the phone.
-    private static final int[] TIMBRE_DEFAULT = {0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 5, 5, 1, 0, 2};
-    private static final int[] AIR_DEFAULT = {0, 0, 0, 0, 3, 0, 1, 0, 0, 0, 3, 3, 3, 1, 0, 3};
+    private static final int[] TIMBRE_DEFAULT = {0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 5, 5, 1, 0, 0};
+    private static final int[] AIR_DEFAULT = {0, 0, 0, 0, 3, 0, 1, 0, 0, 0, 3, 3, 3, 1, 0, 0};
     /** Pitch makeup by voice: the trial voices were set by ear on the phone. */
     private static final int[] PITCH_DEFAULT = {0, 0, 0, 0, 0, 0, 4, -1, 0, 1, 0, 0, 0, -2, 0, -1};
 
@@ -336,8 +336,8 @@ final class Prefs {
     static final int OWN_TEMPO_MIN = -6;
     static final int OWN_TEMPO_MAX = 6;
     private static final float OWN_TEMPO_STEP = 0.05f;
-    /** By voice: the fifteenth hurried through its sample's pace and starts a tenth slower. */
-    private static final int[] OWN_TEMPO_DEFAULT = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2};
+    /** By voice, set by ear on the phone: the thirteenth and fifteenth read slower than their samples. */
+    private static final int[] OWN_TEMPO_DEFAULT = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -3, 0, -4};
 
     static int defaultOwnTempo(int voice) {
         return voice >= 1 && voice < OWN_TEMPO_DEFAULT.length ? OWN_TEMPO_DEFAULT[voice] : 0;
