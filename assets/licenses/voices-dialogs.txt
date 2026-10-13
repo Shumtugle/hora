@@ -7,6 +7,8 @@ They are distributed under the license below. Anyone who receives them must comp
 Sample 1 is a derivative of the same speaker's excerpt: the excerpt was given as the voice
 to an open speech model (Qwen3-TTS, Apache-2.0), which read a calm passage with it; the first
 two sentences of that reading are the sample. The voice is the speaker's; the reading is calmer.
+The model's licence covers the model, not the audio it made: the sample stays under the licence
+below, as a derivative of the speaker's excerpt.
 Sample 2 is made the same way from its own speaker's excerpt; the sample is the opening
 sentences of that reading.
 Samples 10 and 12 are samples 1 and 2 as they were before: the speakers' own excerpts,

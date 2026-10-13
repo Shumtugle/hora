@@ -9,20 +9,30 @@ Origin. Each sample is cut from speech generated (samples 6 to 9 on 11 October,
 samples 13 to 15 on 12 October 2026) by the
 voice design model Qwen3-TTS-12Hz-1.7B-VoiceDesign (Qwen team, Alibaba Cloud),
 https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign
-The speech was made in the model's official public demo,
+The speech of samples 6 to 9 was made in the model's official public demo,
 https://huggingface.co/spaces/Qwen/Qwen3-TTS
 which runs the same open weights (no separate cloud service) and is marked
-Apache 2.0. Each voice was designed from a written description of a voice.
-No recording of any person was used as input: these voices are not clones
-of a real person and do not imitate one. The text read is a short passage
-of Russian prose written for this app; only Russian sentences were kept.
+Apache 2.0. Samples 13 to 15 were made with the same model; where it ran is
+still being confirmed, and this note will say so. Each voice was designed
+from a written description of a voice. No recording of any person was used
+as input: these voices are not clones of a real person and do not imitate
+one. The text read is a short passage of Russian prose written for this
+app; only Russian sentences were kept.
 
-Licence. The model and its code are licensed under the Apache License,
+Licence. The model and its code are published under the Apache License,
 Version 2.0 (Copyright 2026 Alibaba Cloud); the full text is in the notice
-"Apache License 2.0" of this app. The licence covers the model; it states
-no conditions for audio the model generates, and no other terms are shown
-by the model card or the demo. The Qwen team has not given a separate
-written confirmation for generated voices used inside an app.
+"Apache License 2.0" of this app. As recorded on 13 October 2026: model
+revision 5ecdb67327fd37bb2e042aab12ff7391903235d3, marked apache-2.0 on its
+model card; code repository QwenLM/Qwen3-TTS at commit
+022e286b98fbec7e1e916cb940cdf532cd9f488e, whose LICENSE is that text.
+That licence covers the model and its code. It does not by itself put the
+audio the model makes under Apache 2.0, and neither the model card nor the
+demo states conditions for generated audio; the demo is hosted by Hugging
+Face, whose own terms apply to its use. The Qwen team has not given a
+separate written confirmation for generated voices used inside an app; a
+public question about it to the team has no answer yet. These samples are
+offered here as made, with this account of where they come from, and with
+no claim beyond it.
 
 Changes: each sample was cut to whole sentences, trimmed at the edges with
 short fades, and its level set to a common peak; in sample 14 long pauses
