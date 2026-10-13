@@ -127,12 +127,82 @@ public final class BookPlayer extends Service {
         final int generation;
         final int index;
         final float[] sound;
+        /** The frame the playing starts from: zero, or a point a long pause rewound to. */
+        final int from;
 
         Chunk(int generation, int index, float[] sound) {
+            this(generation, index, sound, 0);
+        }
+
+        Chunk(int generation, int index, float[] sound, int from) {
             this.generation = generation;
             this.index = index;
             this.sound = sound;
+            this.from = from;
         }
+    }
+
+    /** A pause at least this long steps back a little before going on, so the listener picks up the thread. */
+    private static final long ROLLBACK_AFTER_MS = 3000;
+    /** About how far back a long pause steps, never past the start of the piece being heard. */
+    private static final float ROLLBACK_S = 3.5f;
+    /** How far before and after that point a quiet gap is looked for, so speech resumes between words. */
+    private static final float GAP_SEARCH_S = 2.5f;
+    private static final float GAP_AFTER_S = 1f;
+    /** A gap this long and this quiet (part of the piece's peak) is a place between words. */
+    private static final float GAP_S = 0.12f;
+    private static final float GAP_LEVEL = 0.02f;
+    /** With no gap near, the start of the piece is taken if it is no further back than this. */
+    private static final float START_WITHIN_S = 7f;
+
+    /**
+     * Where to go on in a piece after a long pause: the quiet gap nearest to ROLLBACK_S before
+     * the last frame heard, looked for from GAP_SEARCH_S before that point to GAP_AFTER_S after
+     * it. With no gap there, the start of the piece when it is near enough, else the point itself.
+     * A piece barely begun goes back to its start.
+     */
+    static int rollbackPoint(float[] s, int heard, int r) {
+        int target = heard - Math.round(ROLLBACK_S * r);
+        if (target <= 0 || s.length == 0) {
+            return 0;
+        }
+        target = Math.min(target, s.length);
+        float peak = 0f;
+        for (float v : s) {
+            peak = Math.max(peak, Math.abs(v));
+        }
+        int fallback = heard <= Math.round(START_WITHIN_S * r) ? 0 : target;
+        if (peak <= 0f) {
+            return fallback;
+        }
+        float quiet = peak * GAP_LEVEL;
+        int frame = Math.max(1, r / 100);
+        int need = Math.max(1, Math.round(GAP_S * 100));
+        int lowest = Math.max(0, target - Math.round(GAP_SEARCH_S * r));
+        int highest = Math.min(s.length, target + Math.round(GAP_AFTER_S * r));
+        int best = -1;
+        int run = 0;
+        // Walk back in steps of ten milliseconds; each quiet run long enough is a candidate once.
+        for (int end = highest; end - frame >= lowest; end -= frame) {
+            float loud = 0f;
+            for (int i = end - frame; i < end; i++) {
+                loud = Math.max(loud, Math.abs(s[i]));
+            }
+            if (loud < quiet) {
+                run++;
+                if (run == need) {
+                    // Resume a little before the gap ends: the next word starts clean, not clipped.
+                    int gapEnd = end + (run - 1) * frame;
+                    int point = Math.max(0, gapEnd - frame * 4);
+                    if (best < 0 || Math.abs(point - target) < Math.abs(best - target)) {
+                        best = point;
+                    }
+                }
+            } else {
+                run = 0;
+            }
+        }
+        return best >= 0 ? best : fallback;
     }
 
     /** Headphones pulled out: stop before the speaker takes over. */
@@ -845,10 +915,31 @@ public final class BookPlayer extends Service {
         AudioTrack track = null;
         int trackRate = 0;
         long dryFrom = 0;
+        // Frames written since the track was made or flushed: the same count as its play head, and wrapping like it.
+        int written = 0;
+        // The piece written last and the one before it, with the head position each one's first frame has.
+        // The head runs up to a buffer behind the writing, so it may still be in the piece before.
+        // Both are forgotten whenever the track is flushed: their positions mean nothing after it.
+        Chunk last = null;
+        int lastStart = 0;
+        Chunk prev = null;
+        int prevStart = 0;
+        // When a pause between pieces began, or zero.
+        long pausedFrom = 0;
+        // Sound outputs that failed in a row; reset by the first piece of sound that goes through.
+        int failures = 0;
+        // A piece that starts later than frame zero is only ever the first one after a flush or a new
+        // track, so the unheard piece a step back puts back always starts from zero.
         while (alive) {
             Chunk c;
+            Chunk into = null;
+            int intoHeard = 0;
+            long pausedFor;
             synchronized (lock) {
                 while (alive && (!playing || queue.isEmpty())) {
+                    if (track != null && !playing && pausedFrom == 0) {
+                        pausedFrom = SystemClock.elapsedRealtime();
+                    }
                     // Waiting while playing is silence the listener hears; waiting while paused is not.
                     if (playing && dryFrom == 0) {
                         dryFrom = SystemClock.elapsedRealtime();
@@ -868,17 +959,49 @@ public final class BookPlayer extends Service {
                 if (!alive) {
                     break;
                 }
-                c = queue.poll();
-                queuedSeconds -= c.sound.length / (float) Math.max(1, rate);
+                pausedFor = pausedFrom == 0 ? 0 : SystemClock.elapsedRealtime() - pausedFrom;
+                pausedFrom = 0;
+                if (pausedFor >= ROLLBACK_AFTER_MS && track != null && last != null && last.generation == generation) {
+                    // Paused between pieces: the step back goes into the piece the head was in.
+                    int head = track.getPlaybackHeadPosition();
+                    if (head - lastStart >= 0) {
+                        into = last;
+                        intoHeard = Math.min(last.sound.length, head - lastStart);
+                    } else if (prev != null && prev.generation == generation && head - prevStart >= 0) {
+                        into = prev;
+                        intoHeard = Math.min(prev.sound.length, head - prevStart);
+                        // The last piece was written but not heard: it comes again after the step back.
+                        queue.addFirst(new Chunk(last.generation, last.index, last.sound));
+                        queuedSeconds += last.sound.length / (float) Math.max(1, rate);
+                    }
+                }
+                if (into == null) {
+                    c = queue.poll();
+                    queuedSeconds -= c.sound.length / (float) Math.max(1, rate);
+                } else {
+                    c = null;
+                }
                 if (dryFrom > 0) {
                     long dry = SystemClock.elapsedRealtime() - dryFrom;
                     if (dry > 500) {
                         Diag.mark(this, String.format(Locale.ROOT, "book: silent %.1f s waiting for paragraph %d",
-                                dry / 1000f, c.index));
+                                dry / 1000f, c != null ? c.index : into.index));
                     }
                     dryFrom = 0;
                 }
                 lock.notifyAll();
+            }
+            if (into != null) {
+                int to = rollbackPoint(into.sound, intoHeard, trackRate);
+                track.flush();
+                written = 0;
+                last = null;
+                prev = null;
+                Diag.log(this, String.format(Locale.ROOT, "book: back %.1f s after a pause of %.0f s",
+                        (intoHeard - to) / (float) Math.max(1, trackRate), pausedFor / 1000f));
+                // Through the queue like any piece, so what is counted ahead stays true.
+                requeue(into, to);
+                continue;
             }
             if (c.generation != generation) {
                 continue;
@@ -887,24 +1010,50 @@ public final class BookPlayer extends Service {
                 if (track != null) {
                     out = null;
                     track.release();
+                    track = null;
                 }
                 trackRate = rate;
-                track = openTrack(trackRate);
+                try {
+                    track = openTrack(trackRate);
+                } catch (RuntimeException e) {
+                    // The sound server may still be coming back: wait, longer each time, then give up.
+                    failures++;
+                    Diag.log(this, "book: no sound output, try " + failures, e);
+                    requeue(c, c.from);
+                    failures = giveUpOnOutput(failures);
+                    SystemClock.sleep(Math.min(4000, 250L << Math.min(4, failures)));
+                    continue;
+                }
+                written = 0;
+                last = null;
+                prev = null;
                 out = track;
                 loudness(track, gain);
             }
             playIndex = c.index;
             publish();
             track.play();
-            int at = 0;
+            int at = Math.min(c.from, c.sound.length);
+            int start = written - at;
+            prev = last;
+            prevStart = lastStart;
+            last = c;
+            lastStart = start;
             while (at < c.sound.length && alive) {
                 if (c.generation != generation) {
                     track.pause();
                     track.flush();
+                    written = 0;
+                    last = null;
+                    prev = null;
                     break;
                 }
                 if (!playing) {
+                    int head = track.getPlaybackHeadPosition();
+                    Chunk before = prev;
+                    int beforeStart = prevStart;
                     track.pause();
+                    long from = SystemClock.elapsedRealtime();
                     synchronized (lock) {
                         while (alive && !playing && c.generation == generation) {
                             waitLock();
@@ -912,18 +1061,114 @@ public final class BookPlayer extends Service {
                     }
                     if (c.generation != generation) {
                         track.flush();
+                        written = 0;
+                        last = null;
+                        prev = null;
                         break;
+                    }
+                    long paused = SystemClock.elapsedRealtime() - from;
+                    if (paused >= ROLLBACK_AFTER_MS) {
+                        if (head - start >= 0) {
+                            // The head was in this piece: step back within it.
+                            int heard = Math.min(at, head - start);
+                            int to = rollbackPoint(c.sound, heard, trackRate);
+                            track.flush();
+                            written = 0;
+                            prev = null;
+                            Diag.log(this, String.format(Locale.ROOT, "book: back %.1f s after a pause of %.0f s",
+                                    (heard - to) / (float) Math.max(1, trackRate), paused / 1000f));
+                            at = to;
+                            start = -to;
+                            lastStart = start;
+                        } else if (before != null && before.generation == c.generation && head - beforeStart >= 0) {
+                            // The head was still in the piece before, at its last words: step back in that
+                            // one, then this one again from its start. Nothing is lost to the flush.
+                            int heard = Math.min(before.sound.length, head - beforeStart);
+                            int to = rollbackPoint(before.sound, heard, trackRate);
+                            synchronized (lock) {
+                                if (c.generation == generation) {
+                                    queue.addFirst(new Chunk(c.generation, c.index, c.sound));
+                                    queue.addFirst(new Chunk(before.generation, before.index, before.sound, to));
+                                    queuedSeconds += (c.sound.length + before.sound.length) / (float) Math.max(1, rate);
+                                    lock.notifyAll();
+                                }
+                            }
+                            track.flush();
+                            written = 0;
+                            last = null;
+                            prev = null;
+                            Diag.log(this, String.format(Locale.ROOT, "book: back %.1f s after a pause of %.0f s",
+                                    (heard - to) / (float) Math.max(1, trackRate), paused / 1000f));
+                            break;
+                        }
+                        // Otherwise the head is somewhere not kept: go on from where the writing stopped.
                     }
                     track.play();
                 }
                 int n = Math.min(SLICE, c.sound.length - at);
-                track.write(c.sound, at, n, AudioTrack.WRITE_BLOCKING);
-                at += n;
+                int done = track.write(c.sound, at, n, AudioTrack.WRITE_BLOCKING);
+                if (done < 0) {
+                    // The output died (the sound server restarted): open a new one and go on from
+                    // what was heard, not from what was written into the dead buffer.
+                    failures++;
+                    Diag.log(this, "book: the sound output failed, " + done + ", try " + failures);
+                    int heard = track.getPlaybackHeadPosition() - start;
+                    requeue(c, heard >= 0 ? Math.min(at, heard) : 0);
+                    out = null;
+                    track.release();
+                    track = null;
+                    written = 0;
+                    last = null;
+                    prev = null;
+                    long wait = Math.min(4000, 250L << Math.min(4, failures));
+                    failures = giveUpOnOutput(failures);
+                    SystemClock.sleep(wait);
+                    break;
+                }
+                if (done == 0) {
+                    // Nothing taken this time; look again soon rather than spin.
+                    SystemClock.sleep(10);
+                    continue;
+                }
+                failures = 0;
+                written += done;
+                at += done;
             }
         }
         out = null;
         if (track != null) {
             track.release();
+        }
+    }
+
+    /** Sound outputs that may fail in a row before the reading pauses instead of trying on. */
+    private static final int OUTPUT_TRIES = 8;
+
+    /** Play thread only. After too many failed outputs in a row the reading pauses; returns the count to keep. */
+    private int giveUpOnOutput(int failures) {
+        if (failures < OUTPUT_TRIES) {
+            return failures;
+        }
+        main.post(new Runnable() {
+            @Override
+            public void run() {
+                pause("sound output lost");
+            }
+        });
+        return 0;
+    }
+
+    /**
+     * Play thread only. Puts a piece back at the head of the queue, to play from the given frame,
+     * unless a jump made it stale. The full length is counted, as taking it off subtracts the full length.
+     */
+    private void requeue(Chunk c, int from) {
+        synchronized (lock) {
+            if (c.generation == generation) {
+                queue.addFirst(new Chunk(c.generation, c.index, c.sound, from));
+                queuedSeconds += c.sound.length / (float) Math.max(1, rate);
+                lock.notifyAll();
+            }
         }
     }
 
