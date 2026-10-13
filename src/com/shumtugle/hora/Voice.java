@@ -204,7 +204,66 @@ final class Voice {
         config.model.pocket.vocabJson = path(model, "vocab.json");
         config.model.pocket.tokenScoresJson = path(model, "token_scores.json");
         config.model.pocket.voiceEmbeddingCacheCapacity = 4;
-        engine = new OfflineTts(config);
+        engine = urgently(config);
+    }
+
+    /**
+     * Builds an engine with this thread raised for the moment: the engine's worker threads are
+     * started now and take this thread's priority with them. Made at an ordinary priority, they
+     * would do most of the work there, however urgent the thread that asks for speech, and lose
+     * out to other work whenever the processor is contended (with the screen off, a route phrase
+     * being made, or the phone warm). The journal's reading speed by screen and core group tells
+     * whether this helps.
+     */
+    private OfflineTts urgently(OfflineTtsConfig config) {
+        int tid = android.os.Process.myTid();
+        int before = android.os.Process.getThreadPriority(tid);
+        boolean raised = false;
+        try {
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
+            raised = true;
+        } catch (RuntimeException e) {
+            Diag.mark(context, "voice: engine threads could not be raised");
+        }
+        try {
+            OfflineTts made = new OfflineTts(config);
+            if (raised) {
+                Diag.mark(context, "voice: engine built, threads raised " + raisedThreads());
+            }
+            return made;
+        } finally {
+            try {
+                android.os.Process.setThreadPriority(before);
+            } catch (RuntimeException e) {
+                // Lowering again is always allowed; nothing to do if it is not.
+            }
+        }
+    }
+
+    /** How many threads of this process run at the raised priority now, for the journal. */
+    private static int raisedThreads() {
+        java.io.File[] tasks = new java.io.File("/proc/self/task").listFiles();
+        if (tasks == null) {
+            return -1;
+        }
+        int n = 0;
+        for (java.io.File t : tasks) {
+            try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.FileReader(new java.io.File(t, "stat")))) {
+                String line = r.readLine();
+                if (line == null) {
+                    continue;
+                }
+                // The name may hold spaces: the fields are counted after its closing bracket.
+                String[] f = line.substring(line.lastIndexOf(')') + 2).split(" ");
+                // After the name: state is field 0, nice is field 16.
+                if (f.length > 16 && Integer.parseInt(f[16]) == android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY) {
+                    n++;
+                }
+            } catch (java.io.IOException | RuntimeException e) {
+                // A thread that ended meanwhile is not counted.
+            }
+        }
+        return n;
     }
 
     /**
@@ -267,7 +326,7 @@ final class Voice {
             config.model.pocket.encoder = path(model, "encoder.onnx");
             config.model.pocket.decoder = decoderPath();
             config.model.pocket.voiceEmbeddingCacheCapacity = 4;
-            english = new OfflineTts(config);
+            english = urgently(config);
             Diag.mark(context, "voice: English model ready, tempo " + englishTempo);
         } catch (RuntimeException e) {
             Diag.log(context, "voice: English model failed", e);

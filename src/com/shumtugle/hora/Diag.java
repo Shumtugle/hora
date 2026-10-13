@@ -186,6 +186,32 @@ final class Diag {
             int plugged = b.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
             s.append(plugged != 0 ? ", charging" : ", on battery");
         }
+        String group = cpuGroup();
+        if (!group.isEmpty()) {
+            s.append(", cores ").append(group);
+        }
         return s.toString();
+    }
+
+    /**
+     * The group of processor cores the system lets this thread use now, as it names it (for
+     * instance the one for the app in front, or the one for work in the background): with the
+     * screen off a process may lose the fastest cores. Empty when it cannot be read.
+     */
+    static String cpuGroup() {
+        java.io.File own = new java.io.File("/proc/thread-self/cpuset");
+        String path = own.exists() ? own.getPath() : "/proc/self/cpuset";
+        try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.FileReader(path))) {
+            String line = r.readLine();
+            if (line == null) {
+                return "";
+            }
+            line = line.trim();
+            int slash = line.lastIndexOf('/');
+            String name = slash >= 0 ? line.substring(slash + 1) : line;
+            return name.isEmpty() ? "all" : name;
+        } catch (java.io.IOException | RuntimeException e) {
+            return "";
+        }
     }
 }

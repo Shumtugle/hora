@@ -777,9 +777,9 @@ public final class BookPlayer extends Service {
                         }, quick, reader);
                 long spent = SystemClock.elapsedRealtime() - t0;
                 Diag.log(this, String.format(Locale.ROOT,
-                        "book: paragraph %d, %.1f s of speech in %.1f s (%.2fx), first sound after %.1f s, %.0f s ahead, %s",
+                        "book: paragraph %d, %.1f s of speech in %.1f s (%.2fx), first sound after %.1f s, %.0f s ahead, bed %d, %s",
                         index, made[0], spent / 1000f, spent > 0 ? made[0] * 1000f / spent : 0f,
-                        Math.max(0, firstAt[0]) / 1000f, queuedSeconds, Diag.state(this)));
+                        Math.max(0, firstAt[0]) / 1000f, queuedSeconds, Prefs.bed(this), Diag.state(this)));
             } catch (Voice.Missing m) {
                 // No voice to read with: stop at this paragraph instead of running through the book in silence.
                 synchronized (lock) {
