@@ -34,7 +34,7 @@ final class TimePhrase {
         return r.getString(R.string.bot_date, week[w], days[d - 1] + " " + months[m]);
     }
 
-    /** The date and then the time, as said for a double press of the headphone button. */
+    /** The date and then the time: what is said whenever the time is asked. */
     static String dateAndTime(Resources r) {
         java.util.Calendar now = java.util.Calendar.getInstance();
         String time = build(r, now.get(java.util.Calendar.HOUR_OF_DAY), now.get(java.util.Calendar.MINUTE));

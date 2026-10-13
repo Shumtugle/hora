@@ -21,7 +21,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -363,9 +362,7 @@ public final class TalkActivity extends Activity {
         Bot.Answer a = Bot.handle(this, text, voice);
         switch (a.kind) {
             case Bot.TIME: {
-                Calendar now = Calendar.getInstance();
-                answer(TimePhrase.build(SpeechLanguage.resources(this), now.get(Calendar.HOUR_OF_DAY),
-                        now.get(Calendar.MINUTE)), "");
+                answer(TimePhrase.dateAndTime(SpeechLanguage.resources(this)), "");
                 if (Bot.alsoAsks(this, text, "weather")) {
                     weather();
                 }
@@ -374,9 +371,7 @@ public final class TalkActivity extends Activity {
             case Bot.WEATHER:
                 // Two questions in one ("the weather, and what time is it?"): both are answered.
                 if (Bot.alsoAsks(this, text, "time")) {
-                    Calendar now = Calendar.getInstance();
-                    answer(TimePhrase.build(SpeechLanguage.resources(this), now.get(Calendar.HOUR_OF_DAY),
-                            now.get(Calendar.MINUTE)), "");
+                    answer(TimePhrase.dateAndTime(SpeechLanguage.resources(this)), "");
                 }
                 weather();
                 break;

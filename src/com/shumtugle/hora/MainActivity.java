@@ -19,8 +19,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.util.Calendar;
-
 /**
  * The main screen: the current voice as a portrait, what it last said, a few
  * quick questions and a line to type anything for it to read.
@@ -130,9 +128,7 @@ public final class MainActivity extends Activity {
     }
 
     private void askTime() {
-        Calendar now = Calendar.getInstance();
-        say(TimePhrase.build(SpeechLanguage.resources(this),
-                now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE)));
+        say(TimePhrase.dateAndTime(SpeechLanguage.resources(this)));
     }
 
     private static final int REQUEST_PLACE = 40;
