@@ -2524,4 +2524,29 @@
     <string name="tile_hush">Hora: тихо</string>
     <string name="tile_hush_speaking">говорит · коснись, чтобы замолчала</string>
     <string name="tile_hush_silent">молчит</string>
+    <!-- New notifications, said once Hora may speak again -->
+    <string name="missed_short">У тебя есть новые уведомления.</string>
+    <string name="missed_full">Новые уведомления: %1$s.</string>
+    <string name="missed_join">"; "</string>
+    <string name="missed_app">%1$s — %2$s</string>
+    <string name="missed_app_one">%1$s — %2$s, пишет %3$s</string>
+    <string name="missed_app_two">%1$s — %2$s, пишут %3$s и %4$s</string>
+    <string name="missed_app_many">%1$s — %2$s, пишут %3$s, %4$s и другие</string>
+    <string name="missed_more">И ещё в других приложениях.</string>
+    <string-array name="missed_counts">
+        <item>одно</item>
+        <item>два</item>
+        <item>три</item>
+        <item>четыре</item>
+        <item>пять</item>
+        <item>шесть</item>
+        <item>семь</item>
+        <item>восемь</item>
+        <item>девять</item>
+        <item>десять</item>
+    </string-array>
+    <string name="missed_switch">Говорить о новых уведомлениях</string>
+    <string name="missed_switch_sub">Когда мне снова можно говорить: после звонка, тихих часов или когда ты надеваешь наушники.</string>
+    <string name="missed_full_switch">Подробно</string>
+    <string name="missed_full_sub">Какие приложения и кто пишет, без текста.</string>
 </resources>

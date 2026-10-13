@@ -505,6 +505,27 @@ final class Prefs {
         sp(c).edit().putBoolean(NAV_STREET, on).commit();
     }
 
+    private static final String MISSED_SAY = "missed_say";
+    private static final String MISSED_FULL = "missed_full";
+
+    /** Whether Hora says there are new notifications once it may speak again; read from the voice process. */
+    static boolean missedSayShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(MISSED_SAY, true);
+    }
+
+    static void setMissedSay(Context c, boolean on) {
+        sp(c).edit().putBoolean(MISSED_SAY, on).commit();
+    }
+
+    /** Whether that word names the apps and who writes, never what; read from the voice process. */
+    static boolean missedFullShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(MISSED_FULL, false);
+    }
+
+    static void setMissedFull(Context c, boolean on) {
+        sp(c).edit().putBoolean(MISSED_FULL, on).commit();
+    }
+
     /** Whether the reader says so when the battery runs low; read from the voice process too. */
     static boolean batteryWarnShared(Context c) {
         return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(BATTERY_WARN, true);

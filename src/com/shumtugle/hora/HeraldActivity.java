@@ -47,6 +47,7 @@ public final class HeraldActivity extends Activity {
     private View toRow;
     private TextView appsTitle;
     private View streetRow;
+    private View missedFullRow;
     private View sampleRow;
     private LinearLayout apps;
     private EditText search;
@@ -130,6 +131,30 @@ public final class HeraldActivity extends Activity {
         quiet.addView(toRow);
         list.addView(quiet, Kit.wide());
         showQuiet();
+
+        // What came while Hora had to be silent: said once it may speak again, briefly or in full.
+        LinearLayout missed = Kit.plate(this);
+        missed.addView(Kit.rowToggle(this, getString(R.string.missed_switch), getString(R.string.missed_switch_sub),
+                Prefs.missedSayShared(this), new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Prefs.setMissedSay(HeraldActivity.this, on);
+                        showMissed();
+                    }
+                }));
+        missed.addView(Kit.divider(this));
+        missedFullRow = Kit.rowToggle(this, getString(R.string.missed_full_switch), getString(R.string.missed_full_sub),
+                Prefs.missedFullShared(this), new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Prefs.setMissedFull(HeraldActivity.this, on);
+                    }
+                });
+        missed.addView(missedFullRow);
+        LinearLayout.LayoutParams mp = Kit.wide();
+        mp.topMargin = Ui.dp(this, 12);
+        list.addView(missed, mp);
+        showMissed();
 
         // A word into the headphones when the battery runs low: at 15 percent, and again at 5.
         LinearLayout power = Kit.plate(this);
@@ -280,6 +305,13 @@ public final class HeraldActivity extends Activity {
             v.setAlpha(on ? 1f : 0.4f);
             v.setEnabled(on);
         }
+    }
+
+    /** "In full" only matters while the word is said at all; it dims rather than hides, so nothing jumps. */
+    private void showMissed() {
+        boolean on = Prefs.missedSayShared(this);
+        missedFullRow.setAlpha(on ? 1f : 0.4f);
+        missedFullRow.setEnabled(on);
     }
 
     /** The street row only matters while the hints are on; it dims rather than hides, so nothing jumps. */

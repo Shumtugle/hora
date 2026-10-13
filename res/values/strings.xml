@@ -1435,4 +1435,29 @@
     <string name="tile_hush">Hora: quiet</string>
     <string name="tile_hush_speaking">speaking · touch to silence</string>
     <string name="tile_hush_silent">silent</string>
+    <!-- New notifications, said once Hora may speak again -->
+    <string name="missed_short">You have new notifications.</string>
+    <string name="missed_full">New notifications: %1$s.</string>
+    <string name="missed_join">"; "</string>
+    <string name="missed_app">%1$s, %2$s</string>
+    <string name="missed_app_one">%1$s, %2$s, from %3$s</string>
+    <string name="missed_app_two">%1$s, %2$s, from %3$s and %4$s</string>
+    <string name="missed_app_many">%1$s, %2$s, from %3$s, %4$s and others</string>
+    <string name="missed_more">And more in other apps.</string>
+    <string-array name="missed_counts">
+        <item>one</item>
+        <item>two</item>
+        <item>three</item>
+        <item>four</item>
+        <item>five</item>
+        <item>six</item>
+        <item>seven</item>
+        <item>eight</item>
+        <item>nine</item>
+        <item>ten</item>
+    </string-array>
+    <string name="missed_switch">Tell me about new notifications</string>
+    <string name="missed_switch_sub">When I may speak again: after a call, after quiet hours, or when you put the headphones on.</string>
+    <string name="missed_full_switch">In full</string>
+    <string name="missed_full_sub">Which apps and who writes, never the text.</string>
 </resources>

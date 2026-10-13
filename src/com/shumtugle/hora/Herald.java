@@ -96,13 +96,85 @@ public final class Herald extends NotificationListenerService {
                 }
             });
     private boolean listening;
+    /** What the reader had to stay silent about, until it may say there are new notifications. */
+    private volatile Missed missed;
+    private final java.util.concurrent.atomic.AtomicBoolean toldQueued = new java.util.concurrent.atomic.AtomicBoolean();
+    /** The listener is bound and sees the shade; the service is gone for good. */
+    private volatile boolean connected;
+    private volatile boolean destroyed;
+    /** Since when a call has kept Hora silent with something to tell, elapsed time; zero when not. */
+    private long callSince;
+    /** The call mode has lasted so long that looking is given up until it ends for real. */
+    private boolean callGivenUp;
+    /** Tellings that found the sound still taken (often the call's own, for a moment after it ends). */
+    private final AtomicInteger tellTries = new AtomicInteger();
+    /** A call this long is a mode some app forgot to give back: stop looking until the next event. */
+    private static final long CALL_GIVE_UP_MS = 2 * 60 * 60 * 1000L;
+    /** How a reading ended. */
+    private static final int SILENT = 0;
+    private static final int CUT = 1;
+    private static final int CUT_BY_USER = 2;
+    private static final int WHOLE = 3;
 
     private final AudioDeviceCallback devices = new AudioDeviceCallback() {
+        @Override
+        public void onAudioDevicesAdded(AudioDeviceInfo[] added) {
+            // Headphones on: what came meanwhile can be told, once the sound has settled on them.
+            main.removeCallbacks(lookAgain);
+            main.postDelayed(lookAgain, 1500);
+        }
+
         @Override
         public void onAudioDevicesRemoved(AudioDeviceInfo[] removed) {
             if (!Earpiece.present(audio)) {
                 cutNow();
             }
+        }
+    };
+
+    /**
+     * Main thread. Tells about new notifications as soon as Hora may speak again. While a call
+     * lasts it looks every few seconds, in quiet hours every minute; headphones put on and the
+     * end of do not disturb call it themselves.
+     */
+    private final Runnable lookAgain = new Runnable() {
+        @Override
+        public void run() {
+            main.removeCallbacks(this);
+            if (audio == null) {
+                return;
+            }
+            boolean inCallMode = audio.getMode() != AudioManager.MODE_NORMAL;
+            if (!inCallMode) {
+                callSince = 0;
+                callGivenUp = false;
+            }
+            Missed m = missed;
+            if (destroyed || !connected || m == null || m.isEmpty() || !Prefs.missedSayShared(Herald.this)) {
+                return;
+            }
+            if (mayTell()) {
+                queueTell();
+            } else if (inCallMode) {
+                if (callGivenUp) {
+                    return;
+                }
+                long now = android.os.SystemClock.elapsedRealtime();
+                if (callSince == 0) {
+                    callSince = now;
+                }
+                long inCall = now - callSince;
+                if (inCall < CALL_GIVE_UP_MS) {
+                    // Often at first, as most calls are short; then rarely.
+                    main.postDelayed(this, inCall < 10 * 60_000 ? 3000 : 30_000);
+                } else {
+                    // A mode some app forgot to give back: wait for it to end, not for the clock.
+                    callGivenUp = true;
+                }
+            } else if (quietNow()) {
+                main.postDelayed(this, 60_000);
+            }
+            // Otherwise the headphones are off or the phone is set not to disturb; their own events look again.
         }
     };
 
@@ -203,7 +275,7 @@ public final class Herald extends NotificationListenerService {
                     @Override
                     public void run() {
                         try {
-                            read("battery", said, null);
+                            read("battery", said, null, null);
                         } catch (Throwable t) {
                             Diag.mark(Herald.this, "herald: battery word failed, " + t.getClass().getSimpleName());
                         } finally {
@@ -218,6 +290,10 @@ public final class Herald extends NotificationListenerService {
     @Override
     public void onListenerConnected() {
         audio = (AudioManager) getSystemService(AUDIO_SERVICE);
+        if (missed == null) {
+            missed = new Missed(this);
+        }
+        connected = true;
         if (!listening) {
             audio.registerAudioDeviceCallback(devices, main);
             registerReceiver(noisy, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
@@ -233,10 +309,19 @@ public final class Herald extends NotificationListenerService {
             listening = true;
         }
         Diag.mark(this, "herald: connected");
+        // Whatever waited when this process was ended is told once Hora may speak.
+        main.postDelayed(lookAgain, 3000);
+    }
+
+    @Override
+    public void onInterruptionFilterChanged(int filter) {
+        main.post(lookAgain);
     }
 
     @Override
     public void onListenerDisconnected() {
+        connected = false;
+        main.removeCallbacks(lookAgain);
         cutNow();
         stopListening();
         Diag.mark(this, "herald: disconnected");
@@ -244,6 +329,9 @@ public final class Herald extends NotificationListenerService {
 
     @Override
     public void onDestroy() {
+        destroyed = true;
+        connected = false;
+        main.removeCallbacks(lookAgain);
         cutNow();
         stopListening();
         worker.shutdownNow();
@@ -295,34 +383,31 @@ public final class Herald extends NotificationListenerService {
             return;
         }
         Ranking r = new Ranking();
+        boolean heldBack = false;
         if (rankings != null && rankings.getRanking(sbn.getKey(), r)) {
-            if (r.getImportance() < NotificationManager.IMPORTANCE_DEFAULT
-                    || r.isAmbient() || !r.matchesInterruptionFilter()) {
+            if (r.getImportance() < NotificationManager.IMPORTANCE_DEFAULT || r.isAmbient()) {
                 return;
             }
+            heldBack = !r.matchesInterruptionFilter();
         }
         String app = label(pkg);
-        if (quietNow()) {
-            Diag.mark(this, "herald: quiet hours, " + app);
-            return;
-        }
         String said = gist(n, app);
         if (said == null) {
+            // Nothing worth saying: a reply of one's own, an empty post. Not news, not missed either.
             return;
         }
-        long now = System.currentTimeMillis();
-        synchronized (seen) {
-            forgetOld(now);
-            boolean update = seen.containsKey(sbn.getKey());
-            seen.put(sbn.getKey(), now);
-            if (update && (n.flags & Notification.FLAG_ONLY_ALERT_ONCE) != 0) {
-                return;
-            }
-            String same = pkg + '\n' + said;
-            if (seen.containsKey(same)) {
-                return;
-            }
-            seen.put(same, now);
+        if (!fresh(sbn, n, pkg, said)) {
+            return;
+        }
+        if (heldBack) {
+            // Kept back by do not disturb: still news once the phone may disturb again.
+            miss(sbn.getKey(), app, sender(n));
+            return;
+        }
+        if (quietNow()) {
+            Diag.mark(this, "herald: quiet hours, " + app);
+            miss(sbn.getKey(), app, sender(n));
+            return;
         }
         if (waiting.get() >= QUEUE_LIMIT) {
             Diag.mark(this, "herald: dropped, queue full, " + app);
@@ -334,11 +419,12 @@ public final class Herald extends NotificationListenerService {
         final String a = app;
         final String s = said;
         final String key = sbn.getKey();
+        final String from = sender(n);
         worker.execute(new Runnable() {
             @Override
             public void run() {
                 try {
-                    read(a, s, key);
+                    read(a, s, key, from);
                 } catch (Throwable t) {
                     Diag.mark(Herald.this, "herald: failed, " + a + ", " + t.getClass().getSimpleName());
                 } finally {
@@ -359,8 +445,181 @@ public final class Herald extends NotificationListenerService {
         }
         String key = sbn.getKey();
         gone.add(key);
+        Missed m = missed;
+        if (m != null) {
+            m.gone(key);
+        }
         if (key.equals(readingKey)) {
             cutNow("notification gone");
+        }
+    }
+
+    /**
+     * Whether a post is news: not an update that asks not to alert again, not the same words
+     * from the same app said lately. Remembers it either way.
+     */
+    private boolean fresh(StatusBarNotification sbn, Notification n, String pkg, String said) {
+        long now = System.currentTimeMillis();
+        synchronized (seen) {
+            forgetOld(now);
+            boolean update = seen.containsKey(sbn.getKey());
+            seen.put(sbn.getKey(), now);
+            if (update && (n.flags & Notification.FLAG_ONLY_ALERT_ONCE) != 0) {
+                return false;
+            }
+            String same = pkg + '\n' + said;
+            if (seen.containsKey(same)) {
+                return false;
+            }
+            seen.put(same, now);
+            return true;
+        }
+    }
+
+    /**
+     * Main thread. One more notification the reader stays silent about, kept only when it is to
+     * be told at all; who wrote is kept only when it is to be told in full. Starts looking for
+     * the moment it may be told.
+     */
+    private void miss(String key, String app, String sender) {
+        miss(key, app, sender, true);
+    }
+
+    private void miss(String key, String app, String sender, boolean look) {
+        Missed m = missed;
+        if (destroyed || m == null || key == null || !Prefs.missedSayShared(this)) {
+            return;
+        }
+        m.add(key, app, Prefs.missedFullShared(this) ? sender : null);
+        if (look) {
+            main.post(lookAgain);
+        }
+    }
+
+    /** Who wrote a message, from the messaging style or a message's title; null when not a message. */
+    private static String sender(Notification n) {
+        Bundle x = n.extras;
+        if (x == null) {
+            return null;
+        }
+        Parcelable[] messages = x.getParcelableArray(Notification.EXTRA_MESSAGES);
+        if (messages != null && messages.length > 0 && messages[messages.length - 1] instanceof Bundle) {
+            Bundle last = (Bundle) messages[messages.length - 1];
+            String who = str(last.getCharSequence("sender"));
+            if (who == null && android.os.Build.VERSION.SDK_INT >= 28) {
+                Object p = last.getParcelable("sender_person");
+                if (p instanceof Person) {
+                    who = str(((Person) p).getName());
+                }
+            }
+            return who;
+        }
+        if (Notification.CATEGORY_MESSAGE.equals(n.category)) {
+            String title = str(x.getCharSequence(Notification.EXTRA_TITLE));
+            // A title with a number in it is a count ("3 new messages"), not a name.
+            return title == null || title.matches("(?s).*\\d.*") ? null : title;
+        }
+        return null;
+    }
+
+    /** Whether Hora may speak now: no quiet hours, no call, headphones in, nothing set not to disturb. */
+    private boolean mayTell() {
+        return !quietNow() && mayStart() && disturbAllowed();
+    }
+
+    /** The phone is not set not to disturb; read only while the listener is bound. */
+    private boolean disturbAllowed() {
+        try {
+            return getCurrentInterruptionFilter() == INTERRUPTION_FILTER_ALL;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    /** Main thread. Puts telling about new notifications in line, once. */
+    private void queueTell() {
+        if (!toldQueued.compareAndSet(false, true)) {
+            return;
+        }
+        waiting.incrementAndGet();
+        try {
+            worker.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        tell();
+                    } catch (Throwable t) {
+                        Diag.mark(Herald.this, "herald: new notifications not told, " + t.getClass().getSimpleName());
+                    } finally {
+                        toldQueued.set(false);
+                        waiting.decrementAndGet();
+                    }
+                }
+            });
+        } catch (java.util.concurrent.RejectedExecutionException e) {
+            // The service is going away.
+            toldQueued.set(false);
+            waiting.decrementAndGet();
+        }
+    }
+
+    /**
+     * Worker thread. What to say about new notifications, or null: nothing new, the shade not
+     * seen right now, the phone set not to disturb, or the word turned off. Only notifications
+     * still in the shade count; nothing of what they say is told or written down.
+     */
+    private Missed.Telling prepareTelling() {
+        Missed m = missed;
+        if (!connected || m == null || m.isEmpty() || !Prefs.missedSayShared(this)) {
+            return null;
+        }
+        java.util.Set<String> keys = new java.util.HashSet<String>();
+        if (!disturbAllowed()) {
+            return null;
+        }
+        try {
+            StatusBarNotification[] shown = getActiveNotifications();
+            if (shown == null) {
+                return null;
+            }
+            for (StatusBarNotification sbn : shown) {
+                keys.add(sbn.getKey());
+            }
+        } catch (RuntimeException e) {
+            return null;
+        }
+        return m.prepare(SpeechLanguage.resources(this), Prefs.missedFullShared(this), keys);
+    }
+
+    /** Worker thread. Forgets what was told once it was heard: whole, or stopped by the person. */
+    private void told(Missed.Telling t, int how) {
+        Missed m = missed;
+        if (t == null || m == null || (how != WHOLE && how != CUT_BY_USER)) {
+            return;
+        }
+        tellTries.set(0);
+        m.told(t.keys);
+        Diag.mark(this, "herald: new notifications told, " + t.total + " in " + t.apps + " apps, "
+                + (t.full ? "in full" : "briefly"));
+    }
+
+    /**
+     * Worker thread. Says there are new notifications, on its own. When the sound is still
+     * taken (as for a moment after a call) it tries again a few times, a few seconds apart.
+     */
+    private void tell() throws Exception {
+        Missed.Telling t = prepareTelling();
+        if (t == null) {
+            return;
+        }
+        int how = read("new notifications", t.text, null, null);
+        told(t, how);
+        if (how == SILENT) {
+            if (tellTries.incrementAndGet() <= 3) {
+                main.postDelayed(lookAgain, 5000);
+            } else {
+                tellTries.set(0);
+            }
         }
     }
 
@@ -663,21 +922,33 @@ public final class Herald extends NotificationListenerService {
         }
     }
 
-    /** On the worker thread: pauses the book, speaks, gives the book back. */
-    private void read(String app, String said, String key) throws Exception {
+    /**
+     * On the worker thread: pauses the book, speaks, gives the book back. Returns how it went:
+     * SILENT, CUT, CUT_BY_USER or WHOLE. A notification it stays silent about (one with a key)
+     * is kept to be told later; before one it reads, it says in the same breath what was missed.
+     */
+    private int read(String app, String said, String key, String sender) throws Exception {
         // A route hint that came in meanwhile goes first.
         sayRouteSafely();
         if (key != null && gone.remove(key)) {
             Diag.mark(this, "herald: gone before its turn, " + app);
-            return;
+            return SILENT;
         }
         if (quietNow()) {
             Diag.mark(this, "herald: quiet hours, " + app);
-            return;
+            missOnMain(key, app, sender);
+            return SILENT;
         }
         if (!mayStart()) {
-            Diag.mark(this, "herald: quiet, no headphones, " + app);
-            return;
+            Diag.mark(this, (audio.getMode() != AudioManager.MODE_NORMAL
+                    ? "herald: quiet, in a call, " : "herald: quiet, no headphones, ") + app);
+            missOnMain(key, app, sender);
+            return SILENT;
+        }
+        // Hora may speak again: what was missed is said first, in the same breath and the same hold of the book.
+        Missed.Telling first = key != null ? prepareTelling() : null;
+        if (first != null) {
+            said = first.text + ' ' + said;
         }
         // From here on a route hint coming in cuts this reading short, at whatever stage it is.
         newsSpeaking = true;
@@ -697,7 +968,8 @@ public final class Herald extends NotificationListenerService {
             held = onMain(true);
             if (audio.requestAudioFocus(focus) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 Diag.mark(this, "herald: quiet, no focus, " + app);
-                return;
+                missOnMain(key, app, sender);
+                return SILENT;
             }
             why = "headphones gone";
             readingKey = key;
@@ -709,6 +981,16 @@ public final class Herald extends NotificationListenerService {
             });
             boolean whole = speak(said);
             Diag.mark(this, (whole ? "herald: read, " : "herald: cut, " + why + ", ") + app);
+            int how = whole ? WHOLE
+                    : "headphone button".equals(why) || "quiet tile".equals(why) ? CUT_BY_USER : CUT;
+            told(first, how);
+            if (how == CUT && !"notification gone".equals(why)) {
+                // Cut by the world, not by the person: it was not heard, so it is still news, told at the
+                // next chance. Not at once: right now another sound or a turn has the floor, and the
+                // next notification, the headphones or a call's end will bring it up.
+                missOnMain(key, app, sender, false);
+            }
+            return how;
         } finally {
             newsSpeaking = false;
             readingKey = null;
@@ -722,6 +1004,23 @@ public final class Herald extends NotificationListenerService {
                 onMain(false);
             }
         }
+    }
+
+    /** From the worker: keeps a notification it stayed silent about; the list is touched on the main thread. */
+    private void missOnMain(String key, String app, String sender) {
+        missOnMain(key, app, sender, true);
+    }
+
+    private void missOnMain(final String key, final String app, final String sender, final boolean look) {
+        if (key == null) {
+            return;
+        }
+        main.post(new Runnable() {
+            @Override
+            public void run() {
+                miss(key, app, sender, look);
+            }
+        });
     }
 
     private boolean quietNow() {
