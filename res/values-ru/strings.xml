@@ -1925,6 +1925,7 @@
     <string name="brain_awake_line">Отвечает %1$.1f токена в секунду · выгрузится через %2$d мин без вопросов.</string>
     <string name="brain_asleep_line">Загрузится при первом вопросе, за несколько секунд.</string>
     <string name="brain_draft_refused">Ускоритель не подошёл — модель работает без него.</string>
+    <string name="brain_saved">Модель ИИ сохранена · %1$.1f ГБ</string>
     <string name="brain_size">В телефоне: %1$.1f ГБ, файлов: %2$d</string>
     <string name="brain_restore">Вернуть как было</string>
     <string name="brain_save">Сохранить</string>
@@ -2569,7 +2570,6 @@
     <string name="missed_switch_sub">Когда мне снова можно говорить: после звонка, тихих часов или когда ты надеваешь наушники.</string>
     <string name="missed_full_switch">Подробно</string>
     <string name="missed_full_sub">Какие приложения и кто пишет, без текста.</string>
-    <string name="brain_files_note_plain">Файлы скачиваются здесь, из релиза Hora. «Для фото» — дополнение, с которым модель понимает картинки. «Ускоритель» — необязательная маленькая модель: заметно помогает только на длинных ответах.</string>
     <!-- Morning line -->
     <string name="morning_hello">Доброе утро.</string>
     <string name="morning_hello_day">Добрый день.</string>

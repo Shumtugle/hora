@@ -35,6 +35,9 @@ public final class BrainActivity extends Activity {
     private LinearLayout prompts;
     private View draftToggle;
     private TextView fileNote;
+    /** The files' title and plate: names, sizes and bits are for the developer room only. */
+    private View filesTitle;
+    private View filesPlate;
     private View draftLine;
     /** What is missing and how to get it; empty when nothing is missing. */
     private LinearLayout getBox;
@@ -444,8 +447,10 @@ public final class BrainActivity extends Activity {
         getBox = Ui.column(this);
         list.addView(getBox, Kit.below(this, 16));
 
-        list.addView(Kit.section(this, getString(R.string.brain_files)));
+        filesTitle = Kit.section(this, getString(R.string.brain_files));
+        list.addView(filesTitle);
         LinearLayout files = Kit.plate(this);
+        filesPlate = files;
         int[] titles = {R.string.brain_slot_model, R.string.brain_slot_vision, R.string.brain_slot_draft};
         for (int i = 0; i < 3; i++) {
             final int slot = i;
@@ -461,7 +466,7 @@ public final class BrainActivity extends Activity {
             files.addView(slotRows[i]);
         }
         list.addView(files);
-        // Bringing one's own file in place of Hora's is for the developer room only.
+        // The files, and bringing one's own file in place of Hora's, are for the developer room only.
         fileNote = Ui.text(this, "", 12, Palette.HINT);
         fileNote.setLineSpacing(0, 1.3f);
         fileNote.setPadding(dp(6), dp(8), dp(6), 0);
@@ -628,7 +633,8 @@ public final class BrainActivity extends Activity {
         String line = awake && b.lastSpeed() > 0
                 ? getString(R.string.brain_awake_line, b.lastSpeed(), Brain.sleepMinutes(this))
                 : getString(R.string.brain_asleep_line);
-        if (b.draftRefused()) {
+        boolean dev = Beta.open(this);
+        if (dev && b.draftRefused()) {
             line += " " + getString(R.string.brain_draft_refused);
         }
         stateLine.setText(line);
@@ -638,15 +644,18 @@ public final class BrainActivity extends Activity {
                 count++;
             }
         }
-        sizeLine.setText(getString(R.string.brain_size, b.size() / 1e9, count));
+        // Outside the developer room: no files, parts or bits, only that the model is kept and its size.
+        sizeLine.setText(dev ? getString(R.string.brain_size, b.size() / 1e9, count)
+                : getString(R.string.brain_saved, b.size() / 1e9));
+        sizeLine.setVisibility(dev || b.hasModel() ? View.VISIBLE : View.GONE);
+        for (View v : new View[] {filesTitle, filesPlate, fileNote}) {
+            v.setVisibility(dev ? View.VISIBLE : View.GONE);
+        }
         int[] roles = {R.string.brain_role_model, R.string.brain_role_vision, R.string.brain_role_draft};
-        boolean dev = Beta.open(this);
-        fileNote.setText(dev ? R.string.brain_files_note : R.string.brain_files_note_plain);
+        fileNote.setText(R.string.brain_files_note);
         for (int i = 0; i < 3; i++) {
             TextView[] t = (TextView[]) slotRows[i].getTag();
-            // Outside the developer room a row opens only where there is something to do: removing a
-            // file in place, or fetching the accelerator. An empty model or photo row just says so:
-            // their download is offered above. No arrow that leads nowhere.
+            // The rows show only in the developer room, where every one of them opens.
             boolean opens = dev || b.has(i) || i == Brain.SLOT_DRAFT;
             slotRows[i].setClickable(opens);
             slotRows[i].setEnabled(opens);
@@ -668,7 +677,7 @@ public final class BrainActivity extends Activity {
             }
         }
         showGet();
-        boolean accel = Brain.get(this).has(Brain.SLOT_DRAFT);
+        boolean accel = dev && Brain.get(this).has(Brain.SLOT_DRAFT);
         draftToggle.setVisibility(accel ? View.VISIBLE : View.GONE);
         draftLine.setVisibility(accel ? View.VISIBLE : View.GONE);
         prompts.removeAllViews();

@@ -907,6 +907,7 @@
     <string name="brain_awake_line">Answers at %1$.1f tokens per second · unloads after %2$d minutes without questions.</string>
     <string name="brain_asleep_line">Loads on the first question, in a few seconds.</string>
     <string name="brain_draft_refused">The accelerator did not fit; the model runs without it.</string>
+    <string name="brain_saved">AI model saved · %1$.1f GB</string>
     <string name="brain_size">On the phone: %1$.1f GB, files: %2$d</string>
     <string name="brain_restore">Restore</string>
     <string name="brain_save">Save</string>
@@ -1461,7 +1462,6 @@
     <string name="missed_switch_sub">When I may speak again: after a call, after quiet hours, or when you put the headphones on.</string>
     <string name="missed_full_switch">In full</string>
     <string name="missed_full_sub">Which apps and who writes, never the text.</string>
-    <string name="brain_files_note_plain">The files are downloaded here, from Hora’s release. “For photos” is an add-on that lets the model understand pictures. The accelerator is an optional small model that mainly helps long answers.</string>
     <!-- Morning line -->
     <string name="morning_hello">Good morning.</string>
     <string name="morning_hello_day">Good afternoon.</string>
