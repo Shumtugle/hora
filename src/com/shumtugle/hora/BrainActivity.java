@@ -33,6 +33,8 @@ public final class BrainActivity extends Activity {
     private TextView sizeLine;
     /** Outside the developer room, the one way to give the model's room back: all its parts at once. */
     private View removeAll;
+    /** Fine settings and the voices' instructions: for the developer room only. */
+    private final java.util.List<View> deep = new java.util.ArrayList<View>();
     private final View[] slotRows = new View[3];
     private LinearLayout prompts;
     private View draftToggle;
@@ -496,7 +498,7 @@ public final class BrainActivity extends Activity {
         set.addView(draftToggle);
         draftLine = line();
         set.addView(draftLine);
-        set.addView(slider(getString(R.string.brain_liveliness), getString(R.string.brain_even),
+        set.addView(deep(slider(getString(R.string.brain_liveliness), getString(R.string.brain_even),
                 getString(R.string.brain_livelier), 14, Math.round((Brain.temperature(this) - 0.2f) * 20),
                 new Value() {
                     @Override
@@ -508,9 +510,9 @@ public final class BrainActivity extends Activity {
                     public void set(int p) {
                         Brain.setTemperature(BrainActivity.this, 0.2f + p / 20f);
                     }
-                }));
-        set.addView(line());
-        set.addView(slider(getString(R.string.brain_length), getString(R.string.lab_shorter),
+                })));
+        set.addView(deep(line()));
+        set.addView(deep(slider(getString(R.string.brain_length), getString(R.string.lab_shorter),
                 getString(R.string.lab_longer), 16, (Brain.replyTokens(this) - 40) / 10, new Value() {
                     @Override
                     public String show(int p) {
@@ -521,9 +523,9 @@ public final class BrainActivity extends Activity {
                     public void set(int p) {
                         Brain.setReplyTokens(BrainActivity.this, 40 + p * 10);
                     }
-                }));
-        set.addView(line());
-        set.addView(slider(getString(R.string.brain_memory), getString(R.string.brain_less),
+                })));
+        set.addView(deep(line()));
+        set.addView(deep(slider(getString(R.string.brain_memory), getString(R.string.brain_less),
                 getString(R.string.brain_more), 10, Brain.remembered(this) - 2, new Value() {
                     @Override
                     public String show(int p) {
@@ -534,9 +536,9 @@ public final class BrainActivity extends Activity {
                     public void set(int p) {
                         Brain.setRemembered(BrainActivity.this, p + 2);
                     }
-                }));
-        set.addView(line());
-        set.addView(slider(getString(R.string.brain_sleep_after), getString(R.string.brain_sooner),
+                })));
+        set.addView(deep(line()));
+        set.addView(deep(slider(getString(R.string.brain_sleep_after), getString(R.string.brain_sooner),
                 getString(R.string.brain_later), 14, Brain.sleepMinutes(this) - 1, new Value() {
                     @Override
                     public String show(int p) {
@@ -547,8 +549,8 @@ public final class BrainActivity extends Activity {
                     public void set(int p) {
                         Brain.setSleepMinutes(BrainActivity.this, p + 1);
                     }
-                }));
-        set.addView(line());
+                })));
+        set.addView(deep(line()));
         LinearLayout who = Ui.column(this);
         who.setPadding(dp(16), dp(12), dp(16), dp(12));
         who.addView(Ui.text(this, getString(R.string.lab_brain_user), 16, Palette.INK));
@@ -562,9 +564,9 @@ public final class BrainActivity extends Activity {
         set.addView(who);
         list.addView(set);
 
-        list.addView(Kit.section(this, getString(R.string.brain_prompts)));
+        list.addView(deep(Kit.section(this, getString(R.string.brain_prompts))));
         prompts = Kit.plate(this);
-        list.addView(prompts);
+        list.addView(deep(prompts));
 
         list.addView(Kit.section(this, getString(R.string.brain_guards)));
         LinearLayout guards = Kit.plate(this);
@@ -581,6 +583,11 @@ public final class BrainActivity extends Activity {
             guards.addView(g);
         }
         list.addView(guards);
+    }
+
+    private <T extends View> T deep(T v) {
+        deep.add(v);
+        return v;
     }
 
     private View line() {
@@ -639,8 +646,10 @@ public final class BrainActivity extends Activity {
         Brain b = Brain.get(this);
         boolean awake = b.awake();
         state.setText(awake ? R.string.brain_awake : R.string.brain_asleep);
-        String line = awake && b.lastSpeed() > 0
-                ? getString(R.string.brain_awake_line, b.lastSpeed(), Brain.sleepMinutes(this))
+        // Speed and the unload time are numbers for the developer room; elsewhere, plain words.
+        String line = !awake ? getString(R.string.brain_asleep_line)
+                : !Beta.open(this) ? getString(R.string.brain_awake_plain)
+                : b.lastSpeed() > 0 ? getString(R.string.brain_awake_line, b.lastSpeed(), Brain.sleepMinutes(this))
                 : getString(R.string.brain_asleep_line);
         boolean dev = Beta.open(this);
         if (dev && b.draftRefused()) {
@@ -658,6 +667,10 @@ public final class BrainActivity extends Activity {
                 : getString(R.string.brain_saved, b.size() / 1e9));
         sizeLine.setVisibility(dev || b.hasModel() ? View.VISIBLE : View.GONE);
         removeAll.setVisibility(!dev && b.hasModel() ? View.VISIBLE : View.GONE);
+        // Outside the developer room the settings keep only how to address the person.
+        for (View v : deep) {
+            v.setVisibility(dev ? View.VISIBLE : View.GONE);
+        }
         for (View v : new View[] {filesTitle, filesPlate, fileNote}) {
             v.setVisibility(dev ? View.VISIBLE : View.GONE);
         }

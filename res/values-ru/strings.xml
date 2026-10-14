@@ -1923,6 +1923,7 @@
     <string name="brain_awake">В памяти</string>
     <string name="brain_asleep">Не загружена</string>
     <string name="brain_awake_line">Отвечает %1$.1f токена в секунду · выгрузится через %2$d мин без вопросов.</string>
+    <string name="brain_awake_plain">Готова отвечать. Если долго не спрашивать, выгрузится сама.</string>
     <string name="brain_asleep_line">Загрузится при первом вопросе, за несколько секунд.</string>
     <string name="brain_draft_refused">Ускоритель не подошёл — модель работает без него.</string>
     <string name="brain_remove_all">Убрать с телефона</string>

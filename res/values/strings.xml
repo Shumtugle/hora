@@ -905,6 +905,7 @@
     <string name="brain_awake">In memory</string>
     <string name="brain_asleep">Not loaded</string>
     <string name="brain_awake_line">Answers at %1$.1f tokens per second · unloads after %2$d minutes without questions.</string>
+    <string name="brain_awake_plain">Ready to answer. Unloads by itself after a while without questions.</string>
     <string name="brain_asleep_line">Loads on the first question, in a few seconds.</string>
     <string name="brain_draft_refused">The accelerator did not fit; the model runs without it.</string>
     <string name="brain_remove_all">Remove from the phone</string>
