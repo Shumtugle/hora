@@ -31,6 +31,8 @@ public final class BrainActivity extends Activity {
     private TextView state;
     private TextView stateLine;
     private TextView sizeLine;
+    /** Outside the developer room, the one way to give the model's room back: all its parts at once. */
+    private View removeAll;
     private final View[] slotRows = new View[3];
     private LinearLayout prompts;
     private View draftToggle;
@@ -444,6 +446,13 @@ public final class BrainActivity extends Activity {
         }), tp);
         status.addView(acts, Kit.below(this, 12));
         list.addView(status, Kit.below(this, 16));
+        removeAll = Kit.link(this, getString(R.string.brain_remove_all), new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                removeAllSheet();
+            }
+        });
+        list.addView(removeAll, Kit.below(this, 8));
         getBox = Ui.column(this);
         list.addView(getBox, Kit.below(this, 16));
 
@@ -648,6 +657,7 @@ public final class BrainActivity extends Activity {
         sizeLine.setText(dev ? getString(R.string.brain_size, b.size() / 1e9, count)
                 : getString(R.string.brain_saved, b.size() / 1e9));
         sizeLine.setVisibility(dev || b.hasModel() ? View.VISIBLE : View.GONE);
+        removeAll.setVisibility(!dev && b.hasModel() ? View.VISIBLE : View.GONE);
         for (View v : new View[] {filesTitle, filesPlate, fileNote}) {
             v.setVisibility(dev ? View.VISIBLE : View.GONE);
         }
@@ -857,6 +867,24 @@ public final class BrainActivity extends Activity {
             }
         });
         d.show();
+    }
+
+    /** Removes the model with its photo part and accelerator; books, voices and settings stay. */
+    private void removeAllSheet() {
+        final Brain b = Brain.get(this);
+        TextView what = Ui.text(this, getString(R.string.brain_remove_all_text, b.size() / 1e9), 15, Palette.INK);
+        what.setLineSpacing(0, 1.3f);
+        Kit.sheet(this, getString(R.string.brain_remove_all_title), what, getString(R.string.brain_remove),
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        for (int slot = 0; slot < 3; slot++) {
+                            b.remove(slot);
+                        }
+                        Diag.mark(BrainActivity.this, "brain: removed from the phone");
+                        refresh();
+                    }
+                }).show();
     }
 
     /** The accelerator is optional: offered for download, or picked from a file. */

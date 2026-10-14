@@ -907,6 +907,9 @@
     <string name="brain_awake_line">Answers at %1$.1f tokens per second · unloads after %2$d minutes without questions.</string>
     <string name="brain_asleep_line">Loads on the first question, in a few seconds.</string>
     <string name="brain_draft_refused">The accelerator did not fit; the model runs without it.</string>
+    <string name="brain_remove_all">Remove from the phone</string>
+    <string name="brain_remove_all_title">Remove the AI model?</string>
+    <string name="brain_remove_all_text">This frees %1$.1f GB. Books, voices and settings stay. The model can be downloaded again right here.</string>
     <string name="brain_saved">AI model saved · %1$.1f GB</string>
     <string name="brain_size">On the phone: %1$.1f GB, files: %2$d</string>
     <string name="brain_restore">Restore</string>

@@ -1925,6 +1925,9 @@
     <string name="brain_awake_line">Отвечает %1$.1f токена в секунду · выгрузится через %2$d мин без вопросов.</string>
     <string name="brain_asleep_line">Загрузится при первом вопросе, за несколько секунд.</string>
     <string name="brain_draft_refused">Ускоритель не подошёл — модель работает без него.</string>
+    <string name="brain_remove_all">Убрать с телефона</string>
+    <string name="brain_remove_all_title">Убрать модель ИИ?</string>
+    <string name="brain_remove_all_text">Освободится %1$.1f ГБ. Книги, голоса и настройки останутся. Скачать модель можно снова здесь же.</string>
     <string name="brain_saved">Модель ИИ сохранена · %1$.1f ГБ</string>
     <string name="brain_size">В телефоне: %1$.1f ГБ, файлов: %2$d</string>
     <string name="brain_restore">Вернуть как было</string>
