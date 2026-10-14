@@ -17,7 +17,8 @@ import java.util.regex.Pattern;
  */
 final class TextPrep {
     private static final Pattern DIGITS = Pattern.compile("\\d+");
-    private static final Pattern LATIN = Pattern.compile("[A-Za-z]+");
+    /** Latin words, letters with marks included (umlauts, rings, accents), so no word is torn at them. */
+    private static final Pattern LATIN = Pattern.compile("[A-Za-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff]+");
     private static final Pattern SPACES = Pattern.compile("[ \\t]{2,}");
     private static final int MAX_NUMBER_DIGITS = 12;
 
@@ -39,9 +40,23 @@ final class TextPrep {
     private final java.util.Set<String> oneLetterWords = new java.util.HashSet<String>();
     private static final Pattern TOKEN = Pattern.compile("[\\p{L}\\p{M}]+");
 
+    /** Single foreign words read by their own language's rules; null without such rules. */
+    private final Latin latin;
+
     /** @param allowed code points the voice can read, or null to skip filtering */
     TextPrep(Resources res, Set<Integer> allowed) {
+        this(res, allowed, "");
+    }
+
+    /**
+     * @param allowed code points the voice can read, or null to skip filtering
+     * @param country where the phone is, two letters in lower case, or empty: it decides how a
+     *     foreign word with no other sign of its language is read
+     */
+    TextPrep(Resources res, Set<Integer> allowed, String country) {
         this.res = res;
+        Latin l = new Latin(res, country);
+        latin = l.isEmpty() ? null : l;
         this.allowed = allowed;
         unitsM = res.getStringArray(R.array.num_units_m);
         unitsF = res.getStringArray(R.array.num_units_f);
@@ -134,7 +149,8 @@ final class TextPrep {
                 char c = w.charAt(i);
                 if (c < 128 && Character.isLetter(c)) {
                     latin = true;
-                } else if (Character.isLetter(c)) {
+                } else if (Character.isLetter(c) && Character.UnicodeScript.of(c) != Character.UnicodeScript.LATIN) {
+                    // Latin letters with marks (umlauts, rings, accents) are Latin too, not native.
                     nativeLetter = true;
                 }
             }
@@ -163,6 +179,7 @@ final class TextPrep {
     }
 
     String apply(String text) {
+        Latin.begin();
         String out = replaceAll(DIGITS, normalizer.apply(fixScripts(text)), new Fn() {
             @Override
             public String on(String digits) {
@@ -173,7 +190,8 @@ final class TextPrep {
             out = replaceAll(LATIN, out, new Fn() {
                 @Override
                 public String on(String word) {
-                    return transliterate(word.toLowerCase(Locale.ROOT));
+                    String read = latin == null ? null : latin.read(word);
+                    return read != null ? read : transliterate(word.toLowerCase(Locale.ROOT));
                 }
             });
         }

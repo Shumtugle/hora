@@ -322,6 +322,25 @@
         <item>x=кс</item>
         <item>y=и</item>
         <item>z=з</item>
+        <item>ä=э</item>
+        <item>ö=ё</item>
+        <item>ü=ю</item>
+        <item>å=о</item>
+        <item>é=е</item>
+        <item>è=е</item>
+        <item>ê=е</item>
+        <item>á=а</item>
+        <item>à=а</item>
+        <item>â=а</item>
+        <item>ó=о</item>
+        <item>ò=о</item>
+        <item>í=и</item>
+        <item>ú=у</item>
+        <item>ñ=нь</item>
+        <item>ç=с</item>
+        <item>ß=сс</item>
+        <item>ø=ё</item>
+        <item>æ=э</item>
     </string-array>
     <string name="expression">Выразительность</string>
     <string name="lexicon_import">Импорт словаря…</string>
@@ -2569,4 +2588,150 @@
     <string name="morning_battery_sub">Если наушники его сообщают.</string>
     <string name="morning_note">Один раз в день, не раньше четырёх утра и не в тихие часы. Время — всегда. О новых уведомлениях — если включено «Говорить о новых уведомлениях», в той же фразе, коротко или подробно.</string>
     <string name="morning_battery_denied">Без разрешения Hora не видит заряд наушников</string>
+    <!-- Single words in Latin letters: names of services read by heart, Finnish and Swedish by their rules -->
+    <string-array name="latin_known">
+        <item>telegram=телегра́м</item>
+        <item>whatsapp=уотса́п</item>
+        <item>gmail=джиме́йл</item>
+        <item>google=гу́гл</item>
+        <item>youtube=ютю́б</item>
+        <item>instagram=инстагра́м</item>
+        <item>facebook=фейсбу́к</item>
+        <item>messenger=мэ́сенджер</item>
+        <item>signal=си́гнал</item>
+        <item>viber=ва́йбер</item>
+        <item>spotify=споти́фай</item>
+        <item>android=андро́ид</item>
+        <item>chatgpt=чат джи пи ти́</item>
+        <item>claude=кло́д</item>
+        <item>gemini=дже́мини</item>
+        <item>wifi=вайфа́й</item>
+        <item>bluetooth=блюту́з</item>
+        <item>email=имэ́йл</item>
+        <item>outlook=а́утлук</item>
+        <item>teams=ти́мс</item>
+        <item>zoom=зу́м</item>
+        <item>linkedin=линкеди́н</item>
+        <item>uber=у́бер</item>
+        <item>wolt=во́льт</item>
+        <item>hora=хо́ра</item>
+        <item>iphone=айфо́н</item>
+        <item>chrome=хро́м</item>
+        <item>booking=бу́кинг</item>
+        <item>toyota=тойо́та</item>
+        <item>netflix=не́тфликс</item>
+        <item>microsoft=майкросо́фт</item>
+        <item>samsung=са́мсунг</item>
+        <item>sony=со́ни</item>
+    </string-array>
+    <!-- Where the phone is: a Latin word there is taken as Finnish, or as Swedish -->
+    <string-array name="latin_fi_countries">
+        <item>fi</item>
+    </string-array>
+    <string-array name="latin_sv_countries">
+        <item>se</item>
+        <item>ax</item>
+    </string-array>
+    <!-- Endings that mark a Swedish name anywhere -->
+    <string-array name="latin_sv_endings">
+        <item>vägen</item>
+        <item>gatan</item>
+        <item>gränd</item>
+        <item>stigen</item>
+        <item>torget</item>
+        <item>backen</item>
+        <item>holmen</item>
+        <item>stranden</item>
+        <item>parken</item>
+    </string-array>
+    <!-- Finnish: a letter alone; ".c" after a consonant; "j" with a vowel; "i.glide" closing a diphthong; "l.coda" before a consonant or at the end -->
+    <string-array name="latin_fi">
+        <item>a=а</item>
+        <item>o=о</item>
+        <item>u=у</item>
+        <item>i=и</item>
+        <item>e=э</item>
+        <item>e.c=е</item>
+        <item>y=ю</item>
+        <item>ä=э</item>
+        <item>ä.c=я</item>
+        <item>ö=э</item>
+        <item>ö.c=ё</item>
+        <item>i.glide=й</item>
+        <item>ja=я</item>
+        <item>jä=я</item>
+        <item>ju=ю</item>
+        <item>jy=ю</item>
+        <item>je=е</item>
+        <item>jo=йо</item>
+        <item>ji=йи</item>
+        <item>jö=йё</item>
+        <item>j=й</item>
+        <item>h=х</item>
+        <item>k=к</item>
+        <item>p=п</item>
+        <item>t=т</item>
+        <item>s=с</item>
+        <item>m=м</item>
+        <item>n=н</item>
+        <item>r=р</item>
+        <item>v=в</item>
+        <item>d=д</item>
+        <item>g=г</item>
+        <item>b=б</item>
+        <item>f=ф</item>
+        <item>l=л</item>
+        <item>l.coda=ль</item>
+        <item>c=к</item>
+        <item>w=в</item>
+        <item>z=ц</item>
+        <item>x=кс</item>
+        <item>q=к</item>
+    </string-array>
+    <!-- Swedish: longest letters first; ".0" at the start of a word, ".end" at its end -->
+    <string-array name="latin_sv">
+        <item>skj=ш</item>
+        <item>stj=ш</item>
+        <item>sj=ш</item>
+        <item>tj=ч</item>
+        <item>kj=ч</item>
+        <item>ck=к</item>
+        <item>å=о</item>
+        <item>ä=э</item>
+        <item>ö=ё</item>
+        <item>a=а</item>
+        <item>e=е</item>
+        <item>e.0=э</item>
+        <item>i=и</item>
+        <item>o=о</item>
+        <item>o.end=у</item>
+        <item>u=у</item>
+        <item>y=ю</item>
+        <item>b=б</item>
+        <item>c=к</item>
+        <item>d=д</item>
+        <item>f=ф</item>
+        <item>g=г</item>
+        <item>h=х</item>
+        <item>j=й</item>
+        <item>k=к</item>
+        <item>l=л</item>
+        <item>m=м</item>
+        <item>n=н</item>
+        <item>p=п</item>
+        <item>r=р</item>
+        <item>s=с</item>
+        <item>t=т</item>
+        <item>v=в</item>
+        <item>w=в</item>
+        <item>x=кс</item>
+        <item>z=с</item>
+    </string-array>
+    <!-- Swedish double letters said as one -->
+    <string-array name="latin_sv_after">
+        <item>нн=н</item>
+        <item>сс=с</item>
+        <item>лл=л</item>
+        <item>мм=м</item>
+    </string-array>
 </resources>

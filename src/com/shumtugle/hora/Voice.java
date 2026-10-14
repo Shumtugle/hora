@@ -191,7 +191,7 @@ final class Voice {
         List<String> pieces = vocabulary(new File(model, "vocab.json"));
         respell = new Respell(SpeechLanguage.resources(context));
         modelStress = new ModelStress(pieces, StressNet.get(context), ModelStress.clitics(context));
-        prep = new TextPrep(SpeechLanguage.resources(context), TextPrep.charsOf(pieces));
+        prep = new TextPrep(SpeechLanguage.resources(context), TextPrep.charsOf(pieces), Bot.country(context));
 
         OfflineTtsConfig config = new OfflineTtsConfig();
         config.model.numThreads = THREADS;
@@ -366,7 +366,7 @@ final class Voice {
     private String nativeText(String text) {
         // Words produced by normalization (numbers, abbreviations) get stress marks too.
         Lexicon lex = Lexicon.get(context);
-        String out = Homographs.get(context).apply(prep.apply(text), lex);
+        String out = Homographs.get(context).apply(prep.apply(lex.applyOwnLatin(text)), lex);
         out = Lexicon.bareYo(modelStress.apply(lex.applyWords(out)));
         return Prefs.respellShared(context) ? respell.apply(out) : out;
     }
@@ -1027,8 +1027,8 @@ final class Voice {
     }
 
     /** Speech level every voice is brought to, as the RMS of its sounding part. */
-    private static final float LEVEL_TARGET = 0.07f;
-    private static final float LEVEL_MAX_GAIN = 2.5f;
+    private static final float LEVEL_TARGET = 0.14f;
+    private static final float LEVEL_MAX_GAIN = 5f;
     private static final float LEVEL_MIN_GAIN = 0.4f;
     /** Below this a sample counts as silence when measuring level. */
     private static final float LEVEL_FLOOR = 0.01f;

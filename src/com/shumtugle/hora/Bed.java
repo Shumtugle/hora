@@ -179,6 +179,16 @@ final class Bed {
         return curve(Prefs.bedVolume(c, kind));
     }
 
+    /** Rounds off what the voice and the background together push past the top, instead of cutting it. */
+    static float soft(float v) {
+        float a = Math.abs(v);
+        if (a <= 0.9f) {
+            return v;
+        }
+        float over = 0.9f + 0.1f * (float) Math.tanh((a - 0.9f) / 0.1f);
+        return v < 0 ? -over : over;
+    }
+
     private static float curve(int percent) {
         float v = percent / 100f;
         return CEILING * v * (float) Math.sqrt(v);
@@ -220,7 +230,7 @@ final class Bed {
                 long k = at + i;
                 float edge = Math.max(0f, Math.min(1f, Math.min(k, total - 1 - k) / (float) fade));
                 float v = (short) ((pcm[2 * i] & 0xff) | (pcm[2 * i + 1] << 8)) / 32768f + buf[i] * gain * edge * edge;
-                int s = Math.round(Math.max(-1f, Math.min(1f, v)) * 32767f);
+                int s = Math.round(soft(v) * 32767f);
                 pcm[2 * i] = (byte) s;
                 pcm[2 * i + 1] = (byte) (s >> 8);
             }

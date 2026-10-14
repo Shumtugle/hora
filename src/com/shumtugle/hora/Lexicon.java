@@ -157,6 +157,35 @@ final class Lexicon {
         return sb.toString();
     }
 
+    private static final Pattern LATIN_WORD =
+            Pattern.compile("[A-Za-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff]+");
+
+    /**
+     * The person's own readings for words in Latin letters, put in before any rule of a language
+     * reads them: what the person wrote for a name wins over every guess.
+     */
+    String applyOwnLatin(String text) {
+        if (words.isEmpty() || text == null) {
+            return text;
+        }
+        Matcher m = LATIN_WORD.matcher(text);
+        StringBuffer sb = null;
+        while (m.find()) {
+            String own = own(m.group().toLowerCase(Locale.ROOT));
+            if (sb == null && own != null) {
+                sb = new StringBuffer(text.length());
+            }
+            if (sb != null) {
+                m.appendReplacement(sb, Matcher.quoteReplacement(own != null ? own : m.group()));
+            }
+        }
+        if (sb == null) {
+            return text;
+        }
+        m.appendTail(sb);
+        return sb.toString();
+    }
+
     /**
      * Only the user's pattern rules. Runs before normalization; stress marks
      * are added after it, because a mark inside a word hides the word from

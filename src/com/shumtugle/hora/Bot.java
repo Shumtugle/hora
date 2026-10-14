@@ -415,6 +415,18 @@ final class Bot {
      * which mobile networks in most countries also route to help.
      */
     static String emergencyNumber(Context c, Resources r) {
+        String country = country(c);
+        for (String row : r.getStringArray(R.array.emergency_numbers)) {
+            int eq = row.indexOf('=');
+            if (eq > 0 && row.substring(0, eq).equals(country)) {
+                return row.substring(eq + 1);
+            }
+        }
+        return "112";
+    }
+
+    /** The country the phone is in: the network's, else the SIM's, else the language's; two letters, lower case. */
+    static String country(Context c) {
         String country = "";
         try {
             android.telephony.TelephonyManager tm =
@@ -431,14 +443,7 @@ final class Bot {
         if (country == null || country.isEmpty()) {
             country = java.util.Locale.getDefault().getCountry();
         }
-        country = country == null ? "" : country.toLowerCase(java.util.Locale.ROOT);
-        for (String row : r.getStringArray(R.array.emergency_numbers)) {
-            int eq = row.indexOf('=');
-            if (eq > 0 && row.substring(0, eq).equals(country)) {
-                return row.substring(eq + 1);
-            }
-        }
-        return "112";
+        return country == null ? "" : country.toLowerCase(java.util.Locale.ROOT);
     }
 
     private static boolean mentions(Resources r, int array, String text) {

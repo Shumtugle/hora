@@ -127,7 +127,8 @@ final class Respell {
     private String word(String token, char next) {
         String lower = token.toLowerCase(Locale.ROOT);
         String plain = lower.replace(String.valueOf(ACUTE), "");
-        if (untouched.contains(plain)) {
+        if (untouched.contains(plain) || Latin.made(plain)) {
+            // A foreign word read by its own rules: the native vowel reduction would spoil it.
             return token;
         }
         String out;

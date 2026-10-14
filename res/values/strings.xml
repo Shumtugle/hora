@@ -1478,4 +1478,12 @@
     <string name="morning_battery_sub">If the headphones report it.</string>
     <string name="morning_note">Once a day, not before four in the morning and not in quiet hours. The time always. New notifications if “Tell me about new notifications” is on, in the same breath, briefly or in full.</string>
     <string name="morning_battery_denied">Without the permission Hora cannot see the headphones’ charge</string>
+    <!-- Single Latin words read by rules of other languages: not needed when the voice reads Latin itself -->
+    <string-array name="latin_known"/>
+    <string-array name="latin_fi_countries"/>
+    <string-array name="latin_sv_countries"/>
+    <string-array name="latin_sv_endings"/>
+    <string-array name="latin_fi"/>
+    <string-array name="latin_sv"/>
+    <string-array name="latin_sv_after"/>
 </resources>
