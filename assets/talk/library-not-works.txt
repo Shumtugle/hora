@@ -1,0 +1,21 @@
+prefix|ЭСБЕ/
+prefix|МЭСБЕ/
+prefix|БСЭ1/
+prefix|РБС/
+prefix|ЕЭБЕ/
+prefix|НЭС/
+prefix|ЭЛ/
+prefix|1911 Encyclopædia Britannica/
+prefix|Dictionary of National Biography
+prefix|The Encyclopedia Americana
+prefix|Appletons'
+prefix|The New Student's Reference Work/
+prefix|Catholic Encyclopedia
+heading|о нём
+heading|о ней
+heading|об авторе
+heading|биограф
+heading|литература о
+heading|works about
+heading|about
+heading|biograph

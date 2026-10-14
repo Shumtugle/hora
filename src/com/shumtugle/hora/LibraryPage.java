@@ -123,7 +123,7 @@ final class LibraryPage {
     }
 
     /** Whether any step of the path below the work names another edition (an old spelling). */
-    private static boolean otherEdition(String title, String page, List<String> skip) {
+    static boolean otherEdition(String title, String page, List<String> skip) {
         String below = title.startsWith(page + "/") ? title.substring(page.length() + 1) : title;
         for (String step : below.split("/")) {
             if (skip.contains(step.trim().toLowerCase(Locale.ROOT))) {
@@ -131,6 +131,106 @@ final class LibraryPage {
             }
         }
         return false;
+    }
+
+    /** The links of a page under one of its headings. */
+    static final class Heading {
+        final String name;
+        final List<Link> links = new ArrayList<Link>();
+
+        Heading(String name) {
+            this.name = name;
+        }
+    }
+
+    /**
+     * The page's links in order, under the headings they stand beneath; links before the first
+     * heading come under an empty one. Only links into the library, without what it marks as not
+     * text, and no red links to pages not yet written.
+     */
+    static List<Heading> sections(String html) {
+        List<Heading> out = new ArrayList<Heading>();
+        Heading cur = new Heading("");
+        out.add(cur);
+        Matcher m = TOKEN.matcher(html);
+        String skipping = null;
+        int depth = 0;
+        int headStart = -1;
+        String headTag = null;
+        int linkStart = -1;
+        String linkAttrs = null;
+        // A link inside a heading (a collection named in its own heading) belongs to the section it opens.
+        List<Link> inHeading = new ArrayList<Link>();
+        while (m.find()) {
+            String tag = m.group(2);
+            if (tag == null) {
+                continue;
+            }
+            tag = tag.toLowerCase(Locale.ROOT);
+            boolean closing = !m.group(1).isEmpty();
+            boolean empty = VOID.contains(" " + tag + " ") || m.group(3).trim().endsWith("/");
+            if (skipping != null) {
+                if (tag.equals(skipping) && !empty) {
+                    depth += closing ? -1 : 1;
+                    if (depth == 0) {
+                        skipping = null;
+                    }
+                }
+                continue;
+            }
+            if (!closing && !empty && skipped(tag, m.group(3), false)) {
+                skipping = tag;
+                depth = 1;
+                continue;
+            }
+            if (tag.matches("h[2-4]")) {
+                if (!closing) {
+                    headStart = m.end();
+                    headTag = tag;
+                } else if (tag.equals(headTag) && headStart >= 0) {
+                    String name = clean(BookText.entities(html.substring(headStart, m.start())
+                            .replaceAll("(?s)<[^>]*>", " ")).replace('\n', ' '));
+                    cur = new Heading(name);
+                    cur.links.addAll(inHeading);
+                    inHeading.clear();
+                    out.add(cur);
+                    headStart = -1;
+                    headTag = null;
+                }
+            } else if (tag.equals("a")) {
+                if (!closing) {
+                    linkStart = m.end();
+                    linkAttrs = m.group(3);
+                } else if (linkStart >= 0) {
+                    Link l = link(linkAttrs, html.substring(linkStart, m.start()));
+                    if (l != null) {
+                        (headStart >= 0 ? inHeading : cur.links).add(l);
+                    }
+                    linkStart = -1;
+                }
+            }
+        }
+        List<Heading> kept = new ArrayList<Heading>();
+        for (Heading h : out) {
+            if (!h.links.isEmpty()) {
+                kept.add(h);
+            }
+        }
+        return kept;
+    }
+
+    /** A link into the library, or null for one that leads out of it, to a file, or nowhere yet. */
+    private static Link link(String attrs, String inner) {
+        String href = attr(HREF, attrs);
+        String title = BookText.entities(attr(TITLE, attrs));
+        if (href.isEmpty() || title.isEmpty() || href.contains("action=edit") || href.contains("redlink=1")
+                || href.startsWith("#") || hasClass(attrs, "new") || hasClass(attrs, "extiw")
+                || hasClass(attrs, "external") || hasClass(attrs, "image") || hasClass(attrs, "internal")
+                || href.startsWith("http") || href.startsWith("//")) {
+            return null;
+        }
+        String words = clean(BookText.entities(inner.replaceAll("(?s)<[^>]*>", " ")).replace('\n', ' '));
+        return new Link(title, words);
     }
 
     /** The work's text on this page, one paragraph per line, without what the library marks as not text. */

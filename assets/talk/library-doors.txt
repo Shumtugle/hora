@@ -1,0 +1,6 @@
+ru|authors|Категория:Авторы по алфавиту
+ru|genres|Категория:Литература по жанрам
+ru|featured|Викитека:Избранные тексты
+en|authors|Wikisource:Authors
+en|genres|Category:Works by genre
+en|featured|Wikisource:Featured texts

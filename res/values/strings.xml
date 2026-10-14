@@ -1894,7 +1894,6 @@
     <string name="library_hint">Title or author</string>
     <string name="library_note">Only what is free of rights. In Latin letters, the English Wikisource.</string>
     <string name="library_searching">Searching…</string>
-    <string name="library_found">Found</string>
     <string name="library_none">Nothing found</string>
     <string name="library_offline">Wikisource does not answer. Check the connection and try again.</string>
     <string name="library_opening">Opening…</string>
@@ -1911,4 +1910,19 @@
     <string name="library_cut">The book is very long: its beginning is on the shelf.</string>
     <string name="library_missing">Wikisource did not give everything: %1$d parts missing.</string>
     <string name="library_failed">The book could not be put together. Try again.</string>
+    <string name="library_doors">What to read</string>
+    <string name="library_door_authors">Authors</string>
+    <string name="library_door_authors_sub">by name, with all their works</string>
+    <string name="library_door_genres">Genres and eras</string>
+    <string name="library_door_genres_sub">novels, stories, poetry, plays…</string>
+    <string name="library_door_featured">Chosen</string>
+    <string name="library_door_featured_sub">picked by the editors themselves</string>
+    <string name="library_lang_ru">Russian</string>
+    <string name="library_lang_en">English</string>
+    <string name="library_authors">Authors</string>
+    <string name="library_works">Works</string>
+    <string name="library_sections">Sections</string>
+    <string name="library_more">Show more</string>
+    <string name="library_empty">Nothing here yet</string>
+    <string name="library_author_line">author · all works in Wikisource</string>
 </resources>

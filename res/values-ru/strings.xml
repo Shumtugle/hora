@@ -2767,7 +2767,6 @@
     <string name="library_hint">Название или автор</string>
     <string name="library_note">Только то, что свободно от прав. Латиницей — английская Викитека.</string>
     <string name="library_searching">Ищу…</string>
-    <string name="library_found">Найдено</string>
     <string name="library_none">Ничего не нашлось</string>
     <string name="library_offline">Викитека не отвечает. Проверь связь и попробуй ещё раз.</string>
     <string name="library_opening">Открываю…</string>
@@ -2786,4 +2785,19 @@
     <string name="library_cut">Книга очень длинная: на полку встало её начало.</string>
     <string name="library_missing">Викитека отдала не всё: глав пропущено — %1$d.</string>
     <string name="library_failed">Не получилось собрать книгу. Попробуй ещё раз.</string>
+    <string name="library_doors">Что почитать</string>
+    <string name="library_door_authors">Авторы</string>
+    <string name="library_door_authors_sub">по алфавиту, со всеми их вещами</string>
+    <string name="library_door_genres">Жанры и эпохи</string>
+    <string name="library_door_genres_sub">романы, рассказы, поэзия, пьесы…</string>
+    <string name="library_door_featured">Избранное</string>
+    <string name="library_door_featured_sub">что выбрали сами редакторы</string>
+    <string name="library_lang_ru">По-русски</string>
+    <string name="library_lang_en">In English</string>
+    <string name="library_authors">Авторы</string>
+    <string name="library_works">Произведения</string>
+    <string name="library_sections">Разделы</string>
+    <string name="library_more">Показать ещё</string>
+    <string name="library_empty">Здесь пока пусто</string>
+    <string name="library_author_line">автор · все вещи в Викитеке</string>
 </resources>

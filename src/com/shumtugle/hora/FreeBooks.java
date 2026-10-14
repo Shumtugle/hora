@@ -20,8 +20,10 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -56,13 +58,44 @@ final class FreeBooks {
     private FreeBooks() {
     }
 
-    /** One search result: the page, its title as shown, and what the page name adds (often the author). */
+    /** What a found page is: a work to shelve, an author's page, or a part of the catalogue. */
+    static final int WORK = 0;
+    static final int AUTHOR = 1;
+    static final int CATEGORY = 2;
+    /** A page of the library's own that lists others (an index of authors, a portal). */
+    static final int LIST = 3;
+    private static final int CATEGORY_SPACE = 14;
+    private static final int PROJECT_SPACE = 4;
+
+    /** One result or one line of a list: the page, its title as shown, a quieter line, and what it is. */
     static final class Found {
         String page;
         String title;
         String by;
         String lang;
+        int kind;
     }
+
+    /** A list of the catalogue under one heading. */
+    static final class Section {
+        String name;
+        final List<Found> items = new ArrayList<Found>();
+    }
+
+    /** A page of the catalogue: its sections, and where the next page of it begins, if there is one. */
+    static final class Listing {
+        final List<Section> sections = new ArrayList<Section>();
+        String more;
+    }
+
+    /** What a library calls its spaces of pages: the authors' space, and every prefix that is not a work. */
+    private static final class Site {
+        int author = -1;
+        int portal = -1;
+        final Map<String, Integer> prefixes = new HashMap<String, Integer>();
+    }
+
+    private static final Map<String, Site> SITES = new HashMap<String, Site>();
 
     /** A work about to be put on the shelf; its front page is kept from the first look. */
     static final class Work {
@@ -89,6 +122,13 @@ final class FreeBooks {
         boolean stopped();
     }
 
+    /** Thrown when the library has no page by that name. */
+    static final class Missing extends IOException {
+        Missing() {
+            super("library: no such page");
+        }
+    }
+
     /** Thrown when the person stopped the work. */
     static final class Stopped extends IOException {
         Stopped() {
@@ -103,9 +143,11 @@ final class FreeBooks {
     /** Works whose title or text matches; parts of works, editions lists and other editions are left out. */
     static List<Found> search(Context c, String query) throws IOException {
         String lang = edition(query);
+        Site site = site(c, lang);
+        String spaces = site.author >= 0 ? "0%7C" + site.author : "0";
         // Pages that only list the editions of a work are marked by the library; they are no book.
         JSONObject r = get(c, api(c, lang) + "?action=query&format=json&formatversion=2&generator=search"
-                + "&gsrnamespace=0&gsrlimit=40&prop=pageprops&ppprop=disambiguation&gsrsearch="
+                + "&gsrnamespace=" + spaces + "&gsrlimit=40&prop=pageprops&ppprop=disambiguation&gsrsearch="
                 + URLEncoder.encode(query, "UTF-8"));
         if (r.has("error")) {
             throw new IOException("library: the search was refused");
@@ -120,7 +162,7 @@ final class FreeBooks {
                 if (props != null && props.has("disambiguation")) {
                     continue;
                 }
-                ranked.add(new Object[] {p.optInt("index", i + 1000), p.optString("title")});
+                ranked.add(new Object[] {p.optInt("index", i + 1000), p.optString("title"), p.optInt("ns", 0)});
             }
         } catch (JSONException e) {
             throw new IOException("library: " + e.getMessage());
@@ -132,6 +174,7 @@ final class FreeBooks {
             }
         });
         List<String> skip = skip(c);
+        List<Found> authors = new ArrayList<Found>();
         List<Found> titled = new ArrayList<Found>();
         List<Found> rest = new ArrayList<Found>();
         String q = query.trim().toLowerCase(java.util.Locale.ROOT);
@@ -144,11 +187,23 @@ final class FreeBooks {
             Found f = new Found();
             f.page = page;
             f.lang = lang;
+            if ((Integer) o[2] != 0) {
+                f.kind = AUTHOR;
+                f.title = bare(page);
+                f.by = "";
+                if (authors.size() < 3) {
+                    authors.add(f);
+                }
+                continue;
+            }
+            f.kind = WORK;
             f.title = shownTitle(page);
             f.by = added(page);
             (f.title.toLowerCase(java.util.Locale.ROOT).contains(q) ? titled : rest).add(f);
         }
         titled.addAll(rest);
+        // A few authors first: someone known by name, all of whose works are one touch away.
+        titled.addAll(0, authors);
         List<Found> out = titled.size() > SHOWN ? new ArrayList<Found>(titled.subList(0, SHOWN)) : titled;
         Diag.mark(c, "library: search, " + out.size() + " shown");
         return out;
@@ -176,9 +231,239 @@ final class FreeBooks {
         String title = LibraryPage.meta(w.front, "ws-title");
         String author = LibraryPage.meta(w.front, "ws-author");
         w.title = title.isEmpty() ? shownTitle(w.page) : title;
-        w.author = author.isEmpty() ? added(w.page) : author;
+        w.author = author.isEmpty() ? added(w.page) : unlabelled(c, author);
         w.year = LibraryPage.meta(w.front, "ws-year");
         return w;
+    }
+
+    /** The author's name without a word before it that only says "author" or "by". */
+    static String unlabelled(Context c, String author) throws IOException {
+        String a = author.trim();
+        for (String label : lines(c, "talk/library-labels.txt")) {
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("^" + java.util.regex.Pattern.quote(label)
+                    + "\\s*(?:[:.\\u2013\\u2014-]\\s*|\\s+)", java.util.regex.Pattern.CASE_INSENSITIVE
+                    | java.util.regex.Pattern.UNICODE_CASE).matcher(a);
+            // Only a name follows the label ("Author: Jack London"); "Author unknown" stays as it is.
+            if (m.find() && m.end() < a.length() && Character.isUpperCase(a.charAt(m.end()))) {
+                return a.substring(m.end()).trim();
+            }
+        }
+        return a;
+    }
+
+    /** The title without the name of its space ("Author:", "Category:"). */
+    static String bare(String page) {
+        int colon = page.indexOf(':');
+        return colon > 0 && colon < page.length() - 1 ? page.substring(colon + 1).trim() : page;
+    }
+
+    /** A page named in the bundle as a door of the catalogue (authors, genres, chosen works); null if none. */
+    static String door(Context c, String lang, String which) throws IOException {
+        for (String line : lines(c, "talk/library-doors.txt")) {
+            String[] p = line.split("\\|", 3);
+            if (p.length == 3 && p[0].equals(lang) && p[1].equals(which)) {
+                return p[2];
+            }
+        }
+        return null;
+    }
+
+    /** Whether a page is a part of the catalogue (a category) rather than a page to read. */
+    static boolean isCategory(Context c, String lang, String page) throws IOException {
+        return space(site(c, lang), page) == CATEGORY_SPACE;
+    }
+
+    /**
+     * A page of the library as a list: its works, and on a page that is not an author's own, the
+     * authors and catalogue parts it leads to, under the page's own headings.
+     */
+    static Listing page(Context c, String lang, String page) throws IOException {
+        Site site = site(c, lang);
+        Listing out = new Listing();
+        String[] got;
+        try {
+            got = parse(c, lang, page);
+        } catch (Missing e) {
+            Diag.mark(c, "library: a list page is missing");
+            return out;
+        }
+        boolean authors = space(site, got[0]) == site.author;
+        List<String> skip = skip(c);
+        List<String> notWorks = new ArrayList<String>();
+        List<String> notSections = new ArrayList<String>();
+        for (String line : lines(c, "talk/library-not-works.txt")) {
+            String[] p = line.split("\\|", 2);
+            if (p.length == 2) {
+                (p[0].equals("heading") ? notSections : notWorks).add(p[1].toLowerCase(java.util.Locale.ROOT));
+            }
+        }
+        Set<String> seen = new HashSet<String>();
+        for (LibraryPage.Heading h : LibraryPage.sections(got[1])) {
+            // On an author's page, what is written about the author is no work of theirs.
+            if (authors && startsWithAny(h.name.toLowerCase(java.util.Locale.ROOT), notSections)) {
+                continue;
+            }
+            Section s = new Section();
+            s.name = h.name;
+            for (LibraryPage.Link l : h.links) {
+                if (l.page.equals(got[0]) || LibraryPage.otherEdition(l.page, "", skip) || !seen.add(l.page)
+                        || startsWithAny(l.page.toLowerCase(java.util.Locale.ROOT), notWorks)) {
+                    continue;
+                }
+                Found f = found(site, lang, l.page, l.words);
+                if (f == null || authors && f.kind != WORK) {
+                    continue;
+                }
+                if (authors) {
+                    f.by = "";
+                }
+                s.items.add(f);
+            }
+            if (!s.items.isEmpty()) {
+                out.sections.add(s);
+            }
+        }
+        Diag.mark(c, "library: a list page, " + out.sections.size() + " sections");
+        return out;
+    }
+
+    /** The members of a category: its own parts first, then authors, then works; up to two hundred at a time. */
+    static Listing category(Context c, String lang, String page, String from) throws IOException {
+        Site site = site(c, lang);
+        JSONObject r = get(c, api(c, lang) + "?action=query&format=json&formatversion=2&list=categorymembers"
+                + "&cmlimit=200&cmprop=title%7Cns&cmtitle=" + URLEncoder.encode(page, "UTF-8")
+                + (from == null ? "" : "&cmcontinue=" + URLEncoder.encode(from, "UTF-8")));
+        if (r.has("error")) {
+            throw new IOException("library: the list was refused");
+        }
+        Section parts = new Section();
+        Section people = new Section();
+        Section works = new Section();
+        List<String> skip = skip(c);
+        Listing out = new Listing();
+        try {
+            JSONObject q = r.optJSONObject("query");
+            JSONArray members = q == null ? null : q.optJSONArray("categorymembers");
+            for (int i = 0; members != null && i < members.length(); i++) {
+                String title = members.getJSONObject(i).optString("title");
+                if (title.isEmpty() || LibraryPage.otherEdition(title, "", skip)) {
+                    continue;
+                }
+                Found f = found(site, lang, title, "");
+                if (f == null || f.kind == WORK && title.indexOf('/') >= 0) {
+                    continue;
+                }
+                (f.kind == CATEGORY ? parts : f.kind == AUTHOR ? people : works).items.add(f);
+            }
+            JSONObject more = r.optJSONObject("continue");
+            out.more = more == null ? null : more.optString("cmcontinue", null);
+        } catch (JSONException e) {
+            throw new IOException("library: " + e.getMessage());
+        }
+        for (Section s : new Section[] {parts, people, works}) {
+            if (!s.items.isEmpty()) {
+                out.sections.add(s);
+            }
+        }
+        Diag.mark(c, "library: a category, " + (parts.items.size() + people.items.size() + works.items.size())
+                + " lines");
+        return out;
+    }
+
+    private static boolean startsWithAny(String s, List<String> heads) {
+        for (String h : heads) {
+            if (s.startsWith(h)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** A line for a linked page, or null for a page that is neither a work, an author nor a category. */
+    private static Found found(Site site, String lang, String page, String words) {
+        int space = space(site, page);
+        Found f = new Found();
+        f.page = page;
+        f.lang = lang;
+        if (space == 0) {
+            f.kind = WORK;
+            f.title = words.isEmpty() ? shownTitle(page) : words;
+            f.by = added(page);
+        } else if (space == site.author && space >= 0) {
+            f.kind = AUTHOR;
+            f.title = bare(page);
+            f.by = "";
+        } else if (space == CATEGORY_SPACE) {
+            f.kind = CATEGORY;
+            f.title = bare(page);
+            f.by = "";
+        } else if (space == PROJECT_SPACE || space == site.portal && space >= 0) {
+            f.kind = LIST;
+            f.title = words.isEmpty() ? bare(page) : words;
+            f.by = "";
+        } else {
+            return null;
+        }
+        return f;
+    }
+
+    /** The space a page belongs to by its prefix; 0 for a work. */
+    private static int space(Site site, String page) {
+        int colon = page.indexOf(':');
+        if (colon <= 0) {
+            return 0;
+        }
+        Integer id = site.prefixes.get(page.substring(0, colon).trim().toLowerCase(java.util.Locale.ROOT));
+        return id == null ? 0 : id;
+    }
+
+    /** The library's spaces, asked once per language and kept while the app lives. */
+    private static Site site(Context c, String lang) throws IOException {
+        synchronized (SITES) {
+            Site known = SITES.get(lang);
+            if (known != null) {
+                return known;
+            }
+        }
+        JSONObject r = get(c, api(c, lang) + "?action=query&format=json&formatversion=2&meta=siteinfo"
+                + "&siprop=namespaces%7Cnamespacealiases");
+        Site s = new Site();
+        List<String> authorNames = lines(c, "talk/library-author.txt");
+        try {
+            JSONObject q = r.getJSONObject("query");
+            JSONObject spaces = q.getJSONObject("namespaces");
+            java.util.Iterator<String> keys = spaces.keys();
+            while (keys.hasNext()) {
+                JSONObject n = spaces.getJSONObject(keys.next());
+                int id = n.optInt("id");
+                if (id == 0) {
+                    continue;
+                }
+                for (String name : new String[] {n.optString("name"), n.optString("canonical")}) {
+                    if (!name.isEmpty()) {
+                        String low = name.toLowerCase(java.util.Locale.ROOT);
+                        s.prefixes.put(low, id);
+                        if (s.author < 0 && authorNames.contains(low)) {
+                            s.author = id;
+                        }
+                        if ("portal".equals(low)) {
+                            s.portal = id;
+                        }
+                    }
+                }
+            }
+            JSONArray aliases = q.optJSONArray("namespacealiases");
+            for (int i = 0; aliases != null && i < aliases.length(); i++) {
+                JSONObject a = aliases.getJSONObject(i);
+                s.prefixes.put(a.optString("alias").toLowerCase(java.util.Locale.ROOT), a.optInt("id"));
+            }
+        } catch (JSONException e) {
+            throw new IOException("library: " + e.getMessage());
+        }
+        synchronized (SITES) {
+            SITES.put(lang, s);
+        }
+        return s;
     }
 
     /** Puts the work together and writes it as one book file. */
@@ -390,6 +675,10 @@ final class FreeBooks {
                 + "&disableeditsection=1&disablelimitreport=1&page=" + URLEncoder.encode(page, "UTF-8"));
         JSONObject parse = r.optJSONObject("parse");
         if (parse == null) {
+            JSONObject error = r.optJSONObject("error");
+            if (error != null && "missingtitle".equals(error.optString("code"))) {
+                throw new Missing();
+            }
             throw new IOException("library: page not given");
         }
         return new String[] {parse.optString("title", page), parse.optString("text", "")};
