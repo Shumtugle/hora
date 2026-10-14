@@ -91,6 +91,8 @@ public final class BookPlayer extends Service {
     private int nextIndex;
     private volatile int playIndex;
     private volatile List<String> paragraphs;
+    /** The open book is English from end to end: the English voice reads all of it. */
+    private volatile boolean englishBook;
     private String uri = "";
     private String title = "";
     /**
@@ -631,8 +633,9 @@ public final class BookPlayer extends Service {
                     Library.opened(BookPlayer.this, u, name, book, at, Prefs.roleShared(BookPlayer.this, Cast.NARRATOR));
                 }
                 publish();
+                englishBook = Foreign.englishBook(p);
                 Diag.mark(BookPlayer.this, "book: opened, " + p.size() + " paragraphs, "
-                        + book.chapters.size() + " chapters, at " + at);
+                        + book.chapters.size() + " chapters, at " + at + (englishBook ? ", in English" : ""));
                 if (playNow) {
                     play("opened");
                 }
@@ -846,7 +849,8 @@ public final class BookPlayer extends Service {
                 voice.prepare();
                 rate = voice.sampleRate();
                 final long t0 = SystemClock.elapsedRealtime();
-                String spoken = voice.normalize(Lexicon.get(this).applyRules(TextPrep.clean(text)));
+                String spoken = englishBook && voice.speaksEnglish() ? voice.normalizeEnglish(TextPrep.clean(text))
+                        : voice.normalize(Lexicon.get(this).applyRules(TextPrep.clean(text)));
                 final int at = index;
                 final float[] made = new float[1];
                 final long[] firstAt = new long[] {-1};
@@ -854,7 +858,7 @@ public final class BookPlayer extends Service {
                 // while the rest of the paragraph is still being made.
                 // The demo may be read by a voice of its own in place of the narrator; nothing else is.
                 final int reader = Demo.is(this, uri) ? Demo.voice(this) : 0;
-                voice.render(spoken, SpeechLanguage.locale(), Prefs.speedShared(this),
+                voice.render(spoken, englishBook ? java.util.Locale.ENGLISH : SpeechLanguage.locale(), Prefs.speedShared(this),
                         Prefs.pauseMsShared(this), new Voice.Cancel() {
                             @Override
                             public boolean cancelled() {

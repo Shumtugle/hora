@@ -1,0 +1,20 @@
+first|preface
+first|introduction
+first|foreword
+first|prologue
+first|предисловие
+first|введение
+first|вступление
+first|пролог
+first|от автора
+last|appendix
+last|notes
+last|epilogue
+last|afterword
+last|glossary
+last|index
+last|эпилог
+last|послесловие
+last|примечания
+last|приложение
+last|комментарии

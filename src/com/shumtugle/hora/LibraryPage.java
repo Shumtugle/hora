@@ -78,6 +78,12 @@ final class LibraryPage {
      * @param skip names of last parts that mean another edition of the same text, lower case
      */
     static List<Link> parts(String html, String page, List<String> skip) {
+        List<Link> found = parts(html, page, skip, true);
+        // A contents block that leads nowhere under the work: the whole page is looked at instead.
+        return found.isEmpty() ? parts(html, page, skip, false) : found;
+    }
+
+    private static List<Link> parts(String html, String page, List<String> skip, boolean useSummary) {
         String scope = html;
         Matcher m = TOKEN.matcher(html);
         while (m.find()) {
@@ -85,7 +91,7 @@ final class LibraryPage {
                 continue;
             }
             String attrs = m.group(3);
-            if ("ws-summary".equals(attr(ID, attrs)) || hasClass(attrs, "ws-summary")) {
+            if (useSummary && ("ws-summary".equals(attr(ID, attrs)) || hasClass(attrs, "ws-summary"))) {
                 scope = html.substring(m.end(), closing(html, m.end(), m.group(2).toLowerCase(Locale.ROOT)));
                 break;
             }

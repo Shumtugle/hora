@@ -477,6 +477,29 @@ final class FreeBooks {
         }
         List<String> front = own(LibraryPage.paragraphs(w.front, false), parts);
         if (parts.isEmpty()) {
+            // The contents may lead to the parts in a way the page does not show as links under it
+            // (through the scanned pages, for one): the library's own list of pages under the work is asked.
+            List<LibraryPage.Link> below = below(c, w.lang, w.page, skip);
+            String shapes;
+            try {
+                shapes = linkShapes(c, w);
+            } catch (IOException | RuntimeException e) {
+                shapes = "not counted";
+            }
+            Diag.mark(c, "library: no links to parts on the front page (" + shapes + "), "
+                    + below.size() + " pages under it");
+            if (!below.isEmpty()) {
+                parts = below;
+                for (LibraryPage.Link l : parts) {
+                    b.seen.add(l.page);
+                }
+                // Its own text is then a contents list with page numbers: no part of the book.
+                if (contentsList(front)) {
+                    front = new ArrayList<String>();
+                }
+            }
+        }
+        if (parts.isEmpty()) {
             b.add("", front);
         } else {
             // A front page with a text of its own (an epigraph, a preface) keeps it before the parts.
@@ -615,6 +638,142 @@ final class FreeBooks {
             }
             return null;
         }
+    }
+
+    /** The pages directly under a work, in the order of their numbers (2 before 10, IV before IX). */
+    private static List<LibraryPage.Link> below(Context c, String lang, String page, List<String> skip)
+            throws IOException {
+        List<LibraryPage.Link> out = new ArrayList<LibraryPage.Link>();
+        String from = null;
+        // Up to four rounds of five hundred: grandchildren count against the limit too.
+        for (int round = 0; round < 4; round++) {
+            JSONObject r = get(c, api(c, lang) + "?action=query&format=json&formatversion=2&list=allpages"
+                    + "&apnamespace=0&aplimit=500&apfilterredir=nonredirects&apprefix="
+                    + URLEncoder.encode(page + "/", "UTF-8")
+                    + (from == null ? "" : "&apcontinue=" + URLEncoder.encode(from, "UTF-8")));
+            try {
+                JSONObject q = r.optJSONObject("query");
+                JSONArray all = q == null ? null : q.optJSONArray("allpages");
+                for (int i = 0; all != null && i < all.length(); i++) {
+                    String t = all.getJSONObject(i).optString("title");
+                    String rest = t.startsWith(page + "/") ? t.substring(page.length() + 1) : "";
+                    // Only the work's own parts, not the parts of its parts: those come with their part.
+                    if (rest.isEmpty() || rest.indexOf('/') >= 0 || LibraryPage.otherEdition(t, page, skip)) {
+                        continue;
+                    }
+                    out.add(new LibraryPage.Link(t, rest));
+                }
+                JSONObject more = r.optJSONObject("continue");
+                from = more == null ? null : more.optString("apcontinue", null);
+            } catch (JSONException e) {
+                throw new IOException("library: " + e.getMessage());
+            }
+            if (from == null) {
+                break;
+            }
+        }
+        final List<String> first = new ArrayList<String>();
+        final List<String> last = new ArrayList<String>();
+        for (String line : lines(c, "talk/library-order.txt")) {
+            String[] p = line.split("\\|", 2);
+            if (p.length == 2) {
+                (p[0].equals("first") ? first : last).add(p[1].toLowerCase(java.util.Locale.ROOT));
+            }
+        }
+        Collections.sort(out, new Comparator<LibraryPage.Link>() {
+            @Override
+            public int compare(LibraryPage.Link a, LibraryPage.Link b) {
+                int ra = rank(a.words, first, last);
+                int rb = rank(b.words, first, last);
+                return ra != rb ? ra - rb : natural(a.words, b.words);
+            }
+        });
+        return out;
+    }
+
+    /** A preface before the chapters, notes and appendices after them, the rest between. */
+    private static int rank(String name, List<String> first, List<String> last) {
+        String n = name.toLowerCase(java.util.Locale.ROOT);
+        for (String f : first) {
+            if (n.startsWith(f)) {
+                return 0;
+            }
+        }
+        for (String l : last) {
+            if (n.startsWith(l)) {
+                return 2;
+            }
+        }
+        return 1;
+    }
+
+    /**
+     * Compares names word by word: at each place a number (or a roman number) comes before a word,
+     * numbers by value, words by spelling; so the order is the same whichever pair is compared.
+     */
+    static int natural(String a, String b) {
+        String[] x = a.split("[\\s.,:;_-]+");
+        String[] y = b.split("[\\s.,:;_-]+");
+        for (int i = 0; i < Math.min(x.length, y.length); i++) {
+            long p = number(x[i]);
+            long q = number(y[i]);
+            int c;
+            if (p >= 0 && q >= 0) {
+                c = Long.compare(p, q);
+            } else if (p >= 0 || q >= 0) {
+                c = p >= 0 ? -1 : 1;
+            } else {
+                c = x[i].compareToIgnoreCase(y[i]);
+            }
+            if (c != 0) {
+                return c;
+            }
+        }
+        return x.length - y.length;
+    }
+
+    private static long number(String s) {
+        if (s.matches("\\d{1,15}")) {
+            return Long.parseLong(s);
+        }
+        // A single C, D, L or M is a letter more often than a number.
+        if (s.length() == 1 && "CDLM".indexOf(s.charAt(0)) >= 0) {
+            return -1;
+        }
+        int r = English.roman(s);
+        return r > 0 ? r : -1;
+    }
+
+    /** Whether a text is a contents list: many of its lines are only page or chapter numbers. */
+    private static boolean contentsList(List<String> text) {
+        int numbers = 0;
+        for (String line : text) {
+            if (line.matches("[\\dIVXLC.\\s]+")) {
+                numbers++;
+            }
+        }
+        return !text.isEmpty() && numbers * 5 >= text.size();
+    }
+
+    /** Where the front page's links lead, counted for the journal: under the page, in other spaces, elsewhere. */
+    private static String linkShapes(Context c, Work w) throws IOException {
+        Site site = site(c, w.lang);
+        int under = 0;
+        int works = 0;
+        Map<Integer, Integer> spaces = new java.util.TreeMap<Integer, Integer>();
+        for (LibraryPage.Heading h : LibraryPage.sections(w.front)) {
+            for (LibraryPage.Link l : h.links) {
+                int s = space(site, l.page);
+                if (s != 0) {
+                    spaces.put(s, spaces.containsKey(s) ? spaces.get(s) + 1 : 1);
+                } else if (l.page.startsWith(w.page)) {
+                    under++;
+                } else {
+                    works++;
+                }
+            }
+        }
+        return under + " under the title, " + works + " other works, spaces " + spaces;
     }
 
     /** The page's text without the lines that are only the names of its parts (its contents). */

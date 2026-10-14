@@ -597,12 +597,16 @@ final class Export {
             job.put("from", range[0]).put("to", range[1]);
             try (RandomAccessFile out = new RandomAccessFile(pcm(c), "rw")) {
                 out.seek(job.optLong("bytes", 0));
+                // An English book is read by the English voice from end to end, as on the book screen.
+                boolean english = Foreign.englishBook(b.paragraphs) && voice.speaksEnglish();
                 while (p < range[1]) {
                     if (stop.cancelled() || SystemClock.elapsedRealtime() > until || Reading.playing(c)) {
                         return false;
                     }
-                    String spoken = voice.normalize(Lexicon.get(c).applyRules(TextPrep.clean(b.paragraphs.get(p))));
-                    float[] s = voice.render(spoken, SpeechLanguage.locale(), Prefs.speedShared(c),
+                    String spoken = english ? voice.normalizeEnglish(TextPrep.clean(b.paragraphs.get(p)))
+                            : voice.normalize(Lexicon.get(c).applyRules(TextPrep.clean(b.paragraphs.get(p))));
+                    float[] s = voice.render(spoken, english ? java.util.Locale.ENGLISH : SpeechLanguage.locale(),
+                            Prefs.speedShared(c),
                             Prefs.pauseMsShared(c), stop, null, false, reader);
                     if (stop.cancelled()) {
                         return false;

@@ -44,7 +44,10 @@ final class Foreign {
             "have", "has", "do", "at", "as", "by", "from", "or", "if", "me", "so", "no", "will", "can"));
     private static final Set<String> OTHER_WORDS = new HashSet<String>(Arrays.asList(
             "der", "die", "das", "und", "ist", "nicht", "ich", "ein", "eine", "le", "la", "les", "et", "est",
-            "une", "des", "du", "qui", "pas", "je", "vous", "il", "elle", "est", "sono", "che", "non", "el", "los"));
+            "une", "des", "du", "qui", "pas", "je", "vous", "il", "elle", "est", "sono", "che", "non", "el", "los",
+            "que", "de", "het", "een", "van", "niet", "zijn", "para", "uma", "com", "nie", "jest", "och"));
+    /** Letters with marks: a few in an English book (a name, a borrowed word), many in another language. */
+    private static final Pattern MARKED = Pattern.compile("[\u00c0-\u00ff\u0100-\u017f]");
 
     private Foreign() {
     }
@@ -163,6 +166,51 @@ final class Foreign {
         }
         inside[0] = in;
         return out;
+    }
+
+    /**
+     * Whether a whole book is English: nearly all its letters Latin, and its common words English
+     * rather than another Latin-letter language's. Such a book is read by the English voice from
+     * end to end, its numbers, headings and short lines too, not only its long sentences.
+     */
+    static boolean englishBook(List<String> paragraphs) {
+        int latin = 0;
+        int native_ = 0;
+        int ours = 0;
+        int theirs = 0;
+        int marked = 0;
+        int seen = 0;
+        for (String p : paragraphs) {
+            Matcher mk = MARKED.matcher(p);
+            while (mk.find()) {
+                marked++;
+            }
+            for (int i = 0; i < p.length(); i++) {
+                char ch = p.charAt(i);
+                if (ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z') {
+                    latin++;
+                } else if (Character.isLetter(ch)) {
+                    native_++;
+                }
+            }
+            Matcher w = WORD.matcher(p);
+            while (w.find()) {
+                String x = w.group().toLowerCase(Locale.ROOT);
+                if (ENGLISH_WORDS.contains(x)) {
+                    ours++;
+                }
+                if (OTHER_WORDS.contains(x)) {
+                    theirs++;
+                }
+            }
+            seen += p.length();
+            // A sample is enough: the first stretch of a book tells its language.
+            if (seen > 200000) {
+                break;
+            }
+        }
+        return latin > 500 && latin > 0.85 * (latin + native_) && ours > 3 * theirs && ours > 20
+                && marked * 200 < latin;
     }
 
     static boolean has(String s) {
