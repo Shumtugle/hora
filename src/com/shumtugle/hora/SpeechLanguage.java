@@ -50,8 +50,13 @@ final class SpeechLanguage {
     }
 
     static Resources resources(Context context) {
+        return resources(context, locale());
+    }
+
+    /** Resources of another language, for the words said in it. */
+    static Resources resources(Context context, Locale language) {
         Configuration c = new Configuration(context.getResources().getConfiguration());
-        c.setLocale(locale());
+        c.setLocale(language);
         return context.createConfigurationContext(c).getResources();
     }
 }

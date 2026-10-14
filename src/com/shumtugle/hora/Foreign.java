@@ -27,9 +27,14 @@ final class Foreign {
 
     private static final int MIN_WORDS = 4;
 
-    /** Latin words, digits, spaces and the punctuation a quoted sentence carries; no native letters. */
+    /**
+     * Latin words, digits, spaces and the punctuation a quoted sentence carries; no native letters.
+     * Money, percent, degrees, plus, slash and the like stay inside, so a price in an English
+     * quote is said by the English voice, not handed to the native one.
+     */
     private static final Pattern RUN = Pattern.compile(
-            "[A-Za-z][A-Za-z'’\\-]*(?:[\\s,.;:!?\"'’“”()\\-–—]+[A-Za-z0-9][A-Za-z0-9'’\\-]*)+");
+            "[A-Za-z][A-Za-z'’\\-]*(?:[\\s,.;:!?\"'’“”()\\-–—\\$\u20ac\u00a3+/&#]+"
+            + "[A-Za-z0-9][A-Za-z0-9'’\\-%\u00b0\u20ac\u00a3]*)+");
     private static final Pattern WORD = Pattern.compile("[A-Za-z][A-Za-z'’\\-]*");
     /** Letters English does not use: their presence means another language. */
     private static final Pattern NOT_ENGLISH = Pattern.compile("[À-ÿŒœ]");

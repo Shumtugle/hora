@@ -131,6 +131,8 @@ final class Voice {
             java.util.regex.Pattern.compile("\\s[\u2014\u2013]\\s|\\s-\\s?(?=\\p{L})");
     private AudioTrack track;
     private TextPrep prep;
+    /** English written out as said, for the English model. */
+    private English englishText;
     private Respell respell;
     private ModelStress modelStress;
 
@@ -192,6 +194,7 @@ final class Voice {
         respell = new Respell(SpeechLanguage.resources(context));
         modelStress = new ModelStress(pieces, StressNet.get(context), ModelStress.clitics(context));
         prep = new TextPrep(SpeechLanguage.resources(context), TextPrep.charsOf(pieces), Bot.country(context));
+        englishText = new English(SpeechLanguage.resources(context, java.util.Locale.ENGLISH));
 
         OfflineTtsConfig config = new OfflineTtsConfig();
         config.model.numThreads = THREADS;
@@ -268,8 +271,8 @@ final class Voice {
 
     /**
      * Makes arbitrary text readable for this voice. Call after prepare().
-     * With the English module in place, English spans are marked and left as
-     * they are, for the English model; the rest is rewritten for the native one.
+     * With the English module in place, English spans are marked and written out
+     * as said, for the English model; the rest is rewritten for the native one.
      */
     synchronized String normalize(String text) {
         // Marks already in a source text are not ours and are dropped before marking.
@@ -284,7 +287,7 @@ final class Voice {
                 out.append(' ');
             }
             if (p.english) {
-                out.append(Foreign.OPEN).append(p.text).append(Foreign.CLOSE);
+                out.append(Foreign.OPEN).append(englishText == null ? p.text : englishText.say(p.text)).append(Foreign.CLOSE);
             } else {
                 out.append(nativeText(p.text));
             }
@@ -293,8 +296,9 @@ final class Voice {
     }
 
     /** A text asked for in English, read whole by the English model. */
-    String normalizeEnglish(String text) {
-        return Foreign.whole(Foreign.plain(text).trim());
+    synchronized String normalizeEnglish(String text) {
+        String plain = Foreign.plain(text).trim();
+        return Foreign.whole(englishText == null ? plain : englishText.say(plain));
     }
 
     /** Whether English can be read at all: the module is installed. */
