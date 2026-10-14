@@ -166,6 +166,8 @@
     <string name="about_data">Data from the network</string>
     <string name="about_weather">Weather</string>
     <string name="about_wikipedia">Wikipedia</string>
+    <string name="about_wikisource">Wikisource</string>
+    <string name="about_lic_pd_cc_by_sa">public domain · CC BY-SA 4.0</string>
     <string name="about_texts">Full texts</string>
     <string name="about_apache_text">Apache License</string>
     <string name="about_look">Look</string>
@@ -1886,4 +1888,27 @@
         <item>Still</item>
         <item>Yet</item>
     </string-array>
+    <string name="shelf_free_books">Find in Wikisource</string>
+    <string name="shelf_free_note">Classics free of rights, in Russian and in English. Hora puts the book together itself.</string>
+    <string name="library_title">Wikisource</string>
+    <string name="library_hint">Title or author</string>
+    <string name="library_note">Only what is free of rights. In Latin letters, the English Wikisource.</string>
+    <string name="library_searching">Searching…</string>
+    <string name="library_found">Found</string>
+    <string name="library_none">Nothing found</string>
+    <string name="library_offline">Wikisource does not answer. Check the connection and try again.</string>
+    <string name="library_opening">Opening…</string>
+    <string name="library_source">Wikisource · public domain</string>
+    <string name="library_shelve">To the shelf</string>
+    <string name="library_gathering">Putting the book together</string>
+    <string name="library_wait">A long book is gathered chapter by chapter. Keep Hora open until it is on the shelf.</string>
+    <string name="library_starting">Reading the contents…</string>
+    <plurals name="library_parts">
+        <item quantity="one">%1$d of %2$d part</item>
+        <item quantity="other">%1$d of %2$d parts</item>
+    </plurals>
+    <string name="library_stopped">Stopped</string>
+    <string name="library_cut">The book is very long: its beginning is on the shelf.</string>
+    <string name="library_missing">Wikisource did not give everything: %1$d parts missing.</string>
+    <string name="library_failed">The book could not be put together. Try again.</string>
 </resources>

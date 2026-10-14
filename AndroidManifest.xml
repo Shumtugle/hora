@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.shumtugle.hora"
-    android:versionCode="246"
-    android:versionName="0.98.4">
+    android:versionCode="247"
+    android:versionName="0.99.0">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34"/>
     <!-- Lets the app's own processes talk to each other's receivers, and nobody else. -->
     <permission android:name="com.shumtugle.hora.permission.SELF" android:protectionLevel="signature"/>
@@ -108,6 +108,7 @@
         <activity android:name=".TalkActivity" android:exported="false"
             android:label="@string/talk_title" android:windowSoftInputMode="adjustResize|stateHidden"/>
         <activity android:name=".SearchActivity" android:exported="false"/>
+        <activity android:name=".FreeBooksActivity" android:exported="false"/>
         <activity android:name=".PlaceActivity" android:exported="false"
             android:label="@string/place_title" android:windowSoftInputMode="adjustResize|stateHidden"/>
         <activity android:name=".BookActivity" android:exported="false"

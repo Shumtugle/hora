@@ -272,13 +272,20 @@ public final class ShelfActivity extends Activity {
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (Demo.allShelved(ShelfActivity.this)) {
-                    pickBook();
-                    return;
-                }
-                // A demo was taken off: the sheet offers each such one back beside a file of one's own.
+                // A file of one's own, a book from the free library, and any demo taken off, back again.
                 final Dialog[] sheet = new Dialog[1];
                 LinearLayout demos = Ui.column(ShelfActivity.this);
+                demos.addView(Kit.secondary(ShelfActivity.this, getString(R.string.shelf_free_books),
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                sheet[0].dismiss();
+                                startActivity(new Intent(ShelfActivity.this, FreeBooksActivity.class));
+                            }
+                        }), Kit.wide());
+                TextView about = Ui.text(ShelfActivity.this, getString(R.string.shelf_free_note), 13, Palette.HINT);
+                about.setLineSpacing(0, 1.3f);
+                demos.addView(about, Kit.below(ShelfActivity.this, 10));
                 for (int i = 0; i < Demo.COUNT; i++) {
                     if (Demo.shelved(ShelfActivity.this, i)) {
                         continue;
@@ -307,7 +314,7 @@ public final class ShelfActivity extends Activity {
                                 }, "demo-back").start();
                             }
                         });
-                    demos.addView(demo, demos.getChildCount() == 0 ? Kit.wide() : Kit.below(ShelfActivity.this, 10));
+                    demos.addView(demo, Kit.below(ShelfActivity.this, 14));
                 }
                 sheet[0] = Kit.sheet(ShelfActivity.this, getString(R.string.shelf_add), null,
                         getString(R.string.shelf_pick_file), new Runnable() {

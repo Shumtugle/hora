@@ -1,0 +1,1 @@
+https://%s.wikisource.org/w/api.php

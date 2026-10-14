@@ -170,6 +170,8 @@
     <string name="about_data">Данные из сети</string>
     <string name="about_weather">Погода</string>
     <string name="about_wikipedia">Википедия</string>
+    <string name="about_wikisource">Викитека</string>
+    <string name="about_lic_pd_cc_by_sa">общественное достояние · CC BY-SA 4.0</string>
     <string name="about_texts">Полные тексты</string>
     <string name="about_apache_text">Лицензия Apache</string>
     <string name="about_look">Вид</string>
@@ -2759,4 +2761,29 @@
     <string name="ears_choice_open_sub">Книга, повороты, время, погода; вместо уведомлений — короткий сигнал.</string>
     <string name="ears_forget">Забыть устройство</string>
     <string name="ears_q_spoken">Я не знаю, твои ли это наушники, а уведомления Hora выключены. Ответь в настройках Hora, в «Уведомлениях»: до тех пор я не читаю здесь ничего личного.</string>
+    <string name="shelf_free_books">Найти в Викитеке</string>
+    <string name="shelf_free_note">Классика, свободная от прав: по-русски и по-английски. Hora соберёт книгу сама.</string>
+    <string name="library_title">Викитека</string>
+    <string name="library_hint">Название или автор</string>
+    <string name="library_note">Только то, что свободно от прав. Латиницей — английская Викитека.</string>
+    <string name="library_searching">Ищу…</string>
+    <string name="library_found">Найдено</string>
+    <string name="library_none">Ничего не нашлось</string>
+    <string name="library_offline">Викитека не отвечает. Проверь связь и попробуй ещё раз.</string>
+    <string name="library_opening">Открываю…</string>
+    <string name="library_source">Викитека · общественное достояние</string>
+    <string name="library_shelve">На полку</string>
+    <string name="library_gathering">Собираю книгу</string>
+    <string name="library_wait">Длинная книга собирается по главам. Не закрывай Hora, пока она не встанет на полку.</string>
+    <string name="library_starting">Читаю оглавление…</string>
+    <plurals name="library_parts">
+        <item quantity="one">%1$d из %2$d части</item>
+        <item quantity="few">%1$d из %2$d частей</item>
+        <item quantity="many">%1$d из %2$d частей</item>
+        <item quantity="other">%1$d из %2$d частей</item>
+    </plurals>
+    <string name="library_stopped">Остановлено</string>
+    <string name="library_cut">Книга очень длинная: на полку встало её начало.</string>
+    <string name="library_missing">Викитека отдала не всё: глав пропущено — %1$d.</string>
+    <string name="library_failed">Не получилось собрать книгу. Попробуй ещё раз.</string>
 </resources>
