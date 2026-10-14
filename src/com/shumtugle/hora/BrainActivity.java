@@ -34,6 +34,7 @@ public final class BrainActivity extends Activity {
     private final View[] slotRows = new View[3];
     private LinearLayout prompts;
     private View draftToggle;
+    private TextView fileNote;
     private View draftLine;
     /** What is missing and how to get it; empty when nothing is missing. */
     private LinearLayout getBox;
@@ -460,7 +461,8 @@ public final class BrainActivity extends Activity {
             files.addView(slotRows[i]);
         }
         list.addView(files);
-        TextView fileNote = Ui.text(this, getString(R.string.brain_files_note), 12, Palette.HINT);
+        // Bringing one's own file in place of Hora's is for the developer room only.
+        fileNote = Ui.text(this, "", 12, Palette.HINT);
         fileNote.setLineSpacing(0, 1.3f);
         fileNote.setPadding(dp(6), dp(8), dp(6), 0);
         list.addView(fileNote);
@@ -638,8 +640,17 @@ public final class BrainActivity extends Activity {
         }
         sizeLine.setText(getString(R.string.brain_size, b.size() / 1e9, count));
         int[] roles = {R.string.brain_role_model, R.string.brain_role_vision, R.string.brain_role_draft};
+        boolean dev = Beta.open(this);
+        fileNote.setText(dev ? R.string.brain_files_note : R.string.brain_files_note_plain);
         for (int i = 0; i < 3; i++) {
             TextView[] t = (TextView[]) slotRows[i].getTag();
+            // Outside the developer room a row opens only where there is something to do: removing a
+            // file in place, or fetching the accelerator. An empty model or photo row just says so:
+            // their download is offered above. No arrow that leads nowhere.
+            boolean opens = dev || b.has(i) || i == Brain.SLOT_DRAFT;
+            slotRows[i].setClickable(opens);
+            slotRows[i].setEnabled(opens);
+            t[3].setVisibility(opens ? View.VISIBLE : View.INVISIBLE);
             if (b.has(i)) {
                 String name = b.slotName(i);
                 t[1].setText(name.isEmpty() ? getString(R.string.brain_name_unknown) : name);
@@ -688,8 +699,9 @@ public final class BrainActivity extends Activity {
         r.addView(words, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
         LinearLayout.LayoutParams cp = Ui.lp(Ui.WRAP, Ui.WRAP);
         cp.leftMargin = dp(12);
-        r.addView(Ui.text(this, "\u203a", 20, Palette.HINT), cp);
-        r.setTag(new TextView[] {t, name, meta});
+        TextView more = Ui.text(this, "\u203a", 20, Palette.HINT);
+        r.addView(more, cp);
+        r.setTag(new TextView[] {t, name, meta, more});
         r.setBackground(Ui.pressable(new android.graphics.drawable.ColorDrawable(0)));
         r.setOnClickListener(l);
         return r;
@@ -784,6 +796,23 @@ public final class BrainActivity extends Activity {
             draftSheet();
             return;
         }
+        if (!Beta.open(this)) {
+            if (!b.has(slot)) {
+                return;
+            }
+            // Outside the developer room a file in place can be removed, not replaced with one's own.
+            TextView what = Ui.text(this, fileLabel(b, slot), 14, Palette.MUTED);
+            Kit.sheet(this, getString(slot == 0 ? R.string.brain_slot_model
+                    : slot == 1 ? R.string.brain_slot_vision : R.string.brain_slot_draft), what,
+                    getString(R.string.brain_remove), new Runnable() {
+                        @Override
+                        public void run() {
+                            b.remove(slot);
+                            refresh();
+                        }
+                    }).show();
+            return;
+        }
         if (!b.has(slot)) {
             pick(slot);
             return;
@@ -825,7 +854,9 @@ public final class BrainActivity extends Activity {
     private void draftSheet() {
         TextView fromFile = Kit.link(this, getString(R.string.brain_pick_file), null);
         LinearLayout lesser = Ui.column(this);
-        lesser.addView(fromFile);
+        if (Beta.open(this)) {
+            lesser.addView(fromFile);
+        }
         TextView about = Ui.text(this, getString(R.string.brain_draft_about), 14, Palette.MUTED);
         about.setLineSpacing(0, 1.3f);
         final android.app.Dialog d = Kit.sheet(this, getString(R.string.brain_slot_draft), about,

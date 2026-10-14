@@ -1862,7 +1862,7 @@
     <string name="dev_already">Раздел уже открыт</string>
     <string name="dev_steps">Ещё %1$d — и откроется раздел для разработчиков</string>
     <string name="dev_close">Закрыть раздел</string>
-    <string name="dev_note">Пока раздел открыт, в ряду лиц стоят и бета-голоса: %1$s и прежние образцы Хоры, Теи и Порфирия. Они берут роли, как все. Видны и настройки звучания: у каждого голоса — «Настроить», в Настройках — характер и тонкая настройка чтения.</string>
+    <string name="dev_note">Пока раздел открыт, в ряду лиц стоят и бета-голоса: %1$s и прежние образцы Хоры, Теи и Порфирия. Они берут роли, как все. Видны и настройки звучания: у каждого голоса — «Настроить», в Настройках — характер и тонкая настройка чтения. В «Модели ИИ» можно поставить свой файл вместо файла Hora.</string>
     <string name="voices_beta">бета</string>
     <string name="voice_echo_name">%1$s · %2$s</string>
     <string name="app_name">Хора</string>
@@ -2549,4 +2549,24 @@
     <string name="missed_switch_sub">Когда мне снова можно говорить: после звонка, тихих часов или когда ты надеваешь наушники.</string>
     <string name="missed_full_switch">Подробно</string>
     <string name="missed_full_sub">Какие приложения и кто пишет, без текста.</string>
+    <string name="brain_files_note_plain">Файлы скачиваются здесь, из релиза Hora. «Для фото» — дополнение, с которым модель понимает картинки. «Ускоритель» — необязательная маленькая модель: заметно помогает только на длинных ответах.</string>
+    <!-- Morning line -->
+    <string name="morning_hello">Доброе утро.</string>
+    <string name="morning_hello_day">Добрый день.</string>
+    <string name="morning_hello_evening">Добрый вечер.</string>
+    <plurals name="morning_battery">
+        <item quantity="one">Наушники заряжены на %d процент.</item>
+        <item quantity="few">Наушники заряжены на %d процента.</item>
+        <item quantity="many">Наушники заряжены на %d процентов.</item>
+        <item quantity="other">Наушники заряжены на %d процента.</item>
+    </plurals>
+    <string name="morning_section">Утро</string>
+    <string name="morning_switch">Утренняя строка</string>
+    <string name="morning_switch_sub">Когда впервые за день надеваешь наушники.</string>
+    <string name="morning_weather">Погода</string>
+    <string name="morning_weather_sub">Утром Hora один раз сходит в сеть.</string>
+    <string name="morning_battery_switch">Заряд наушников</string>
+    <string name="morning_battery_sub">Если наушники его сообщают.</string>
+    <string name="morning_note">Один раз в день, не раньше четырёх утра и не в тихие часы. Время — всегда. О новых уведомлениях — если включено «Говорить о новых уведомлениях», в той же фразе, коротко или подробно.</string>
+    <string name="morning_battery_denied">Без разрешения Hora не видит заряд наушников</string>
 </resources>

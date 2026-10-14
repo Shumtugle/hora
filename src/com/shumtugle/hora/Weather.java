@@ -55,8 +55,10 @@ final class Weather {
     private Weather() {
     }
 
+    /** Read in both processes: the place is set on a screen and used by the morning line in the voice process. */
+    @SuppressWarnings("deprecation")
     private static SharedPreferences sp(Context c) {
-        return c.getSharedPreferences(FILE, Context.MODE_PRIVATE);
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS);
     }
 
     static boolean hasPlace(Context c) {
@@ -69,7 +71,7 @@ final class Weather {
 
     static void setPlace(Context c, String name, double lat, double lon) {
         sp(c).edit().putString(NAME, name == null ? "" : name)
-                .putString(LAT, String.valueOf(lat)).putString(LON, String.valueOf(lon)).apply();
+                .putString(LAT, String.valueOf(lat)).putString(LON, String.valueOf(lon)).commit();
         cached = null;
     }
 
@@ -98,6 +100,25 @@ final class Weather {
                 sp.edit().putInt(SAID + key, index).apply();
             }
         });
+    }
+
+    /**
+     * The weather in a sentence or two for the morning line, or null when there is no place or
+     * no answer. Goes online when nothing fresh is kept; call off the main thread.
+     */
+    static synchronized String morning(Context c) {
+        WeatherTalk.Facts f = facts(c);
+        if (f == null) {
+            return null;
+        }
+        try {
+            if (talk == null) {
+                talk = new WeatherTalk(c.getAssets().open("talk/weather.txt"));
+            }
+        } catch (IOException e) {
+            return null;
+        }
+        return talk.morning(f, new Random());
     }
 
     /** One line from the talk file for a key, picked at random; empty if there is none. */
@@ -143,7 +164,8 @@ final class Weather {
             cachedFor = key;
             return f;
         } catch (Exception e) {
-            Diag.log(c, "weather: no answer", e);
+            // The kind of failure only: the message of some may carry the address, and with it the place.
+            Diag.log(c, "weather: no answer, " + e.getClass().getSimpleName());
             return cached != null && key.equals(cachedFor) ? cached : null;
         }
     }

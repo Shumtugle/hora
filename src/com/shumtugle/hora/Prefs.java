@@ -505,6 +505,37 @@ final class Prefs {
         sp(c).edit().putBoolean(NAV_STREET, on).commit();
     }
 
+    private static final String MORNING = "morning";
+    private static final String MORNING_WEATHER = "morning_weather";
+    private static final String MORNING_BATTERY = "morning_battery";
+
+    /** Whether the first headphones of the day bring a morning line; off until asked for. Read from the voice process. */
+    static boolean morningShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(MORNING, false);
+    }
+
+    static void setMorning(Context c, boolean on) {
+        sp(c).edit().putBoolean(MORNING, on).commit();
+    }
+
+    /** Whether the morning line says the weather, going online for it once. */
+    static boolean morningWeatherShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(MORNING_WEATHER, true);
+    }
+
+    static void setMorningWeather(Context c, boolean on) {
+        sp(c).edit().putBoolean(MORNING_WEATHER, on).commit();
+    }
+
+    /** Whether the morning line says the headphones' charge, when they tell it. */
+    static boolean morningBatteryShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(MORNING_BATTERY, false);
+    }
+
+    static void setMorningBattery(Context c, boolean on) {
+        sp(c).edit().putBoolean(MORNING_BATTERY, on).commit();
+    }
+
     private static final String MISSED_SAY = "missed_say";
     private static final String MISSED_FULL = "missed_full";
 

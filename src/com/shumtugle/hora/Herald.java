@@ -47,6 +47,12 @@ public final class Herald extends NotificationListenerService {
     private static final long ROUTE_STALE_MS = 5_000;
     /** "Hear an example" on the notifications screen; the screen lives in another process. */
     static final String ACTION_ROUTE_SAMPLE = "com.shumtugle.hora.ROUTE_SAMPLE";
+    /** "Hear an example" of the morning line, said now with what is true now. */
+    static final String ACTION_MORNING_SAMPLE = "com.shumtugle.hora.MORNING_SAMPLE";
+    /** Held only by this app (signature level): who may send to the reader's receivers before Android 13. */
+    static final String SELF = "com.shumtugle.hora.permission.SELF";
+    /** The morning line is not said before this hour. */
+    private static final int MORNING_FROM_HOUR = 4;
     // AudioAttributes.USAGE_ASSISTANT; not available at the compile-time API level.
     private static final int USAGE_ASSISTANT = 16;
 
@@ -119,9 +125,13 @@ public final class Herald extends NotificationListenerService {
     private final AudioDeviceCallback devices = new AudioDeviceCallback() {
         @Override
         public void onAudioDevicesAdded(AudioDeviceInfo[] added) {
-            // Headphones on: what came meanwhile can be told, once the sound has settled on them.
-            main.removeCallbacks(lookAgain);
-            main.postDelayed(lookAgain, 1500);
+            // Headphones on: the morning line, or what came meanwhile, once the sound has settled on them.
+            // A connection after four in the morning may wait for the line; one in the night may not.
+            java.util.Calendar now = java.util.Calendar.getInstance();
+            arrivalDay = now.get(java.util.Calendar.HOUR_OF_DAY) >= MORNING_FROM_HOUR ? today(now) : 0;
+            morningGaveUp = false;
+            main.removeCallbacks(arrived);
+            main.postDelayed(arrived, 1500);
         }
 
         @Override
@@ -129,6 +139,46 @@ public final class Herald extends NotificationListenerService {
             if (!Earpiece.present(audio)) {
                 cutNow();
             }
+        }
+    };
+
+    /**
+     * Main thread. Headphones came: the first time today brings the morning line, any other time
+     * the new notifications. When the line was held back at a connection made today after four
+     * (quiet hours, a call, do not disturb) and the headphones stay on, it looks again every minute,
+     * that day only and until it gives up; headphones left on through the night never wake anyone.
+     */
+    private final Runnable arrived = new Runnable() {
+        @Override
+        public void run() {
+            main.removeCallbacks(this);
+            if (!morningGaveUp && morningDue()) {
+                queueMorning(false);
+                return;
+            }
+            if (!morningGaveUp && morningOwed() && arrivalDay == today(java.util.Calendar.getInstance())) {
+                main.postDelayed(this, 60_000);
+            }
+            lookAgain.run();
+        }
+    };
+
+    /** Main thread. The day of the last connection made after four in the morning, or zero. */
+    private int arrivalDay;
+    /** Main thread. The morning line failed to be heard too often; tried again at the next connection. */
+    private boolean morningGaveUp;
+    /** A morning line is on its way: fetched or waiting its turn. */
+    private final java.util.concurrent.atomic.AtomicBoolean morningQueued =
+            new java.util.concurrent.atomic.AtomicBoolean();
+
+    /** Morning lines that found the sound taken, tried again a few times a few seconds apart. */
+    private final AtomicInteger morningTries = new AtomicInteger();
+
+    /** "Hear an example" of the morning line. */
+    private final BroadcastReceiver morningSample = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context c, Intent i) {
+            queueMorning(true);
         }
     };
 
@@ -302,9 +352,12 @@ public final class Herald extends NotificationListenerService {
             if (android.os.Build.VERSION.SDK_INT >= 33) {
                 registerReceiver(hush, new IntentFilter(Hush.ACTION), RECEIVER_NOT_EXPORTED);
                 registerReceiver(sample, new IntentFilter(ACTION_ROUTE_SAMPLE), RECEIVER_NOT_EXPORTED);
+                registerReceiver(morningSample, new IntentFilter(ACTION_MORNING_SAMPLE), RECEIVER_NOT_EXPORTED);
             } else {
-                registerReceiver(hush, new IntentFilter(Hush.ACTION));
-                registerReceiver(sample, new IntentFilter(ACTION_ROUTE_SAMPLE));
+                // Before Android 13 a receiver cannot be closed to others; a permission only this app holds does it.
+                registerReceiver(hush, new IntentFilter(Hush.ACTION), SELF, null);
+                registerReceiver(sample, new IntentFilter(ACTION_ROUTE_SAMPLE), SELF, null);
+                registerReceiver(morningSample, new IntentFilter(ACTION_MORNING_SAMPLE), SELF, null);
             }
             listening = true;
         }
@@ -322,6 +375,7 @@ public final class Herald extends NotificationListenerService {
     public void onListenerDisconnected() {
         connected = false;
         main.removeCallbacks(lookAgain);
+        main.removeCallbacks(arrived);
         cutNow();
         stopListening();
         Diag.mark(this, "herald: disconnected");
@@ -332,6 +386,7 @@ public final class Herald extends NotificationListenerService {
         destroyed = true;
         connected = false;
         main.removeCallbacks(lookAgain);
+        main.removeCallbacks(arrived);
         cutNow();
         stopListening();
         worker.shutdownNow();
@@ -346,6 +401,7 @@ public final class Herald extends NotificationListenerService {
             unregisterReceiver(battery);
             unregisterReceiver(hush);
             unregisterReceiver(sample);
+            unregisterReceiver(morningSample);
             listening = false;
         }
     }
@@ -601,6 +657,182 @@ public final class Herald extends NotificationListenerService {
         m.told(t.keys);
         Diag.mark(this, "herald: new notifications told, " + t.total + " in " + t.apps + " apps, "
                 + (t.full ? "in full" : "briefly"));
+    }
+
+    /** The day the morning line was last said, as year and day of the year; kept in this process's own file. */
+    private int morningDay() {
+        return getSharedPreferences("morning", MODE_PRIVATE).getInt("day", 0);
+    }
+
+    private static int today(java.util.Calendar now) {
+        return now.get(java.util.Calendar.YEAR) * 1000 + now.get(java.util.Calendar.DAY_OF_YEAR);
+    }
+
+    /** Main thread. The morning line is on, not yet said today, and the headphones are in. */
+    private boolean morningOwed() {
+        return !destroyed && connected && audio != null && Prefs.morningShared(this)
+                && today(java.util.Calendar.getInstance()) != morningDay() && Earpiece.present(audio);
+    }
+
+    /** Main thread. Whether this is the first moment of the day the morning line may be said. */
+    private boolean morningDue() {
+        if (destroyed || !connected || audio == null || !Prefs.morningShared(this)) {
+            return false;
+        }
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        return now.get(java.util.Calendar.HOUR_OF_DAY) >= MORNING_FROM_HOUR && today(now) != morningDay()
+                && mayTell();
+    }
+
+    /**
+     * Main thread. Puts the morning line in line; an example is said whatever the day, and changes
+     * nothing. The weather is fetched first on a thread of its own: the network may be slow, and the
+     * reader's line must stay free for a turn that will not wait.
+     */
+    private void queueMorning(final boolean example) {
+        if (!morningQueued.compareAndSet(false, true)) {
+            return;
+        }
+        final boolean weather = Prefs.morningWeatherShared(this);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String fetched = null;
+                try {
+                    fetched = weather ? Weather.morning(Herald.this) : null;
+                } catch (Throwable t) {
+                    // Without the weather the line is still worth saying; this thread must never take the process down.
+                    Diag.mark(Herald.this, "herald: morning weather failed, " + t.getClass().getSimpleName());
+                }
+                final String w = fetched;
+                waiting.incrementAndGet();
+                try {
+                    worker.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                morning(example, w);
+                            } catch (Throwable t) {
+                                Diag.mark(Herald.this, "herald: morning line failed, " + t.getClass().getSimpleName());
+                            } finally {
+                                morningQueued.set(false);
+                                waiting.decrementAndGet();
+                            }
+                        }
+                    });
+                } catch (java.util.concurrent.RejectedExecutionException e) {
+                    morningQueued.set(false);
+                    waiting.decrementAndGet();
+                }
+            }
+        }, "morning-weather").start();
+    }
+
+    /**
+     * Worker thread. The morning line: a greeting and the time; the weather and the headphones'
+     * charge when asked for and known; new notifications when they are to be told at all. A part
+     * that cannot be had is left out without a word. Said, it is not said again today.
+     */
+    private void morning(boolean example, String weather) throws Exception {
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        // Checked again here: the weather may have taken a while, and much can change meanwhile.
+        if (!example && today(now) == morningDay()) {
+            return;
+        }
+        if (!example && !mayTell()) {
+            // Something came up while the weather was fetched: look again later, as if just arrived.
+            main.postDelayed(arrived, 5000);
+            return;
+        }
+        android.content.res.Resources r = SpeechLanguage.resources(this);
+        int h = now.get(java.util.Calendar.HOUR_OF_DAY);
+        int min = now.get(java.util.Calendar.MINUTE);
+        StringBuilder s = new StringBuilder(r.getString(h < 12 ? R.string.morning_hello
+                : h < 18 ? R.string.morning_hello_day : R.string.morning_hello_evening));
+        String time = TimePhrase.bare(r, h, min);
+        s.append(' ').append(Character.toUpperCase(time.charAt(0))).append(time.substring(1)).append('.');
+        StringBuilder parts = new StringBuilder("time");
+        if (weather != null) {
+            s.append(' ').append(weather);
+            parts.append(", weather");
+        }
+        Missed.Telling t = example ? null : prepareTelling();
+        if (t != null) {
+            s.append(' ').append(t.text);
+            parts.append(", new notifications");
+        }
+        if (Prefs.morningBatteryShared(this)) {
+            int b = headphoneCharge();
+            if (b >= 0) {
+                s.append(' ').append(r.getQuantityString(R.plurals.morning_battery, b, b));
+                parts.append(", charge");
+            }
+        }
+        int how = read(example ? "morning example" : "morning", s.toString(), null, null);
+        told(t, how);
+        if (example) {
+            return;
+        }
+        if (how == WHOLE || how == CUT_BY_USER) {
+            morningTries.set(0);
+            getSharedPreferences("morning", MODE_PRIVATE).edit().putInt("day", today(now)).commit();
+            Diag.mark(this, "herald: morning line, " + parts);
+        } else if (morningTries.incrementAndGet() <= 3) {
+            // Not heard (the sound was taken, or something cut it): again in a few seconds,
+            // and after that at the next headphones.
+            main.postDelayed(arrived, 5000);
+        } else {
+            morningTries.set(0);
+            main.post(new Runnable() {
+                @Override
+                public void run() {
+                    morningGaveUp = true;
+                }
+            });
+        }
+    }
+
+    /**
+     * The charge of the headphones the sound goes to, 0 to 100, or -1 when unknown: not wireless,
+     * no permission, or the headphones do not tell. The system keeps it in a method it does not
+     * publish; it is asked by name and may be gone on some phones.
+     */
+    private int headphoneCharge() {
+        if (android.os.Build.VERSION.SDK_INT < 28 || audio == null) {
+            return -1;
+        }
+        if (android.os.Build.VERSION.SDK_INT >= 31 && checkSelfPermission("android.permission.BLUETOOTH_CONNECT")
+                != PackageManager.PERMISSION_GRANTED) {
+            return -1;
+        }
+        AudioDeviceInfo d = Earpiece.find(audio);
+        String address = d == null ? "" : d.getAddress();
+        if (address == null || address.isEmpty()) {
+            return -1;
+        }
+        try {
+            android.bluetooth.BluetoothManager bm =
+                    (android.bluetooth.BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+            android.bluetooth.BluetoothDevice dev = bm.getAdapter().getRemoteDevice(address);
+            int v = -1;
+            try {
+                Object level = android.bluetooth.BluetoothDevice.class.getMethod("getBatteryLevel").invoke(dev);
+                v = level instanceof Integer ? (Integer) level : -1;
+            } catch (Exception | LinkageError e) {
+                v = -1;
+            }
+            if (v < 0 || v > 100) {
+                // The second way some phones keep it: the device's metadata, key 18, as text.
+                Object meta = android.bluetooth.BluetoothDevice.class.getMethod("getMetadata", int.class)
+                        .invoke(dev, 18);
+                if (meta instanceof byte[]) {
+                    v = Integer.parseInt(new String((byte[]) meta, "UTF-8").trim());
+                }
+            }
+            return v >= 0 && v <= 100 ? v : -1;
+        } catch (Exception | LinkageError e) {
+            return -1;
+        }
     }
 
     /**

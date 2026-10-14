@@ -329,6 +329,31 @@ final class WeatherTalk {
         return list == null || list.isEmpty() ? "" : list.get(0);
     }
 
+    /** Remembers nothing: for a line that may repeat itself. */
+    private static final Memory FORGETFUL = new Memory() {
+        @Override
+        public int last(String key) {
+            return -1;
+        }
+
+        @Override
+        public void used(String key, int index) {
+        }
+    };
+
+    /** The weather for the morning line: degrees and sky, and rain or snow coming or going, if it is. */
+    String morning(Facts f, Random rnd) {
+        String out = upper(brief(f)[0]) + ".";
+        String key = change(f);
+        if (key != null) {
+            String s = any(key, rnd);
+            if (!s.isEmpty()) {
+                out = out + ' ' + fill(s, f, rnd, FORGETFUL);
+            }
+        }
+        return out;
+    }
+
     /** Degrees with a word for the sky, and degrees alone. */
     String[] brief(Facts f) {
         String t = degrees(f.temp);

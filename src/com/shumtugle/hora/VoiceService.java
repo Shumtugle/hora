@@ -99,7 +99,8 @@ public final class VoiceService extends Service {
         if (android.os.Build.VERSION.SDK_INT >= 33) {
             registerReceiver(hush, new android.content.IntentFilter(Hush.ACTION), RECEIVER_NOT_EXPORTED);
         } else {
-            registerReceiver(hush, new android.content.IntentFilter(Hush.ACTION));
+            // Before Android 13 a receiver cannot be closed to others; a permission only this app holds does it.
+            registerReceiver(hush, new android.content.IntentFilter(Hush.ACTION), Herald.SELF, null);
         }
     }
 

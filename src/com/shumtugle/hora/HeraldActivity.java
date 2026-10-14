@@ -48,6 +48,10 @@ public final class HeraldActivity extends Activity {
     private TextView appsTitle;
     private View streetRow;
     private View missedFullRow;
+    private View morningWeatherRow;
+    private View morningBatteryRow;
+    private View morningSampleRow;
+    private static final int REQUEST_NEARBY = 7;
     private View sampleRow;
     private LinearLayout apps;
     private EditText search;
@@ -168,6 +172,53 @@ public final class HeraldActivity extends Activity {
         LinearLayout.LayoutParams pp = Kit.wide();
         pp.topMargin = Ui.dp(this, 12);
         list.addView(power, pp);
+
+        // The morning line: the first headphones of the day, off until asked for.
+        list.addView(Kit.section(this, getString(R.string.morning_section)));
+        LinearLayout morning = Kit.plate(this);
+        morning.addView(Kit.rowToggle(this, getString(R.string.morning_switch), getString(R.string.morning_switch_sub),
+                Prefs.morningShared(this), new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Prefs.setMorning(HeraldActivity.this, on);
+                        Diag.mark(HeraldActivity.this, "herald: morning line " + (on ? "on" : "off"));
+                        showMorning();
+                    }
+                }));
+        morning.addView(Kit.divider(this));
+        morningWeatherRow = Kit.rowToggle(this, getString(R.string.morning_weather), getString(R.string.morning_weather_sub),
+                Prefs.morningWeatherShared(this), new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Prefs.setMorningWeather(HeraldActivity.this, on);
+                    }
+                });
+        morning.addView(morningWeatherRow);
+        morning.addView(Kit.divider(this));
+        morningBatteryRow = Kit.rowToggle(this, getString(R.string.morning_battery_switch),
+                getString(R.string.morning_battery_sub), Prefs.morningBatteryShared(this), new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Prefs.setMorningBattery(HeraldActivity.this, on);
+                        if (on) {
+                            askNearby();
+                        }
+                    }
+                });
+        morning.addView(morningBatteryRow);
+        morning.addView(Kit.divider(this));
+        morningSampleRow = Kit.rowNav(this, getString(R.string.nav_sample), "", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                morningSample();
+            }
+        });
+        morning.addView(morningSampleRow);
+        list.addView(morning, Kit.wide());
+        TextView morningNote = Ui.text(this, getString(R.string.morning_note), 13, Palette.MUTED);
+        morningNote.setLineSpacing(0, 1.25f);
+        list.addView(morningNote, Kit.below(this, 12));
+        showMorning();
 
         // Turn hints from a navigator, whispered into the headphones.
         list.addView(Kit.section(this, getString(R.string.nav_section)));
@@ -305,6 +356,70 @@ public final class HeraldActivity extends Activity {
             v.setAlpha(on ? 1f : 0.4f);
             v.setEnabled(on);
         }
+    }
+
+    /** The parts of the morning line only matter while it is on; they dim rather than hide, so nothing jumps. */
+    private void showMorning() {
+        boolean on = Prefs.morningShared(this);
+        for (View v : new View[] {morningWeatherRow, morningBatteryRow, morningSampleRow}) {
+            v.setAlpha(on ? 1f : 0.4f);
+            v.setEnabled(on);
+        }
+    }
+
+    /** The headphones' charge needs the nearby devices permission from Android 12 on; asked only when switched on. */
+    private void askNearby() {
+        if (android.os.Build.VERSION.SDK_INT >= 31
+                && checkSelfPermission("android.permission.BLUETOOTH_CONNECT") != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[] {"android.permission.BLUETOOTH_CONNECT"}, REQUEST_NEARBY);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int request, String[] names, int[] results) {
+        super.onRequestPermissionsResult(request, names, results);
+        if (request != REQUEST_NEARBY) {
+            return;
+        }
+        if (results.length == 0 || results[0] != PackageManager.PERMISSION_GRANTED) {
+            // Refused: the switch goes back off, so it never promises what Hora cannot see.
+            Prefs.setMorningBattery(this, false);
+            Kit.Toggle t = toggleIn(morningBatteryRow);
+            if (t != null) {
+                t.set(false);
+            }
+            android.widget.Toast.makeText(this, R.string.morning_battery_denied, android.widget.Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private static Kit.Toggle toggleIn(View v) {
+        if (v instanceof Kit.Toggle) {
+            return (Kit.Toggle) v;
+        }
+        if (v instanceof android.view.ViewGroup) {
+            android.view.ViewGroup g = (android.view.ViewGroup) v;
+            for (int i = 0; i < g.getChildCount(); i++) {
+                Kit.Toggle t = toggleIn(g.getChildAt(i));
+                if (t != null) {
+                    return t;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** The morning line said now, as it would be: into the headphones, or a word here on why not. */
+    private void morningSample() {
+        if (!granted()) {
+            Kit.setValue(morningSampleRow, getString(R.string.nav_sample_no_access));
+            return;
+        }
+        if (Earpiece.find(audio) == null) {
+            Kit.setValue(morningSampleRow, getString(R.string.nav_sample_no_ears));
+            return;
+        }
+        Kit.setValue(morningSampleRow, "");
+        sendBroadcast(new Intent(Herald.ACTION_MORNING_SAMPLE).setPackage(getPackageName()));
     }
 
     /** "In full" only matters while the word is said at all; it dims rather than hides, so nothing jumps. */

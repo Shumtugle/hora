@@ -864,7 +864,7 @@
     <string name="dev_already">Already open</string>
     <string name="dev_steps">%1$d more to open the developer section</string>
     <string name="dev_close">Close the section</string>
-    <string name="dev_note">While this section is open, the beta voices stand in the row of faces too: %1$s and the earlier samples of Hora, Teya and Porfiry. They take roles like the others. The sound settings show too: “Tune” on each voice, and character and the fine reading settings in Settings.</string>
+    <string name="dev_note">While this section is open, the beta voices stand in the row of faces too: %1$s and the earlier samples of Hora, Teya and Porfiry. They take roles like the others. The sound settings show too: “Tune” on each voice, and character and the fine reading settings in Settings. In the AI model room, a file of your own can take the place of Hora’s.</string>
     <string name="voices_beta">beta</string>
     <string name="voice_echo_name">%1$s · %2$s</string>
     <string name="folder_samples">Samples</string>
@@ -1460,4 +1460,22 @@
     <string name="missed_switch_sub">When I may speak again: after a call, after quiet hours, or when you put the headphones on.</string>
     <string name="missed_full_switch">In full</string>
     <string name="missed_full_sub">Which apps and who writes, never the text.</string>
+    <string name="brain_files_note_plain">The files are downloaded here, from Hora’s release. “For photos” is an add-on that lets the model understand pictures. The accelerator is an optional small model that mainly helps long answers.</string>
+    <!-- Morning line -->
+    <string name="morning_hello">Good morning.</string>
+    <string name="morning_hello_day">Good afternoon.</string>
+    <string name="morning_hello_evening">Good evening.</string>
+    <plurals name="morning_battery">
+        <item quantity="one">The headphones are at %d percent.</item>
+        <item quantity="other">The headphones are at %d percent.</item>
+    </plurals>
+    <string name="morning_section">Morning</string>
+    <string name="morning_switch">Morning line</string>
+    <string name="morning_switch_sub">When you first put the headphones on in a day.</string>
+    <string name="morning_weather">Weather</string>
+    <string name="morning_weather_sub">In the morning Hora goes online once.</string>
+    <string name="morning_battery_switch">Headphone charge</string>
+    <string name="morning_battery_sub">If the headphones report it.</string>
+    <string name="morning_note">Once a day, not before four in the morning and not in quiet hours. The time always. New notifications if “Tell me about new notifications” is on, in the same breath, briefly or in full.</string>
+    <string name="morning_battery_denied">Without the permission Hora cannot see the headphones’ charge</string>
 </resources>
