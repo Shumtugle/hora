@@ -138,6 +138,15 @@ public final class Herald extends NotificationListenerService {
         public void onAudioDevicesRemoved(AudioDeviceInfo[] removed) {
             if (!Earpiece.present(audio)) {
                 cutNow();
+                return;
+            }
+            int on = readingOn;
+            for (AudioDeviceInfo d : removed) {
+                if (on != 0 && d.getId() == on) {
+                    // The device a reading began on is gone: the words do not follow the sound elsewhere.
+                    cutNow("device changed");
+                    return;
+                }
             }
         }
     };
@@ -152,6 +161,7 @@ public final class Herald extends NotificationListenerService {
         @Override
         public void run() {
             main.removeCallbacks(this);
+            askIfNew();
             if (!morningGaveUp && morningDue()) {
                 queueMorning(false);
                 return;
@@ -173,6 +183,36 @@ public final class Herald extends NotificationListenerService {
 
     /** Morning lines that found the sound taken, tried again a few times a few seconds apart. */
     private final AtomicInteger morningTries = new AtomicInteger();
+
+    /** An answer about a device came from the notification: what waits may now be told. */
+    private final BroadcastReceiver earsChanged = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context c, Intent i) {
+            main.post(lookAgain);
+        }
+    };
+
+    /**
+     * The output a reading began on, or zero. Private words must not move with the sound to
+     * another device (a car taking over in the middle of a message): if the output changes, the
+     * reading stops there.
+     */
+    private volatile int readingOn;
+
+    /** Whether the sound left the device the reading began on. */
+    private boolean deviceMoved() {
+        int on = readingOn;
+        if (on == 0) {
+            return false;
+        }
+        AudioDeviceInfo now = Earpiece.find(audio);
+        return now == null || now.getId() != on;
+    }
+
+    /** Worker thread. When the last purr was played; purrs closer than this are one. */
+    private long lastPurr;
+    private static final long PURR_APART_MS = 10_000;
+    private static final String EARS_CHANNEL = "ears";
 
     /** "Hear an example" of the morning line. */
     private final BroadcastReceiver morningSample = new BroadcastReceiver() {
@@ -353,11 +393,13 @@ public final class Herald extends NotificationListenerService {
                 registerReceiver(hush, new IntentFilter(Hush.ACTION), RECEIVER_NOT_EXPORTED);
                 registerReceiver(sample, new IntentFilter(ACTION_ROUTE_SAMPLE), RECEIVER_NOT_EXPORTED);
                 registerReceiver(morningSample, new IntentFilter(ACTION_MORNING_SAMPLE), RECEIVER_NOT_EXPORTED);
+                registerReceiver(earsChanged, new IntentFilter(EarsAnswer.ACTION_CHANGED), RECEIVER_NOT_EXPORTED);
             } else {
                 // Before Android 13 a receiver cannot be closed to others; a permission only this app holds does it.
                 registerReceiver(hush, new IntentFilter(Hush.ACTION), SELF, null);
                 registerReceiver(sample, new IntentFilter(ACTION_ROUTE_SAMPLE), SELF, null);
                 registerReceiver(morningSample, new IntentFilter(ACTION_MORNING_SAMPLE), SELF, null);
+                registerReceiver(earsChanged, new IntentFilter(EarsAnswer.ACTION_CHANGED), SELF, null);
             }
             listening = true;
         }
@@ -402,6 +444,7 @@ public final class Herald extends NotificationListenerService {
             unregisterReceiver(hush);
             unregisterReceiver(sample);
             unregisterReceiver(morningSample);
+            unregisterReceiver(earsChanged);
             listening = false;
         }
     }
@@ -630,7 +673,8 @@ public final class Herald extends NotificationListenerService {
             return null;
         }
         java.util.Set<String> keys = new java.util.HashSet<String>();
-        if (!disturbAllowed()) {
+        if (!disturbAllowed() || !Ears.privateNow(this, audio)) {
+            // Set not to disturb, or not one's own headphones: names and counts wait for the ear.
             return null;
         }
         try {
@@ -761,7 +805,7 @@ public final class Herald extends NotificationListenerService {
             s.append(' ').append(t.text);
             parts.append(", new notifications");
         }
-        if (Prefs.morningBatteryShared(this)) {
+        if (Prefs.morningBatteryShared(this) && Ears.privateNow(this, audio)) {
             int b = headphoneCharge();
             if (b >= 0) {
                 s.append(' ').append(r.getQuantityString(R.plurals.morning_battery, b, b));
@@ -1177,6 +1221,14 @@ public final class Herald extends NotificationListenerService {
             missOnMain(key, app, sender);
             return SILENT;
         }
+        if (key != null && !Ears.privateNow(this, audio)) {
+            // Not one's own headphones, or not answered yet: a short purr instead of words. The
+            // notification is kept, to be told when the sound is in one's own ears again.
+            missOnMain(key, app, sender, false);
+            Diag.mark(this, "herald: purr, not own headphones, " + app);
+            purr();
+            return SILENT;
+        }
         // Hora may speak again: what was missed is said first, in the same breath and the same hold of the book.
         Missed.Telling first = key != null ? prepareTelling() : null;
         if (first != null) {
@@ -1211,7 +1263,14 @@ public final class Herald extends NotificationListenerService {
                     cutNow("headphone button");
                 }
             });
-            boolean whole = speak(said);
+            AudioDeviceInfo startedOn = Earpiece.find(audio);
+            readingOn = startedOn == null ? 0 : startedOn.getId();
+            boolean whole;
+            try {
+                whole = speak(said);
+            } finally {
+                readingOn = 0;
+            }
             Diag.mark(this, (whole ? "herald: read, " : "herald: cut, " + why + ", ") + app);
             int how = whole ? WHOLE
                     : "headphone button".equals(why) || "quiet tile".equals(why) ? CUT_BY_USER : CUT;
@@ -1236,6 +1295,123 @@ public final class Herald extends NotificationListenerService {
                 onMain(false);
             }
         }
+    }
+
+    /**
+     * Worker thread. The purr, over the book (which steps aside, not stops), at most once in a
+     * few seconds: a burst of notifications is one purr.
+     */
+    private void purr() throws InterruptedException {
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (now - lastPurr < PURR_APART_MS) {
+            return;
+        }
+        lastPurr = now;
+        int rate = 24000;
+        float[] pcm = Purr.make(rate, 0.45f);
+        AudioFocusRequest focus = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                .setAudioAttributes(attributes())
+                .setOnAudioFocusChangeListener(yield, main)
+                .build();
+        Awake.hold(this);
+        BookPlayer.duck(true);
+        try {
+            if (audio.requestAudioFocus(focus) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                // The book takes a third of a second to step aside; the purr waits for it.
+                Thread.sleep(300);
+                playMade(pcm, rate);
+            }
+        } finally {
+            audio.abandonAudioFocusRequest(focus);
+            BookPlayer.duck(false);
+            Awake.let(this);
+        }
+    }
+
+    /**
+     * Main thread. A wireless device not yet decided is asked about, in a notification: own
+     * headphones, or a speaker or a car. Until then it is taken as the latter. Asked again on a
+     * later connection while still undecided (a question swiped away is not an answer), at most
+     * twice a day. Where notifications cannot show, Hora says so once into the device itself:
+     * nothing private, only where to answer.
+     */
+    private void askIfNew() {
+        if (audio == null || destroyed) {
+            return;
+        }
+        AudioDeviceInfo d = Ears.wireless(audio);
+        if (d == null) {
+            return;
+        }
+        String key = Ears.key(d);
+        String name = Ears.name(d);
+        Ears.seen(this, key, name);
+        if (Ears.state(this, key) != Ears.UNKNOWN || !Ears.mayAsk(this, key)) {
+            return;
+        }
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        try {
+            if (nm.getNotificationChannel(EARS_CHANNEL) == null) {
+                android.app.NotificationChannel ch = new android.app.NotificationChannel(EARS_CHANNEL,
+                        getString(R.string.ears_channel), NotificationManager.IMPORTANCE_HIGH);
+                ch.setSound(null, null);
+                nm.createNotificationChannel(ch);
+            }
+            android.app.NotificationChannel ch = nm.getNotificationChannel(EARS_CHANNEL);
+            boolean shows = nm.areNotificationsEnabled() && ch != null
+                    && ch.getImportance() != NotificationManager.IMPORTANCE_NONE;
+            Ears.asked(this, key);
+            if (!shows) {
+                Diag.mark(this, "herald: a new wireless device, notifications off, said where to answer");
+                final String said = SpeechLanguage.resources(this).getString(R.string.ears_q_spoken);
+                waiting.incrementAndGet();
+                try {
+                    worker.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            read("device question", said, null, null);
+                        } catch (Throwable t) {
+                            Diag.mark(Herald.this, "herald: device question failed, " + t.getClass().getSimpleName());
+                        } finally {
+                            waiting.decrementAndGet();
+                        }
+                    }
+                    });
+                } catch (java.util.concurrent.RejectedExecutionException e) {
+                    waiting.decrementAndGet();
+                }
+                return;
+            }
+            Diag.mark(this, "herald: a new wireless device, asked whose it is");
+            int id = Ears.noteId(key);
+            Notification n = new Notification.Builder(this, EARS_CHANNEL)
+                    .setSmallIcon(R.drawable.ic_note)
+                    .setContentTitle(getString(R.string.ears_q_title))
+                    .setStyle(new Notification.BigTextStyle().bigText(getString(R.string.ears_q_text, name)))
+                    .setContentText(getString(R.string.ears_q_text, name))
+                    .setContentIntent(android.app.PendingIntent.getActivity(this, id,
+                            new Intent(this, HeraldActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                            android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE))
+                    .setAutoCancel(true)
+                    .addAction(new Notification.Action.Builder(null, getString(R.string.ears_q_yes),
+                            answer(key, Ears.MINE, id)).build())
+                    .addAction(new Notification.Action.Builder(null, getString(R.string.ears_q_no),
+                            answer(key, Ears.OPEN, id)).build())
+                    .build();
+            nm.notify(Ears.NOTE_TAG, id, n);
+        } catch (RuntimeException e) {
+            Diag.mark(this, "herald: could not ask about the device, " + e.getClass().getSimpleName());
+        }
+    }
+
+    private android.app.PendingIntent answer(String key, int state, int note) {
+        Intent i = new Intent(this, EarsAnswer.class)
+                .putExtra(EarsAnswer.EXTRA_KEY, key)
+                .putExtra(EarsAnswer.EXTRA_STATE, state)
+                .putExtra(EarsAnswer.EXTRA_NOTE, note);
+        return android.app.PendingIntent.getBroadcast(this, key.hashCode() * 4 + state, i,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE);
     }
 
     /** From the worker: keeps a notification it stayed silent about; the list is touched on the main thread. */
@@ -1314,6 +1490,10 @@ public final class Herald extends NotificationListenerService {
                 public boolean cancelled() {
                     if (newsSpeaking && route.get() != null) {
                         why = "route hint";
+                        return true;
+                    }
+                    if (deviceMoved()) {
+                        why = "device changed";
                         return true;
                     }
                     return cut || !Earpiece.present(audio);
@@ -1406,6 +1586,10 @@ public final class Herald extends NotificationListenerService {
      */
     private boolean stopped(AudioTrack out) {
         if (cut || !Earpiece.present(audio)) {
+            return true;
+        }
+        if (deviceMoved()) {
+            why = "device changed";
             return true;
         }
         if (newsSpeaking && route.get() != null) {

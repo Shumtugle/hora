@@ -2734,4 +2734,24 @@
         <item>лл=л</item>
         <item>мм=м</item>
     </string-array>
+    <!-- Whose ears a wireless device is -->
+    <string name="ears_channel">Устройства</string>
+    <string name="ears_q_title">Это твои наушники?</string>
+    <string name="ears_q_text">Подключилось «%1$s». В свои наушники я читаю сообщения и имена; в колонку и машину — только книгу, повороты и короткий сигнал.</string>
+    <string name="ears_q_yes">Да, мои</string>
+    <string name="ears_q_no">Нет, колонка или машина</string>
+    <string name="ears_section">Устройства</string>
+    <string name="ears_mine">Мои наушники · читаю всё</string>
+    <string name="ears_open">Колонка или машина · без личного, сигнал</string>
+    <string name="ears_unknown">Ещё не решено · как колонка</string>
+    <string name="ears_now">сейчас</string>
+    <string name="ears_wired">Проводные наушники</string>
+    <string name="ears_wired_sub">Всегда свои</string>
+    <string name="ears_note">О каждом новом устройстве Hora спрашивает, пока ты не ответишь. Bluetooth не отличает наушники от колонки, поэтому решаешь ты.</string>
+    <string name="ears_choice_mine">Мои наушники</string>
+    <string name="ears_choice_mine_sub">Читаю всё: сообщения, имена, сводку.</string>
+    <string name="ears_choice_open">Колонка или машина</string>
+    <string name="ears_choice_open_sub">Книга, повороты, время, погода; вместо уведомлений — короткий сигнал.</string>
+    <string name="ears_forget">Забыть устройство</string>
+    <string name="ears_q_spoken">Я не знаю, твои ли это наушники, а уведомления Hora выключены. Ответь в настройках Hora, в «Уведомлениях»: до тех пор я не читаю здесь ничего личного.</string>
 </resources>

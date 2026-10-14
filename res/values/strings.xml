@@ -1486,4 +1486,24 @@
     <string-array name="latin_fi"/>
     <string-array name="latin_sv"/>
     <string-array name="latin_sv_after"/>
+    <!-- Whose ears a wireless device is -->
+    <string name="ears_channel">Devices</string>
+    <string name="ears_q_title">Are these your headphones?</string>
+    <string name="ears_q_text">“%1$s” connected. Into your own headphones I read messages and names; into a speaker or a car, only the book, turns and a short signal.</string>
+    <string name="ears_q_yes">Yes, mine</string>
+    <string name="ears_q_no">No, a speaker or a car</string>
+    <string name="ears_section">Devices</string>
+    <string name="ears_mine">My headphones · I read everything</string>
+    <string name="ears_open">Speaker or car · nothing private, a signal</string>
+    <string name="ears_unknown">Not decided yet · as a speaker</string>
+    <string name="ears_now">now</string>
+    <string name="ears_wired">Wired headphones</string>
+    <string name="ears_wired_sub">Always yours</string>
+    <string name="ears_note">Hora asks about each new device until you answer. Bluetooth cannot tell headphones from a speaker, so you decide.</string>
+    <string name="ears_choice_mine">My headphones</string>
+    <string name="ears_choice_mine_sub">I read everything: messages, names, the summary.</string>
+    <string name="ears_choice_open">Speaker or car</string>
+    <string name="ears_choice_open_sub">The book, turns, time, weather; a short signal instead of notifications.</string>
+    <string name="ears_forget">Forget this device</string>
+    <string name="ears_q_spoken">I don’t know whether these are your headphones, and Hora’s notifications are off. Answer in Hora’s settings, under Notifications: until then I read nothing private here.</string>
 </resources>

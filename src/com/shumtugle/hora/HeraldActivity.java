@@ -48,6 +48,21 @@ public final class HeraldActivity extends Activity {
     private TextView appsTitle;
     private View streetRow;
     private View missedFullRow;
+    private LinearLayout earsPlate;
+    /** An answer given in the notification while this screen is open shows at once. */
+    private final android.content.BroadcastReceiver earsChanged = new android.content.BroadcastReceiver() {
+        @Override
+        public void onReceive(android.content.Context c, Intent i) {
+            showEars();
+        }
+    };
+    /** A device just connected is written down by the reader a moment later; the list looks again then. */
+    private final Runnable earsLater = new Runnable() {
+        @Override
+        public void run() {
+            showEars();
+        }
+    };
     private View morningWeatherRow;
     private View morningBatteryRow;
     private View morningSampleRow;
@@ -63,11 +78,15 @@ public final class HeraldActivity extends Activity {
         @Override
         public void onAudioDevicesAdded(AudioDeviceInfo[] added) {
             showState();
+            showEars();
+            main.removeCallbacks(earsLater);
+            main.postDelayed(earsLater, 2500);
         }
 
         @Override
         public void onAudioDevicesRemoved(AudioDeviceInfo[] removed) {
             showState();
+            showEars();
         }
     };
 
@@ -135,6 +154,14 @@ public final class HeraldActivity extends Activity {
         quiet.addView(toRow);
         list.addView(quiet, Kit.wide());
         showQuiet();
+
+        // Whose ears each wireless device is: asked once per device, every answer here to see and change.
+        list.addView(Kit.section(this, getString(R.string.ears_section)));
+        earsPlate = Kit.plate(this);
+        list.addView(earsPlate, Kit.wide());
+        TextView earsNote = Ui.text(this, getString(R.string.ears_note), 13, Palette.MUTED);
+        earsNote.setLineSpacing(0, 1.25f);
+        list.addView(earsNote, Kit.below(this, 12));
 
         // What came while Hora had to be silent: said once it may speak again, briefly or in full.
         LinearLayout missed = Kit.plate(this);
@@ -298,6 +325,13 @@ public final class HeraldActivity extends Activity {
             return;
         }
         showState();
+        showEars();
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            registerReceiver(earsChanged, new android.content.IntentFilter(EarsAnswer.ACTION_CHANGED),
+                    RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(earsChanged, new android.content.IntentFilter(EarsAnswer.ACTION_CHANGED), Herald.SELF, null);
+        }
         Kit.setValue(voiceRow, Cast.name(this, Prefs.role(this, Cast.HERALD)));
         audio.registerAudioDeviceCallback(devices, main);
     }
@@ -306,6 +340,12 @@ public final class HeraldActivity extends Activity {
     protected void onPause() {
         audio.unregisterAudioDeviceCallback(devices);
         super.onPause();
+        main.removeCallbacks(earsLater);
+        try {
+            unregisterReceiver(earsChanged);
+        } catch (IllegalArgumentException ignored) {
+            // Not registered: the screen was stale and closed before it registered.
+        }
     }
 
     /** What stands between a notification and the ear, and the one way past it. */
@@ -356,6 +396,144 @@ public final class HeraldActivity extends Activity {
             v.setAlpha(on ? 1f : 0.4f);
             v.setEnabled(on);
         }
+    }
+
+    /** Every wireless device met, latest first, with what it hears; wired headphones last, always one's own. */
+    private void showEars() {
+        earsPlate.removeAllViews();
+        android.media.AudioDeviceInfo now = Ears.wireless(audio);
+        String nowKey = now == null ? null : Ears.key(now);
+        for (Object[] e : Ears.all(this)) {
+            final String key = (String) e[0];
+            final String name = (String) e[1];
+            int state = (Integer) e[2];
+            String sub = getString(state == Ears.MINE ? R.string.ears_mine
+                    : state == Ears.OPEN ? R.string.ears_open : R.string.ears_unknown);
+            earsPlate.addView(earsRow(name, sub, key.equals(nowKey), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    earsSheet(key, name);
+                }
+            }));
+            earsPlate.addView(Kit.divider(this));
+        }
+        earsPlate.addView(earsRow(getString(R.string.ears_wired), getString(R.string.ears_wired_sub), false, null));
+    }
+
+    private View earsRow(CharSequence title, CharSequence sub, boolean current, View.OnClickListener l) {
+        LinearLayout r = Ui.row(this);
+        r.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        r.setMinimumHeight(Kit.dp(this, 64));
+        r.setPadding(Kit.dp(this, 16), Kit.dp(this, 10), Kit.dp(this, 16), Kit.dp(this, 10));
+        LinearLayout words = Ui.column(this);
+        LinearLayout top = Ui.row(this);
+        TextView t = Ui.text(this, title, 17, Palette.INK);
+        t.setSingleLine(true);
+        t.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        top.addView(t, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        if (current) {
+            LinearLayout.LayoutParams np = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            np.leftMargin = Kit.dp(this, 8);
+            top.addView(Ui.text(this, getString(R.string.ears_now), 13, Palette.ACCENT_TEXT), np);
+        }
+        words.addView(top);
+        TextView s = Ui.text(this, sub, 13, Palette.MUTED);
+        words.addView(s);
+        r.addView(words, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        if (l != null) {
+            LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            cp.leftMargin = Kit.dp(this, 12);
+            r.addView(Ui.text(this, "\u203a", 20, Palette.HINT), cp);
+            r.setBackground(Ui.pressable(new android.graphics.drawable.ColorDrawable(0)));
+            r.setOnClickListener(l);
+        }
+        return r;
+    }
+
+    /** One device: own headphones, or a speaker or a car; chosen at once, and forgotten if asked. */
+    private void earsSheet(final String key, String name) {
+        LinearLayout box = Ui.column(this);
+        final View[] cards = new View[2];
+        final int[] states = {Ears.MINE, Ears.OPEN};
+        int[][] words = {{R.string.ears_choice_mine, R.string.ears_choice_mine_sub},
+            {R.string.ears_choice_open, R.string.ears_choice_open_sub}};
+        for (int i = 0; i < 2; i++) {
+            final int k = i;
+            cards[i] = choiceCard(getString(words[i][0]), getString(words[i][1]));
+            cards[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Ears.set(HeraldActivity.this, key, states[k]);
+                    Diag.mark(HeraldActivity.this, "herald: device set, "
+                            + (states[k] == Ears.MINE ? "own headphones" : "speaker or car"));
+                    sendBroadcast(new Intent(EarsAnswer.ACTION_CHANGED).setPackage(getPackageName()));
+                    markCards(cards, states, states[k]);
+                    showEars();
+                }
+            });
+            LinearLayout.LayoutParams lp = Kit.wide();
+            lp.topMargin = i == 0 ? 0 : Kit.dp(this, 10);
+            box.addView(cards[i], lp);
+        }
+        markCards(cards, states, Ears.state(this, key));
+        final android.app.Dialog[] d = new android.app.Dialog[1];
+        TextView forget = Kit.link(this, getString(R.string.ears_forget), new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Ears.forget(HeraldActivity.this, key);
+                android.app.NotificationManager nm =
+                        (android.app.NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                if (nm != null) {
+                    nm.cancel(Ears.NOTE_TAG, Ears.noteId(key));
+                }
+                sendBroadcast(new Intent(EarsAnswer.ACTION_CHANGED).setPackage(getPackageName()));
+                showEars();
+                if (d[0] != null) {
+                    d[0].dismiss();
+                }
+            }
+        });
+        box.addView(forget, Kit.below(this, 16));
+        d[0] = Kit.liveSheet(this, name, box);
+        d[0].show();
+    }
+
+    private View choiceCard(String title, String sub) {
+        LinearLayout r = Ui.row(this);
+        r.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        r.setPadding(Kit.dp(this, 16), Kit.dp(this, 14), Kit.dp(this, 16), Kit.dp(this, 14));
+        View dot = new View(this);
+        r.addView(dot, new LinearLayout.LayoutParams(Kit.dp(this, 18), Kit.dp(this, 18)));
+        LinearLayout words = Ui.column(this);
+        words.addView(Ui.text(this, title, 17, Palette.INK));
+        TextView s = Ui.text(this, sub, 13, Palette.MUTED);
+        s.setLineSpacing(0, 1.2f);
+        words.addView(s);
+        LinearLayout.LayoutParams wp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        wp.leftMargin = Kit.dp(this, 14);
+        r.addView(words, wp);
+        r.setTag(dot);
+        return r;
+    }
+
+    /** The chosen card is raised and its dot filled; the other is a quiet outline. */
+    private void markCards(View[] cards, int[] states, int chosen) {
+        for (int i = 0; i < cards.length; i++) {
+            boolean on = states[i] == chosen;
+            cards[i].setBackground(on ? Ui.round(Palette.RAISED, 18, this) : outline(18));
+            ((View) cards[i].getTag()).setBackground(on ? Ui.oval(Palette.ACCENT, 0, 0, this)
+                    : Ui.oval(android.graphics.Color.TRANSPARENT, Palette.HINT, 2, this));
+        }
+    }
+
+    private android.graphics.drawable.Drawable outline(float radiusDp) {
+        android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
+        g.setColor(android.graphics.Color.TRANSPARENT);
+        g.setCornerRadius(Kit.dp(this, radiusDp));
+        g.setStroke(Math.max(1, Kit.dp(this, 1)), Palette.LINE);
+        return g;
     }
 
     /** The parts of the morning line only matter while it is on; they dim rather than hide, so nothing jumps. */
