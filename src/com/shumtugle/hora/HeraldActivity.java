@@ -49,11 +49,15 @@ public final class HeraldActivity extends Activity {
     private View streetRow;
     private View missedFullRow;
     private LinearLayout earsPlate;
+    /** The wireless devices met, rebuilt as answers come; the wire switch below them stays put. */
+    private LinearLayout earsList;
+    private LinearLayout wiredRow;
     /** An answer given in the notification while this screen is open shows at once. */
     private final android.content.BroadcastReceiver earsChanged = new android.content.BroadcastReceiver() {
         @Override
         public void onReceive(android.content.Context c, Intent i) {
             showEars();
+            showState();
         }
     };
     /** A device just connected is written down by the reader a moment later; the list looks again then. */
@@ -158,6 +162,20 @@ public final class HeraldActivity extends Activity {
         // Whose ears each wireless device is: asked once per device, every answer here to see and change.
         list.addView(Kit.section(this, getString(R.string.ears_section)));
         earsPlate = Kit.plate(this);
+        earsList = Ui.column(this);
+        earsPlate.addView(earsList);
+        // One switch for every wire and USB output: they are a speaker until switched on as one's own.
+        wiredRow = Kit.rowToggle(this, getString(R.string.ears_wired), wiredSub(Ears.wiredMine(this)),
+                Ears.wiredMine(this), new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Ears.setWiredMine(HeraldActivity.this, on);
+                        Diag.mark(HeraldActivity.this, "herald: wire and USB " + (on ? "own" : "as a speaker"));
+                        ((TextView) ((LinearLayout) wiredRow.getChildAt(0)).getChildAt(1)).setText(wiredSub(on));
+                        sendBroadcast(new Intent(EarsAnswer.ACTION_CHANGED).setPackage(getPackageName()));
+                    }
+                });
+        earsPlate.addView(wiredRow);
         list.addView(earsPlate, Kit.wide());
         TextView earsNote = Ui.text(this, getString(R.string.ears_note), 13, Palette.MUTED);
         earsNote.setLineSpacing(0, 1.25f);
@@ -357,9 +375,12 @@ public final class HeraldActivity extends Activity {
                 granted ? Kit.Mood.FINE : Kit.Mood.TROUBLE));
         AudioDeviceInfo ear = Earpiece.find(audio);
         CharSequence name = ear == null ? null : ear.getProductName();
+        CharSequence shown = name == null || name.length() == 0 ? "\u2014" : name;
+        // Headphones that are not one's own (a speaker, a car, a wire left as a speaker) say so here too.
+        boolean own = ear != null && Ears.privateNow(this, audio);
         plate.addView(Kit.status(this, ear == null ? getString(R.string.herald_ears_none)
-                : getString(R.string.herald_ears_on, name == null || name.length() == 0 ? "\u2014" : name),
-                ear == null ? Kit.Mood.UNKNOWN : Kit.Mood.FINE));
+                : getString(own ? R.string.herald_ears_on : R.string.herald_ears_open, shown),
+                own ? Kit.Mood.FINE : Kit.Mood.UNKNOWN));
         state.addView(plate, Kit.wide());
         if (granted) {
             state.addView(Kit.link(this, getString(R.string.herald_access_settings), new View.OnClickListener() {
@@ -398,9 +419,13 @@ public final class HeraldActivity extends Activity {
         }
     }
 
-    /** Every wireless device met, latest first, with what it hears; wired headphones last, always one's own. */
+    private String wiredSub(boolean mine) {
+        return getString(mine ? R.string.ears_mine : R.string.ears_wired_sub);
+    }
+
+    /** Every wireless device met, latest first, with what it hears; the wire switch stays below them. */
     private void showEars() {
-        earsPlate.removeAllViews();
+        earsList.removeAllViews();
         android.media.AudioDeviceInfo now = Ears.wireless(audio);
         String nowKey = now == null ? null : Ears.key(now);
         for (Object[] e : Ears.all(this)) {
@@ -409,15 +434,14 @@ public final class HeraldActivity extends Activity {
             int state = (Integer) e[2];
             String sub = getString(state == Ears.MINE ? R.string.ears_mine
                     : state == Ears.OPEN ? R.string.ears_open : R.string.ears_unknown);
-            earsPlate.addView(earsRow(name, sub, key.equals(nowKey), new View.OnClickListener() {
+            earsList.addView(earsRow(name, sub, key.equals(nowKey), new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     earsSheet(key, name);
                 }
             }));
-            earsPlate.addView(Kit.divider(this));
+            earsList.addView(Kit.divider(this));
         }
-        earsPlate.addView(earsRow(getString(R.string.ears_wired), getString(R.string.ears_wired_sub), false, null));
     }
 
     private View earsRow(CharSequence title, CharSequence sub, boolean current, View.OnClickListener l) {

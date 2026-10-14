@@ -551,6 +551,7 @@
     <string name="herald_app_details">App info</string>
     <string name="herald_access_settings">Access settings</string>
     <string name="herald_ears_on">Headphones: %1$s</string>
+    <string name="herald_ears_open">As a speaker: %1$s, nothing private</string>
     <string name="herald_ears_none">No headphones: I stay silent</string>
     <string name="herald_voice_section">Voice</string>
     <string name="herald_voice_row">Notifications voice</string>
@@ -1497,9 +1498,9 @@
     <string name="ears_open">Speaker or car · nothing private, a signal</string>
     <string name="ears_unknown">Not decided yet · as a speaker</string>
     <string name="ears_now">now</string>
-    <string name="ears_wired">Wired headphones</string>
-    <string name="ears_wired_sub">Always yours</string>
-    <string name="ears_note">Hora asks about each new device until you answer. Bluetooth cannot tell headphones from a speaker, so you decide.</string>
+    <string name="ears_wired">Wired and USB</string>
+    <string name="ears_wired_sub">As a speaker · nothing private, a signal</string>
+    <string name="ears_note">Hora asks about each new device until you answer. Bluetooth cannot tell headphones from a speaker, so you decide. Wired and USB count as a speaker until you switch them on: an adapter cannot tell what is plugged into it.</string>
     <string name="ears_choice_mine">My headphones</string>
     <string name="ears_choice_mine_sub">I read everything: messages, names, the summary.</string>
     <string name="ears_choice_open">Speaker or car</string>

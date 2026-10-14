@@ -4,8 +4,8 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 
 /**
- * Knows which outputs are private to one listener. Anything that could be
- * heard by the room (the phone speaker, a speaker over the air, a car) is not.
+ * Knows which outputs may be one's own headphones: wired, USB, wireless, a hearing aid. The phone's
+ * own speaker never is. Whose ears a found output really is, is decided in Ears.
  */
 final class Earpiece {
     // Constants newer than the lowest supported level; their values are fixed.
@@ -15,12 +15,13 @@ final class Earpiece {
     private Earpiece() {
     }
 
-    /** Whether a device plays into the listener's ears only. */
+    /** Whether a device may play into the listener's ears; Ears decides whether it does. */
     static boolean isPrivate(AudioDeviceInfo d) {
         switch (d.getType()) {
             case AudioDeviceInfo.TYPE_WIRED_HEADSET:
             case AudioDeviceInfo.TYPE_WIRED_HEADPHONES:
             case AudioDeviceInfo.TYPE_USB_HEADSET:
+            case AudioDeviceInfo.TYPE_USB_DEVICE:
             case AudioDeviceInfo.TYPE_BLUETOOTH_A2DP:
             case TYPE_HEARING_AID:
             case TYPE_BLE_HEADSET:
