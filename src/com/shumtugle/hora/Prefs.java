@@ -212,7 +212,7 @@ final class Prefs {
             def = 5;
         }
         int v = p.getInt(ROLE_PREFIX + role, def);
-        // A trial voice whose samples are gone gives the role back to its usual voice.
+        // A voice that left the troupe gives the role back to its usual voice.
         return Cast.available(c, v) ? v : def;
     }
 
@@ -311,12 +311,12 @@ final class Prefs {
     // Starting makeup per voice, measured on the bench against good human readers (breathiness
     // and top band): the smooth, dark samples get a little brightness and air; the voices whose
     // samples are already breathy or rough are left as they are. The first voice's sample was
-    // made anew and is bright by itself, so it needs none; so was the second voice's.
-    // The echoes keep the makeup their old samples had. The last three were set by ear on the phone.
-    private static final int[] TIMBRE_DEFAULT = {0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 5, 5, 1, 0, 0};
-    private static final int[] AIR_DEFAULT = {0, 0, 0, 0, 3, 0, 1, 0, 0, 0, 3, 3, 3, 1, 0, 0};
-    /** Pitch makeup by voice: the trial voices were set by ear on the phone. */
-    private static final int[] PITCH_DEFAULT = {0, 0, 0, 0, 0, 0, 4, -1, 0, 1, 0, 0, 0, -2, 0, -1};
+    // made anew and is bright by itself, so it needs none; so was the second voice's. By voice
+    // number from 1; the eighth number has no voice.
+    private static final int[] TIMBRE_DEFAULT = {0, 0, 0, 0, 5, 0, 0, 0, 0, 0};
+    private static final int[] AIR_DEFAULT = {0, 0, 0, 0, 3, 0, 1, 0, 0, 0};
+    /** Pitch makeup by voice: the later voices were set by ear on the phone. */
+    private static final int[] PITCH_DEFAULT = {0, 0, 0, 0, 0, 0, 4, -1, 0, 1};
 
     static int defaultTimbre(int voice) {
         return voice >= 1 && voice < TIMBRE_DEFAULT.length ? TIMBRE_DEFAULT[voice] : 0;
@@ -351,8 +351,8 @@ final class Prefs {
     static final int OWN_TEMPO_MIN = -6;
     static final int OWN_TEMPO_MAX = 6;
     private static final float OWN_TEMPO_STEP = 0.05f;
-    /** By voice, set by ear on the phone: the thirteenth and fifteenth read slower than their samples. */
-    private static final int[] OWN_TEMPO_DEFAULT = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -3, 0, -4};
+    /** By voice: every voice reads at the common tempo until the person sets its own. */
+    private static final int[] OWN_TEMPO_DEFAULT = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     static int defaultOwnTempo(int voice) {
         return voice >= 1 && voice < OWN_TEMPO_DEFAULT.length ? OWN_TEMPO_DEFAULT[voice] : 0;
@@ -655,8 +655,7 @@ final class Prefs {
     // Every voice reads whole sentences by default, as it does for other apps: cut into breath
     // groups, each piece lost the sentence's melody and ended as if the sentence had.
     private static final int[] BREATH_DEFAULT = {Breath.NONE, Breath.NONE, Breath.NONE,
-        Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE,
-        Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE};
+        Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE};
 
     static int breathShared(Context c, int voice) {
         int v = Math.max(1, Math.min(Cast.LAST, voice));

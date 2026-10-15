@@ -327,13 +327,6 @@ public final class VoicesActivity extends Activity {
         name.setTypeface(Palette.display(this));
         name.setGravity(Gravity.CENTER);
         below.addView(name, Ui.lp(Ui.MATCH, Ui.WRAP));
-        if (Cast.beta(v) && !Cast.echo(v)) {
-            // A voice from the developer room says so in a word, in the accent colour, as
-            // temporary things do elsewhere.
-            TextView beta = Ui.text(this, getString(R.string.voices_beta), 13, Palette.ACCENT_TEXT);
-            beta.setGravity(Gravity.CENTER);
-            below.addView(beta, Ui.lp(Ui.MATCH, Ui.WRAP));
-        }
 
         // What the voice does: three duties as chips. A lit one is this voice's; a touch on a dark
         // one gives the duty to this voice, taking it from whoever had it.

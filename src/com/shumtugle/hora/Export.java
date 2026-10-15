@@ -151,8 +151,8 @@ final class Export {
      */
     static void drop(Context c, String uri) {
         JSONArray q = queue(c);
-        int first = next(q);
-        int working = first < 0 ? -1 : ready(c, q, first);
+        // The book in work is the first one still to be tried.
+        int working = next(q);
         JSONArray rest = new JSONArray();
         boolean mine = false;
         for (int i = 0; i < q.length(); i++) {
@@ -488,12 +488,6 @@ final class Export {
             if (at < 0) {
                 return NOTHING_LEFT;
             }
-            at = ready(c, q, at);
-            if (at < 0) {
-                // Only books for a trial voice whose sample is gone are left: they wait for it.
-                Diag.markOnce(c, "export-trial", "export: the trial sample is not here, later");
-                return LATER_MS;
-            }
             JSONObject job = q.optJSONObject(at);
             String uri = job.optString("uri");
             Diag.mark(c, "export: working, chapter " + (job.optInt("chapter") + 1) + " of " + job.optInt("chapters")
@@ -557,23 +551,9 @@ final class Export {
         return -1;
     }
 
-    /**
-     * The first job from the given one on whose reader is known. Every voice's sample
-     * ships with the app; a job with an unknown reader waits rather than being read
-     * by someone else, and does not hold up the books behind it.
-     */
-    private static int ready(Context c, JSONArray q, int from) {
-        for (int i = from; i < q.length(); i++) {
-            JSONObject j = q.optJSONObject(i);
-            if (j.optBoolean("failed")) {
-                continue;
-            }
-            int reader = j.optInt("reader", 1);
-            if (reader <= Cast.LAST) {
-                return i;
-            }
-        }
-        return -1;
+    /** A speaker's voice if it is still in the troupe; else none, and the reader reads that side. */
+    private static int known(int voice) {
+        return Cast.exists(voice) ? voice : 0;
     }
 
     private static int find(JSONArray q, String uri) {
@@ -594,9 +574,14 @@ final class Export {
         voice.prepare();
         int rate = voice.sampleRate();
         int reader = job.optInt("reader", 1);
+        // A voice that left the troupe after the book was queued: the narrator reads in its place,
+        // and a speaker it was is read by the reader.
+        if (!Cast.exists(reader)) {
+            reader = Prefs.roleShared(c, Cast.NARRATOR);
+        }
         // A book queued with its own cast keeps it; older queues read their speakers by the roles.
         Voice.useCast(job.has("speakerA")
-                ? new int[] {reader, job.optInt("speakerA"), job.optInt("speakerB")} : null);
+                ? new int[] {reader, known(job.optInt("speakerA")), known(job.optInt("speakerB"))} : null);
         try {
             return chapters(c, job, b, parts, voice, rate, reader, until, stop);
         } finally {

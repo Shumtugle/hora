@@ -11,33 +11,15 @@ import java.io.File;
 final class Cast {
     static final int COUNT = 5;
     /**
-     * Four more voices made after the first five: faces, scenes and names like the
-     * cast's, and the same roles. Three stand with the cast; the last one, close to
-     * another male voice, stays in the developer room.
+     * Voices made after the first five: faces, scenes and names like the cast's, and the same
+     * roles. The eighth number is empty: its voice left the troupe, and the numbers after it keep
+     * their places, so samples, portraits and saved choices stay where they were.
      */
     static final int BETA_F = COUNT + 1;
     static final int BETA_M = COUNT + 2;
-    static final int BETA_M2 = COUNT + 3;
     static final int BETA_F2 = COUNT + 4;
-    /**
-     * Earlier samples of three voices, kept to compare with: each speaks as the voice it
-     * came from, with that voice's face, scenes and manner, only from its old sample.
-     * They stand in the row only while the developer room is open.
-     */
-    static final int ECHO_HOST = COUNT + 5;
-    static final int ECHO_FOURTH = COUNT + 6;
-    static final int ECHO_SECOND = COUNT + 7;
-    /**
-     * Three more voices, made the way the four trial voices were: two female and one male.
-     * They stand in the row only while the developer room is open.
-     */
-    static final int BETA_F3 = COUNT + 8;
-    static final int BETA_F4 = COUNT + 9;
-    static final int BETA_M3 = COUNT + 10;
-    /** The highest voice number, trial voices and echoes included. */
-    static final int LAST = BETA_M3;
-    /** How many voices stand in the row while the developer room is closed. */
-    private static final int STANDING = 8;
+    /** The highest voice number. */
+    static final int LAST = BETA_F2;
     /** Roles: who reads outside dialogue, and the two sides of a dialogue. */
     static final int NARRATOR = 0;
     static final int SPEAKER_A = 1;
@@ -55,24 +37,13 @@ final class Cast {
         return "voice" + voice + ".wav";
     }
 
-    /**
-     * The name on screen. An echo shows its voice's name, as given or as renamed, marked
-     * as a beta, so the two never look like one voice in a list.
-     */
+    /** The name on screen: the person's own name for the voice, or the one it came with. */
     static String name(Context c, int voice) {
         String own = Prefs.voiceName(c, voice);
         if (!own.isEmpty()) {
             return own;
         }
-        if (echo(voice)) {
-            return c.getString(R.string.voice_echo_name, name(c, origin(voice)), c.getString(R.string.voices_beta));
-        }
         return givenName(c, voice);
-    }
-
-    /** Whether a voice is an earlier sample of another one. */
-    static boolean echo(int voice) {
-        return origin(voice) != voice;
     }
 
     /** The name as the voice says it: the person's own name for it, or the one in the speech language. */
@@ -81,36 +52,19 @@ final class Cast {
         if (!own.isEmpty()) {
             return own;
         }
-        if (echo(voice)) {
-            return spokenName(c, origin(voice));
-        }
         return say(c, R.array.voice_names, voice);
     }
 
-    /** The name a voice came with, before anyone renamed it; an echo has its voice's name. */
+    /** The name a voice came with, before anyone renamed it. */
     static String givenName(Context c, int voice) {
         String[] names = c.getResources().getStringArray(R.array.voice_names);
         int v = origin(voice);
         return v >= 1 && v <= names.length ? names[v - 1] : String.valueOf(voice);
     }
 
-    /** The voice whose face, scenes, lines and manner a voice has: an echo's source, else itself. */
+    /** The voice whose face, scenes, lines and manner a voice has: every voice its own now. */
     static int origin(int voice) {
-        switch (voice) {
-            case ECHO_HOST:
-                return HOST;
-            case ECHO_SECOND:
-                return 2;
-            case ECHO_FOURTH:
-                return 4;
-            default:
-                return voice;
-        }
-    }
-
-    /** Whether a voice stands in the row only while the developer room is open. */
-    static boolean beta(int voice) {
-        return place(voice) >= STANDING;
+        return voice;
     }
 
     /** The voice that came with a plain label for a name; it asks for a name when first chosen. */
@@ -120,7 +74,7 @@ final class Cast {
 
     /** Every voice may be given a name of the person's own. */
     static boolean renamable(int voice) {
-        return voice >= 1 && voice <= LAST;
+        return exists(voice);
     }
 
     /**
@@ -128,25 +82,30 @@ final class Cast {
      * female voice, the main male one, then the rest. Numbers stay what they
      * were, so samples, portraits and saved choices keep their places.
      */
-    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_F2, BETA_M, BETA_M2, BETA_F3, BETA_F4, BETA_M3,
-        ECHO_HOST, ECHO_SECOND, ECHO_FOURTH};
+    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_F2, BETA_M};
 
     /** The voice standing at a place in the row, counted from 0. */
     static int at(int place) {
-        return ORDER[Math.max(0, Math.min(LAST - 1, place))];
+        return ORDER[Math.max(0, Math.min(ORDER.length - 1, place))];
     }
 
-    /**
-     * How many voices stand in the row now: the standing ones, and the rest of the
-     * order too while the developer room is open. The row is always a prefix of the
-     * order, so a place in the row and a voice number are not the same thing.
-     */
+    /** How many voices stand in the row: all of them, always. A place in the row is not a voice number. */
     static int size(Context c) {
-        return Beta.open(c) ? LAST : STANDING;
+        return ORDER.length;
+    }
+
+    /** Whether a voice number belongs to a voice of the troupe (one that left has none). */
+    static boolean exists(int voice) {
+        for (int v : ORDER) {
+            if (v == voice) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** The voices that speak of themselves as women; the rest as men. */
-    private static final int[] FEMALE = {1, 2, BETA_F, BETA_F2, BETA_F3, BETA_F4};
+    private static final int[] FEMALE = {1, 2, BETA_F, BETA_F2};
 
     static boolean female(int voice) {
         int v = origin(voice);
@@ -158,20 +117,9 @@ final class Cast {
         return false;
     }
 
-    /** Whether a voice came after the first five: the ones made later and the echoes. */
-    static boolean trial(int voice) {
-        return voice > COUNT && voice <= LAST;
-    }
-
     /** Whether a voice can be chosen now: it stands in the row. */
     static boolean available(Context c, int voice) {
-        int n = size(c);
-        for (int i = 0; i < n; i++) {
-            if (ORDER[i] == voice) {
-                return true;
-            }
-        }
-        return false;
+        return exists(voice);
     }
 
     /** Where a voice stands in the row, counted from 0. */
@@ -187,14 +135,13 @@ final class Cast {
     private static final int[] PORTRAITS = {
         R.drawable.portrait_1, R.drawable.portrait_2, R.drawable.portrait_3,
         R.drawable.portrait_4, R.drawable.portrait_5, R.drawable.portrait_6, R.drawable.portrait_7,
-        R.drawable.portrait_8, R.drawable.portrait_9,
-        // The echoes have their source's portrait, so their places stay empty.
-        0, 0, 0,
-        R.drawable.portrait_13, R.drawable.portrait_14, R.drawable.portrait_15,
+        // The eighth voice left the troupe: its place stays empty.
+        0, R.drawable.portrait_9,
     };
 
+    /** A voice's portrait; a number with no voice shows the first voice's face rather than none. */
     static int portrait(int voice) {
-        return PORTRAITS[Math.max(1, Math.min(PORTRAITS.length, origin(voice))) - 1];
+        return PORTRAITS[(exists(voice) ? voice : HOST) - 1];
     }
 
     /** What a voice is, as a noun: the word that follows its name when it introduces itself. */
@@ -207,7 +154,7 @@ final class Cast {
         return item(c, R.array.voice_kinds, voice);
     }
 
-    /** A voice's own line from a list of five, in the language it speaks. */
+    /** A voice's own line from a list by voice number, in the language it speaks. */
     static String say(Context c, int array, int voice) {
         String[] all = SpeechLanguage.resources(c).getStringArray(array);
         int v = origin(voice);

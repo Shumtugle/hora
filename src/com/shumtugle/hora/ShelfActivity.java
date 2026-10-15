@@ -745,7 +745,9 @@ public final class ShelfActivity extends Activity {
             getString(R.string.shelf_about_size, getResources().getQuantityString(R.plurals.shelf_paragraphs, e.total, e.total),
                     getResources().getQuantityString(R.plurals.book_chapters, e.chapters.size(), e.chapters.size())),
             getString(R.string.shelf_about_place, where(e)),
-            getString(R.string.shelf_about_reader, Cast.name(this, e.reader <= 0 ? 1 : e.reader)),
+            // A book last read by a voice that has since left is told as the narrator's now.
+            getString(R.string.shelf_about_reader, Cast.name(this, Cast.exists(e.reader) ? e.reader
+                    : Prefs.role(this, Cast.NARRATOR))),
             opened.isEmpty() ? "" : getString(R.string.shelf_about_opened, opened),
         };
         for (String r : rows) {

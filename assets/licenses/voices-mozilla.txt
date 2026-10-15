@@ -1,4 +1,4 @@
-Voice samples 4, 5 and 11
+Voice samples 4 and 5
 
 Short excerpts from the single-speaker Russian speech datasets "Denis 1.0" (sample 4) and
 "Dmitri 1.0" (sample 5) published on Mozilla Data Collective, dedicated to the public domain
@@ -7,5 +7,3 @@ under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/).
 Sample 4 is not the excerpt itself but a sentence read by Hora's own speech model with that
 excerpt as its voice: of eight readings of one calm sentence, the evenest that kept the pitch
 of the original was taken. The voice stays the speaker's; only the manner is calmer.
-
-Sample 11 is sample 4 as it was before: the speaker's own excerpt, kept to compare with.

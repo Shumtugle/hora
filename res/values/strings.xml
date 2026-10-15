@@ -150,7 +150,7 @@
     <string name="about_voice_model">Voice model</string>
     <string name="about_samples_123">Voices 1–3</string>
     <string name="about_samples_45">Voices 4–5</string>
-    <string name="about_samples_trial">Voices 6–9</string>
+    <string name="about_samples_trial">Voices 6, 7 and 9</string>
     <string name="about_lic_trial">model: Apache 2.0</string>
     <string name="about_english">English module</string>
     <string name="about_speech_engine">Speech engine</string>
@@ -317,15 +317,9 @@
         <item>Kass</item>
         <item>Nyx</item>
         <item>Mark</item>
-        <item>Severin</item>
+        <!-- The eighth voice left the troupe. -->
+        <item></item>
         <item>Claire</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
-        <item></item>
-        <item></item>
-        <item></item>
-        <item>Sofia Negrete</item>
-        <item>Tomiris</item>
-        <item>Porfiry</item>
     </string-array>
     <string name="slow_by_pauses">Slow down with pauses, not stretching</string>
     <string name="journal">Journal</string>
@@ -411,14 +405,8 @@
         <item>assistant</item>
         <item>assistant</item>
         <item>assistant</item>
-        <item>assistant</item>
-        <item>assistant</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <!-- The eighth voice left the troupe. -->
         <item></item>
-        <item></item>
-        <item></item>
-        <item>assistant</item>
-        <item>assistant</item>
         <item>assistant</item>
     </string-array>
     <string-array name="voice_kinds">
@@ -427,17 +415,11 @@
         <item>male</item>
         <item>male · deep</item>
         <item>male · main</item>
-        <item>female · beta</item>
-        <item>male · beta</item>
-        <item>male · beta</item>
-        <item>female · beta</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item>female</item>
+        <item>male</item>
+        <!-- The eighth voice left the troupe. -->
         <item></item>
-        <item></item>
-        <item></item>
-        <item>female · beta</item>
-        <item>female · beta</item>
-        <item>male · beta</item>
+        <item>female</item>
     </string-array>
     <string name="fonts_license">Cormorant, Manrope · OFL 1.1</string>
     <string name="tools">Tools</string>
@@ -790,15 +772,9 @@
         <item>You are young, light and cheerful.</item>
         <item>You are focused, precise and direct.</item>
         <item>You are calm, attentive and kind.</item>
-        <item>You are low-voiced, unhurried and plain-spoken.</item>
+        <!-- The eighth voice left the troupe. -->
+        <item></item>
         <item>You are even, clear and unhurried.</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
-        <item></item>
-        <item></item>
-        <item></item>
-        <item>You are low-voiced and warm; you speak plainly, with a light smile.</item>
-        <item>You are young, clear-voiced, focused and businesslike.</item>
-        <item>You have seen much; you speak in images, slowly.</item>
     </string-array>
     <string name="brain_trial_question">I am tired today.</string>
     <string name="lab_brain_none">not chosen</string>
@@ -867,9 +843,7 @@
     <string name="dev_already">Already open</string>
     <string name="dev_steps">%1$d more to open the developer section</string>
     <string name="dev_close">Close the section</string>
-    <string name="dev_note">While this section is open, the beta voices stand in the row of faces too: %1$s and the earlier samples of Hora, Teya and Orlov. They take roles like the others. The sound settings show too: “Tune” on each voice, and character and the fine reading settings in Settings. In the AI model room, a file of your own can take the place of Hora’s.</string>
-    <string name="voices_beta">beta</string>
-    <string name="voice_echo_name">%1$s · %2$s</string>
+    <string name="dev_note">While this section is open, the sound settings show: “Tune” on each voice, and character and the fine reading settings in Settings. In the AI model room, a file of your own can take the place of Hora’s.</string>
     <string name="folder_samples">Samples</string>
     <string name="folder_talks">Talks</string>
     <string name="talk_folder_ask">Show me the Hora folder — once, and talks will go there.</string>
@@ -972,15 +946,9 @@
         <item>Time, weather and the book are below. You can type too.</item>
         <item>Time, weather and the book are below. Anything else, just type.</item>
         <item>Time, weather and the book are below. Or type.</item>
-        <item>Buttons below. Or type.</item>
+        <!-- The eighth voice left the troupe. -->
+        <item></item>
         <item>Time, weather and the book are below. You can type too.</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
-        <item></item>
-        <item></item>
-        <item></item>
-        <item>Time, weather and the book are below. Anything else, just type.</item>
-        <item>Time, weather and the book are below. Or type.</item>
-        <item>Buttons below. Or type.</item>
     </string-array>
     <string-array name="voice_step_forward">
         <item>%1$s. I\'m answering now.</item>
@@ -990,15 +958,9 @@
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m answering now.</item>
-        <item>%1$s. I\'m answering now.</item>
-        <item>%1$s. I\'m answering now.</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
-        <item></item>
-        <item></item>
+        <!-- The eighth voice left the troupe. -->
         <item></item>
         <item>%1$s. I\'m answering now.</item>
-        <item>%1$s. I\'m talking now.</item>
-        <item>%1$s. Answering.</item>
     </string-array>
     <string name="lang_title">Languages</string>
     <string name="lang_lead">Hora\'s voice and the languages it reads in. Each is downloaded separately from the app.</string>
@@ -1082,14 +1044,8 @@
         <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>
-        <item>Are you ready to work?</item>
-        <item>Are you ready to work?</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <!-- The eighth voice left the troupe. -->
         <item></item>
-        <item></item>
-        <item></item>
-        <item>Are you ready to work?</item>
-        <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>
     </string-array>
     <string name="brain_look_rules">You have just been shown a picture, and for the answer about it the rules above change. Talk about what is visible in it now, in the present tense, starting with “In the photo” or “In the picture”, not about yourself. Name the main thing and the setting; if the picture has large lettering, read it as it is. Name a place or thing only if you recognise it for sure; otherwise do not guess. Two or three sentences.</string>

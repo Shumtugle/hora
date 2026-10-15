@@ -154,7 +154,7 @@
     <string name="about_voice_model">Модель голоса</string>
     <string name="about_samples_123">Голоса 1–3</string>
     <string name="about_samples_45">Голоса 4–5</string>
-    <string name="about_samples_trial">Голоса 6–9</string>
+    <string name="about_samples_trial">Голоса 6, 7 и 9</string>
     <string name="about_lic_trial">модель: Apache 2.0</string>
     <string name="about_english">Английский модуль</string>
     <string name="about_speech_engine">Движок речи</string>
@@ -379,15 +379,9 @@
         <item>Касс</item>
         <item>Никс</item>
         <item>Марк</item>
-        <item>Северин</item>
+        <!-- The eighth voice left the troupe. -->
+        <item></item>
         <item>Клер</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
-        <item></item>
-        <item></item>
-        <item></item>
-        <item>София Негрете</item>
-        <item>Томирис</item>
-        <item>Порфирий</item>
     </string-array>
     <string name="slow_by_pauses">Замедлять паузами, а не растяжкой</string>
     <string name="journal">Журнал</string>
@@ -847,15 +841,9 @@
         <item>помощник</item>
         <item>помощница</item>
         <item>помощник</item>
-        <item>помощник</item>
-        <item>помощница</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
-        <item></item>
-        <item></item>
+        <!-- The eighth voice left the troupe. -->
         <item></item>
         <item>помощница</item>
-        <item>помощница</item>
-        <item>помощник</item>
     </string-array>
     <string-array name="voice_kinds">
         <item>женский · главный</item>
@@ -863,17 +851,11 @@
         <item>мужской</item>
         <item>мужской · глубокий</item>
         <item>мужской · главный</item>
-        <item>женский · бета</item>
-        <item>мужской · бета</item>
-        <item>мужской · бета</item>
-        <item>женский · бета</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
+        <item>женский</item>
+        <item>мужской</item>
+        <!-- The eighth voice left the troupe. -->
         <item></item>
-        <item></item>
-        <item></item>
-        <item>женский · бета</item>
-        <item>женский · бета</item>
-        <item>мужской · бета</item>
+        <item>женский</item>
     </string-array>
     <string name="tools">Инструменты</string>
     <string-array name="respell_untouched">
@@ -1489,7 +1471,6 @@
         <item>баюн</item>
         <item>боян</item>
         <item>садко</item>
-        <item>порфирий</item>
         <item>орлов</item>
         <item>дима</item>
     </string-array>
@@ -1712,15 +1693,9 @@
         <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты молодой, лёгкий и весёлый.</item>
         <item>Ты женщина (она): глаголы о себе в прошедшем времени у тебя кончаются на -ла. Ты собранная, точная и прямая.</item>
         <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты спокойный, внимательный и доброжелательный.</item>
-        <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты низкоголосый, неторопливый, говоришь просто.</item>
+        <!-- The eighth voice left the troupe. -->
+        <item></item>
         <item>Ты женщина (она): глаголы о себе в прошедшем времени у тебя кончаются на -ла. Ты ровная, ясная и неспешная.</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
-        <item></item>
-        <item></item>
-        <item></item>
-        <item>Ты женщина (она): глаголы о себе в прошедшем времени у тебя кончаются на -ла. Ты низкоголосая, тёплая, говоришь прямо и с лёгкой усмешкой.</item>
-        <item>Ты женщина (она): глаголы о себе в прошедшем времени у тебя кончаются на -ла. Ты молодая, звонкая, собранная и деловая.</item>
-        <item>Ты мужчина (он): глаголы о себе в прошедшем времени у тебя мужского рода. Ты повидал много, говоришь образно и неспешно.</item>
     </string-array>
     <string name="brain_trial_question">Я сегодня устал.</string>
     <string name="lab_brain_none">не выбрана</string>
@@ -1875,7 +1850,6 @@
         <item>баюн</item>
         <item>боян</item>
         <item>садко</item>
-        <item>порфирий</item>
         <item>орлов</item>
         <item>дима</item>
     </string-array>
@@ -1886,9 +1860,7 @@
     <string name="dev_already">Раздел уже открыт</string>
     <string name="dev_steps">Ещё %1$d — и откроется раздел для разработчиков</string>
     <string name="dev_close">Закрыть раздел</string>
-    <string name="dev_note">Пока раздел открыт, в ряду лиц стоят и бета-голоса: %1$s и прежние образцы Хоры, Теи и Орлова. Они берут роли, как все. Видны и настройки звучания: у каждого голоса — «Настроить», в Настройках — характер и тонкая настройка чтения. В «Модели ИИ» можно поставить свой файл вместо файла Hora.</string>
-    <string name="voices_beta">бета</string>
-    <string name="voice_echo_name">%1$s · %2$s</string>
+    <string name="dev_note">Пока раздел открыт, видны настройки звучания: у каждого голоса — «Настроить», в Настройках — характер и тонкая настройка чтения. В «Модели ИИ» можно поставить свой файл вместо файла Hora.</string>
     <string name="app_name">Хора</string>
     <string name="folder_samples">Образцы</string>
     <string name="folder_talks">Разговоры</string>
@@ -1994,15 +1966,9 @@
         <item>Внизу время, погода и книга. Можно написать.</item>
         <item>Время, погода и книга — внизу. Остальное можно написать.</item>
         <item>Внизу время, погода и книга. Или напиши.</item>
-        <item>Кнопки внизу. Или пиши.</item>
+        <!-- The eighth voice left the troupe. -->
+        <item></item>
         <item>Внизу время, погода и книга. Можно написать.</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
-        <item></item>
-        <item></item>
-        <item></item>
-        <item>Время, погода и книга — внизу. Остальное можно написать.</item>
-        <item>Внизу время, погода и книга. Или напиши.</item>
-        <item>Кнопки внизу. Или пиши.</item>
     </string-array>
     <string-array name="voice_step_forward">
         <item>%1$s. Теперь отвечаю я.</item>
@@ -2012,15 +1978,9 @@
         <item>%1$s. Теперь отвечаю я.</item>
         <item>%1$s. Теперь отвечаю я.</item>
         <item>%1$s. Теперь отвечаю я.</item>
-        <item>%1$s. Теперь отвечаю я.</item>
-        <item>%1$s. Теперь отвечаю я.</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
-        <item></item>
-        <item></item>
+        <!-- The eighth voice left the troupe. -->
         <item></item>
         <item>%1$s. Теперь отвечаю я.</item>
-        <item>%1$s. Теперь говорю я.</item>
-        <item>%1$s. Отвечаю я.</item>
     </string-array>
     <string name="lang_title">Языки</string>
     <string name="lang_lead">Голос Hora и языки, на которых он читает. Всё скачивается отдельно от приложения.</string>
@@ -2104,15 +2064,9 @@
         <item>Ты готов к работе?</item>
         <item>Ты готова к работе?</item>
         <item>Ты готов к работе?</item>
-        <item>Ты готов к работе?</item>
-        <item>Ты готова к работе?</item>
-        <!-- 10 to 12 are echoes: they take their source's line. -->
-        <item></item>
-        <item></item>
+        <!-- The eighth voice left the troupe. -->
         <item></item>
         <item>Ты готова к работе?</item>
-        <item>Ты готова к работе?</item>
-        <item>Ты готов к работе?</item>
     </string-array>
     <string name="brain_look_rules">Сейчас тебе показали картинку, и для ответа о ней правила выше меняются. Говори о том, что на ней видно сейчас, в настоящем времени, начиная со слов «На фото» или «На картинке», а не о себе. Назови главное и обстановку; если на картинке есть крупные надписи, прочитай их как есть. Если узнаёшь место или вещь точно, назови; если нет, не гадай. Два-три предложения.</string>
     <string name="brain_wiki_rules">Сейчас тебя спросили о мире, и правила выше меняются: ниже текст статьи «%1$s» из Википедии. Ответь на вопрос только по этому тексту, одним-тремя предложениями, своими словами и по-русски. Даты, числа и имена бери только из текста. Если ответа в тексте нет, так и скажи: «В статье об этом не сказано».</string>

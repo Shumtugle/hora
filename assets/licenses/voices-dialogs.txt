@@ -1,4 +1,4 @@
-Voice samples 1, 2, 3, 10 and 12
+Voice samples 1, 2 and 3
 
 Short excerpts from the dataset dialogs-ru-emotional-conversations (Langswap),
 revision bdd6faadcb539fa0a978a3143eb231d5a7655810, used as voice reference samples.
@@ -6,14 +6,14 @@ They are distributed under the license below. Anyone who receives them must comp
 
 Sample 1 is a derivative of the same speaker's excerpt: the excerpt was given as the voice
 to an open speech model (Qwen3-TTS, its voice clone mode with the Base model, in the official
-public demo, https://huggingface.co/spaces/Qwen/Qwen3-TTS), which read a calm passage with it; the first
+public demo, https://huggingface.co/spaces/Qwen/Qwen3-TTS; the Base model as recorded on 13 October
+2026 at revision fd4b254389122332181a7c3db7f27e918eec64e3, marked apache-2.0 on its model card),
+which read a calm passage with it; the first
 two sentences of that reading are the sample. The voice is the speaker's; the reading is calmer.
 The model's licence covers the model, not the audio it made: the sample stays under the licence
 below, as a derivative of the speaker's excerpt.
 Sample 2 is made the same way from its own speaker's excerpt; the sample is the opening
 sentences of that reading.
-Samples 10 and 12 are samples 1 and 2 as they were before: the speakers' own excerpts,
-kept to compare with.
 
 This dataset ("the Dataset"), and any models or other works trained on or derived
 from it together with their outputs ("Derivatives"), are licensed under an Open

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Builds and signs the APK without an IDE. The voice samples (the first five voices, the later ones and the earlier samples kept as beta voices) go to assets/voice, native libraries to lib/;
+# Builds and signs the APK without an IDE. The voice samples (one per voice of the troupe) go to assets/voice, native libraries to lib/;
 # the speech model itself is a separate pack the app fetches, made by the voice module tool.
 set -e
 AJ=${ANDROID_JAR:?set ANDROID_JAR to a platform jar, API 34 or newer}

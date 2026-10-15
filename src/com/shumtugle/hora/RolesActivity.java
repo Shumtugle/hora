@@ -22,8 +22,6 @@ import android.widget.TextView;
 public final class RolesActivity extends Activity {
     /** The look this screen was built with. */
     private int built;
-    /** How many voices stood in the cast when the screen was built. */
-    private int cast;
     private static final int[] ROLES = {Cast.NARRATOR, Cast.SPEAKER_A, Cast.SPEAKER_B, Cast.HERALD, Cast.TALK};
     private static final int[] TITLES = {R.string.role_narrator, R.string.role_speaker_a, R.string.role_speaker_b,
         R.string.role_herald, R.string.role_talk};
@@ -39,7 +37,6 @@ public final class RolesActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         built = Ui.prepare(this);
-        cast = Cast.size(this);
         setContentView(build());
         paint();
     }
@@ -191,7 +188,7 @@ public final class RolesActivity extends Activity {
             for (int w = 1; w < faces[i].length; w++) {
                 ImageView f = faces[i][w];
                 if (f == null) {
-                    // Built before the trial voices arrived: those faces appear on the next visit.
+                    // A number with no voice (the eighth) has no face here.
                     continue;
                 }
                 boolean on = w == v;
@@ -228,11 +225,6 @@ public final class RolesActivity extends Activity {
     protected void onResume() {
         super.onResume();
         if (Ui.stale(this, built)) {
-            return;
-        }
-        if (cast != Cast.size(this)) {
-            // The trial voices came or went while the screen was away: it is laid out anew.
-            recreate();
             return;
         }
         // Duties may have been given in the voices: names and rings as they are now.

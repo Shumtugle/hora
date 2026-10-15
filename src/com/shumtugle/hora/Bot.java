@@ -292,12 +292,9 @@ final class Bot {
 
     /** The five names as they stand now, in the troupe's order: "A, B, C, D and E". */
     private static String troupe(Context c, Resources r) {
-        // Echoes are earlier samples of voices already named: they are not named twice.
         java.util.List<String> names = new java.util.ArrayList<String>();
         for (int i = 0; i < Cast.size(c); i++) {
-            if (!Cast.echo(Cast.at(i))) {
-                names.add(Cast.name(c, Cast.at(i)));
-            }
+            names.add(Cast.name(c, Cast.at(i)));
         }
         StringBuilder out = new StringBuilder();
         for (int i = 0; i < names.size(); i++) {

@@ -228,6 +228,10 @@ public final class ExportActivity extends Activity {
             // The cast starts as the roles are now: the dialogue voices only when they are on.
             castSet = true;
             cast[0] = getIntent().getIntExtra(EXTRA_READER, Prefs.role(this, Cast.NARRATOR));
+            // A book last read by a voice that has since left the troupe goes to the narrator.
+            if (!Cast.exists(cast[0])) {
+                cast[0] = Prefs.role(this, Cast.NARRATOR);
+            }
             boolean dialogue = Prefs.dialogueVoice(this);
             cast[1] = dialogue ? Prefs.role(this, Cast.SPEAKER_A) : 0;
             cast[2] = dialogue ? Prefs.role(this, Cast.SPEAKER_B) : 0;

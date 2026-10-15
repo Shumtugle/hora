@@ -609,9 +609,6 @@ final class Brain {
     /** A voice's manner as written by the user, or the built-in one. */
     static String manner(Context c, int voice) {
         String own = prefs(c).getString("brain_manner_" + voice, null);
-        if (own == null && Cast.echo(voice)) {
-            own = prefs(c).getString("brain_manner_" + Cast.origin(voice), null);
-        }
         if (own != null) {
             return own;
         }

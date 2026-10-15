@@ -209,7 +209,7 @@ final class Demo {
     @SuppressWarnings("deprecation")
     static int voice(Context c) {
         int v = c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).getInt(VOICE, 0);
-        // A voice that left the row (a beta one, when the developer section closes) gives the book back.
+        // A voice that left the troupe gives the book back.
         return v > 0 && Cast.available(c, v) ? v : 0;
     }
 
@@ -397,7 +397,7 @@ final class Demo {
     private static final String OLD_SAMPLES = "beta";
 
     /**
-     * The trial voices now ship with the app. Samples that earlier builds took
+     * Every voice ships with the app. Trial samples that earlier builds took
      * from the folder are removed once, and the journal says so.
      */
     static void forgetOldSamples(Context c) {

@@ -294,7 +294,8 @@ public final class HoraTtsService extends TextToSpeechService {
         }
         try {
             int v = Integer.parseInt(name.substring(prefix.length()));
-            return v >= 1 && v <= Cast.LAST ? v : 0;
+            // A number whose voice left the troupe names no voice.
+            return Cast.exists(v) ? v : 0;
         } catch (NumberFormatException e) {
             return 0;
         }

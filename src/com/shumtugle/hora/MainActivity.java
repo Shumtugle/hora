@@ -87,11 +87,6 @@ public final class MainActivity extends Activity {
         if (Ui.stale(this, built)) {
             return;
         }
-        if (dots.length > 0 && dots.length != Cast.size(this)) {
-            // The trial voices came or went while the screen was away: the row is laid out anew.
-            recreate();
-            return;
-        }
         // After a restore from another phone: what this phone still has to give.
         RestoreActivity.checkIfPending(this);
         // The voices, or the title page, may have changed the voice.

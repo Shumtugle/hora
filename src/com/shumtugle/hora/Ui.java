@@ -221,7 +221,8 @@ final class Ui {
     }
 
     static synchronized android.graphics.Bitmap face(Context c, int voice) {
-        int i = Math.max(0, Math.min(FACES.length - 1, Cast.origin(voice)));
+        // A number with no voice shares the first voice's face and place, never another voice's.
+        int i = Cast.exists(voice) ? voice : Cast.HOST;
         if (FACES[i] == null) {
             FACES[i] = android.graphics.BitmapFactory.decodeResource(c.getResources(), Cast.portrait(voice));
         }
