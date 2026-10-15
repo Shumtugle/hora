@@ -323,6 +323,15 @@ final class Bot {
         return chapterNameStatic(label);
     }
 
+    /** The same name for the screen: the word for chapter in the screen's language, not the voice's. */
+    static String chapterLabel(Context c, String label) {
+        String l = label == null ? "" : label.trim();
+        if (l.matches("\\d{1,4}\\.?|[IVXLCDM]{1,7}\\.?")) {
+            return c.getString(R.string.chapter_numbered, l.replace(".", ""));
+        }
+        return l;
+    }
+
     private static String chapterNameStatic(String label) {
         String l = label == null ? "" : label.trim();
         if (!chapterWord.isEmpty() && l.matches("\\d{1,4}\\.?|[IVXLCDM]{1,7}\\.?")) {

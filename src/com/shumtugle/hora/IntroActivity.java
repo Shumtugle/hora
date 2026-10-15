@@ -148,7 +148,7 @@ public final class IntroActivity extends Activity {
         if (e != null) {
             String title = e.title != null && !e.title.isEmpty() ? e.title : Reading.title(this);
             int ch = e.chapterAt(e.index);
-            sub = ch < 0 ? title : title + " \u00b7 " + Bot.chapterName(this, e.chapters.get(ch).label);
+            sub = ch < 0 ? title : title + " \u00b7 " + Bot.chapterLabel(this, e.chapters.get(ch).label);
         }
         Kit.setEntry(bookWay, getString(R.string.intro_book), sub);
     }

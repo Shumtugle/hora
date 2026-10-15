@@ -187,8 +187,12 @@ public final class TalkActivity extends Activity {
         Kit.Flow chips = new Kit.Flow(this, 8);
         int[] ready = {R.string.home_time, R.string.home_weather, R.string.book_play, R.string.talk_where,
                 R.string.bot_help_chip};
+        // A button means one thing whatever the screen's language: its label shows in the talk,
+        // and the same request in the language the voice understands goes to the bot.
+        android.content.res.Resources voiceWords = SpeechLanguage.resources(this);
         for (int k = 0; k < ready.length; k++) {
             final String said = getString(ready[k]);
+            final String meant = voiceWords.getString(ready[k]);
             TextView chip = Ui.pill(this, said, Palette.SURFACE, Palette.LINE, Palette.INK, false);
             chip.setPadding(dp(16), 0, dp(16), 0);
             chip.setMinHeight(dp(40));
@@ -196,7 +200,7 @@ public final class TalkActivity extends Activity {
             chip.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    send(said);
+                    send(said, meant);
                 }
             });
             chips.addView(chip, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
@@ -568,7 +572,12 @@ public final class TalkActivity extends Activity {
 
     /** A request: your line, then hers, spoken in her voice, with what was done under it. */
     private void send(String text) {
-        add(new Line(true, text, ""));
+        send(text, text);
+    }
+
+    /** A request shown as one line and understood as another: a button's label and its meaning. */
+    private void send(String shown, String text) {
+        add(new Line(true, shown, ""));
         Bot.Answer a = Bot.handle(this, text, voice);
         switch (a.kind) {
             case Bot.TIME: {
