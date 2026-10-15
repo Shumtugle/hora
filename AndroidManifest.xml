@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.shumtugle.hora"
-    android:versionCode="251"
-    android:versionName="0.99.4">
+    android:versionCode="252"
+    android:versionName="0.99.5">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34"/>
     <!-- Lets the app's own processes talk to each other's receivers, and nobody else. -->
     <permission android:name="com.shumtugle.hora.permission.SELF" android:protectionLevel="signature"/>

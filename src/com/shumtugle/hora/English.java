@@ -74,6 +74,20 @@ final class English {
     private static final Pattern SLASH = Pattern.compile("\\s?/\\s?");
     private static final Pattern SLASH_WORDS = Pattern.compile("(?<=[A-Za-z])/(?=[A-Za-z])");
     private static final Pattern ROMAN = Pattern.compile("[IVXLCDM]+");
+    /**
+     * A roman number numbering a chapter rather than the pronoun or a letter: heading a line
+     * before a colon and a capital ("I: Into the Primitive", "V: The Toil"), standing alone on a
+     * line ("II", "IV."), heading a sentence before a colon and a capital ("Recalled to Life. I:
+     * The Period"), or ending a line after a title with no stop of its own ("The Pilgrim. I"). A
+     * sentence end counts only after a word of three small letters, so the stop of a title
+     * before a name ("Mr. X: ...") is no sentence end.
+     */
+    private static final Pattern LEADING_ROMAN = Pattern.compile(
+            "^([IVXLC]{1,10})(?=:\\s+[\\p{Lu}\u201c\"])"
+            + "|^([IVXLC]{2,10})(?=[.:]?\\s*$)"
+            + "|(?<=[a-z]{3}[.!?]\\s)([IVXLC]{1,10})(?=:\\s+[\\p{Lu}\u201c\"])"
+            + "|(?<=[a-z]{3}\\.\\s)([IVXLC]{1,10})(?=\\s*$)");
+
     /** A name and a roman number of two letters or more: a monarch, a pope, a ship. */
     private static final Pattern REGNAL = Pattern.compile("(?<![A-Za-z])([A-Z][a-z]+)\\s+([IVX]{2,6})(?![A-Za-z'\u2019])");
     private static final Pattern YEAR = Pattern.compile("(?<![\\d.,])(1[1-9]\\d\\d|20\\d\\d)(?![\\d]|[.,]\\d)");
@@ -664,6 +678,19 @@ final class English {
     }
 
     private String romans(String t) {
+        Matcher lead = LEADING_ROMAN.matcher(t);
+        StringBuffer led = new StringBuffer();
+        while (lead.find()) {
+            int g = lead.group(1) != null ? 1 : lead.group(2) != null ? 2 : lead.group(3) != null ? 3 : 4;
+            String numeral = lead.group(g);
+            int n = roman(numeral);
+            // Only what a chapter number looks like: one of I, V, X in it (CC, CL are letters), not
+            // too large, and a number standing alone smaller still (a lone CV or XL is a letter pair).
+            boolean likely = numeral.matches(".*[IVX].*") && n > 0 && n < (g == 2 ? 100 : 200);
+            lead.appendReplacement(led, Matcher.quoteReplacement(likely ? cardinal(n) : lead.group()));
+        }
+        lead.appendTail(led);
+        t = led.toString();
         Matcher m = romanAfter.matcher(t);
         StringBuffer out = new StringBuffer();
         while (m.find()) {
