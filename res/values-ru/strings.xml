@@ -2761,11 +2761,11 @@
     <string name="ears_choice_open_sub">Книга, повороты, время, погода; вместо уведомлений — короткий сигнал.</string>
     <string name="ears_forget">Забыть устройство</string>
     <string name="ears_q_spoken">Я не знаю, твои ли это наушники, а уведомления Hora выключены. Ответь в настройках Hora, в «Уведомлениях»: до тех пор я не читаю здесь ничего личного.</string>
-    <string name="shelf_free_books">Найти в Викитеке</string>
+    <string name="shelf_free_books">Найти свободную книгу</string>
     <string name="shelf_free_note">Классика, свободная от прав: по-русски и по-английски. Hora соберёт книгу сама.</string>
-    <string name="library_title">Викитека</string>
+    <string name="library_title">Свободные книги</string>
     <string name="library_hint">Название или автор</string>
-    <string name="library_note">Только то, что свободно от прав. Латиницей — английская Викитека.</string>
+    <string name="library_note">Только то, что свободно от прав. Латиницей — английские книги.</string>
     <string name="library_searching">Ищу…</string>
     <string name="library_none">Ничего не нашлось</string>
     <string name="library_offline">Викитека не отвечает. Проверь связь и попробуй ещё раз.</string>
@@ -2800,4 +2800,50 @@
     <string name="library_more">Показать ещё</string>
     <string name="library_empty">Здесь пока пусто</string>
     <string name="library_author_line">автор · все вещи в Викитеке</string>
+    <string name="edited_title">Выверенные издания</string>
+    <string name="edited_latest">Новинки</string>
+    <string name="edited_latest_sub">последние, с обложками</string>
+    <string name="edited_all">Все книги</string>
+    <string name="edited_all_sub">около %1$s, по авторам</string>
+    <string name="edited_all_sub_plain">по авторам</string>
+    <string name="edited_note">Выверенные издания — каждая книга вычитана вручную, на обложке картина. Только по-английски.</string>
+    <string name="edited_source">Standard Ebooks · общественное достояние в США. В другой стране — проверь её закон.</string>
+    <string name="edited_aloud">около %1$d ч %2$02d мин вслух</string>
+    <string name="edited_aloud_hours">около %1$d ч вслух</string>
+    <string name="edited_aloud_minutes">около %1$d мин вслух</string>
+    <string name="edited_reading_list">Читаю каталог…</string>
+    <string name="edited_offline">Выверенные издания не отвечают. Проверь связь и попробуй ещё раз.</string>
+    <string name="edited_still_reading">Каталог выверенных изданий ещё читается: повтори поиск через минуту.</string>
+    <string name="edited_missing">Пришло не всё: глав пропущено — %1$d.</string>
+    <string name="edited_latest_line">Выверенные издания · последние</string>
+    <string name="edited_authors_line">Выверенные издания · по авторам</string>
+    <string name="about_edited">Standard Ebooks</string>
+    <string name="about_lic_pd_us_cc0">общественное достояние в США · CC0</string>
+    <plurals name="edited_books">
+        <item quantity="one">%1$d книга</item>
+        <item quantity="few">%1$d книги</item>
+        <item quantity="many">%1$d книг</item>
+        <item quantity="other">%1$d книги</item>
+    </plurals>
+    <string-array name="edited_genres">
+        <item>adventure|приключения</item>
+        <item>autobiography|автобиография</item>
+        <item>biography|биография</item>
+        <item>children\'s|детская</item>
+        <item>comedy|комедия</item>
+        <item>drama|драма</item>
+        <item>fantasy|фэнтези</item>
+        <item>fiction|проза</item>
+        <item>horror|ужасы</item>
+        <item>memoir|воспоминания</item>
+        <item>mystery|детектив</item>
+        <item>nonfiction|документальная</item>
+        <item>philosophy|философия</item>
+        <item>poetry|поэзия</item>
+        <item>satire|сатира</item>
+        <item>science fiction|фантастика</item>
+        <item>shorts|рассказы</item>
+        <item>spirituality|о духовном</item>
+        <item>travel|путешествия</item>
+    </string-array>
 </resources>

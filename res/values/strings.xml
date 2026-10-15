@@ -1888,11 +1888,11 @@
         <item>Still</item>
         <item>Yet</item>
     </string-array>
-    <string name="shelf_free_books">Find in Wikisource</string>
+    <string name="shelf_free_books">Find a free book</string>
     <string name="shelf_free_note">Classics free of rights, in Russian and in English. Hora puts the book together itself.</string>
-    <string name="library_title">Wikisource</string>
+    <string name="library_title">Free books</string>
     <string name="library_hint">Title or author</string>
-    <string name="library_note">Only what is free of rights. In Latin letters, the English Wikisource.</string>
+    <string name="library_note">Only what is free of rights. In Latin letters, English books.</string>
     <string name="library_searching">Searching…</string>
     <string name="library_none">Nothing found</string>
     <string name="library_offline">Wikisource does not answer. Check the connection and try again.</string>
@@ -1925,4 +1925,48 @@
     <string name="library_more">Show more</string>
     <string name="library_empty">Nothing here yet</string>
     <string name="library_author_line">author · all works in Wikisource</string>
+    <string name="edited_title">Edited editions</string>
+    <string name="edited_latest">New</string>
+    <string name="edited_latest_sub">the latest, with covers</string>
+    <string name="edited_all">All books</string>
+    <string name="edited_all_sub">about %1$s, by author</string>
+    <string name="edited_all_sub_plain">by author</string>
+    <string name="edited_note">Edited editions: each book proofread by hand, a painting on its cover. In English only.</string>
+    <string name="edited_source">Standard Ebooks · public domain in the USA. In another country, check its law.</string>
+    <string name="edited_aloud">about %1$d h %2$02d min aloud</string>
+    <string name="edited_aloud_hours">about %1$d h aloud</string>
+    <string name="edited_aloud_minutes">about %1$d min aloud</string>
+    <string name="edited_reading_list">Reading the catalogue…</string>
+    <string name="edited_offline">The edited editions do not answer. Check the connection and try again.</string>
+    <string name="edited_still_reading">The edited editions’ catalogue is still being read: ask again in a minute.</string>
+    <string name="edited_missing">Not everything came: %1$d parts missing.</string>
+    <string name="edited_latest_line">Edited editions · the latest</string>
+    <string name="edited_authors_line">Edited editions · by author</string>
+    <string name="about_edited">Standard Ebooks</string>
+    <string name="about_lic_pd_us_cc0">public domain in the USA · CC0</string>
+    <plurals name="edited_books">
+        <item quantity="one">%1$d book</item>
+        <item quantity="other">%1$d books</item>
+    </plurals>
+    <string-array name="edited_genres">
+        <item>adventure|adventure</item>
+        <item>autobiography|autobiography</item>
+        <item>biography|biography</item>
+        <item>children\'s|children’s</item>
+        <item>comedy|comedy</item>
+        <item>drama|drama</item>
+        <item>fantasy|fantasy</item>
+        <item>fiction|fiction</item>
+        <item>horror|horror</item>
+        <item>memoir|memoir</item>
+        <item>mystery|mystery</item>
+        <item>nonfiction|nonfiction</item>
+        <item>philosophy|philosophy</item>
+        <item>poetry|poetry</item>
+        <item>satire|satire</item>
+        <item>science fiction|science fiction</item>
+        <item>shorts|short stories</item>
+        <item>spirituality|spirituality</item>
+        <item>travel|travel</item>
+    </string-array>
 </resources>

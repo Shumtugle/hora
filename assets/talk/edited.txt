@@ -1,0 +1,10 @@
+list|https://api.github.com/orgs/standardebooks/repos?type=public&sort=full_name&per_page=100&page=%d
+raw|https://raw.githubusercontent.com/standardebooks/%1$s/HEAD/%2$s
+latest|https://standardebooks.org/feeds/atom/new-releases
+site|https://standardebooks.org/ebooks/
+thumb|/downloads/cover-thumbnail.jpg
+lead|Epub source for the Standard Ebooks edition of
+translated|. Translated by
+package|src/epub/content.opf
+text|src/epub/
+cover|images/cover.jpg

@@ -351,6 +351,12 @@ final class LibraryPage {
      */
     static void fb2(java.io.Writer b, String title, String author, String lang, List<String> names,
             List<List<String>> parts) throws java.io.IOException {
+        fb2(b, title, author, lang, names, parts, null);
+    }
+
+    /** The same file with the book's own cover, a JPEG carried inside it; null for none. */
+    static void fb2(java.io.Writer b, String title, String author, String lang, List<String> names,
+            List<List<String>> parts, byte[] cover) throws java.io.IOException {
         b.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         b.append("<FictionBook>\n<description><title-info>\n");
         String a = author == null ? "" : author.trim();
@@ -359,6 +365,10 @@ final class LibraryPage {
                 .append("</first-name><last-name>").append(xml(cut > 0 ? a.substring(cut + 1) : a))
                 .append("</last-name></author>\n");
         b.append("<book-title>").append(xml(title)).append("</book-title>\n");
+        // The cover comes before the language, in the order the format sets.
+        if (cover != null) {
+            b.append("<coverpage><image href=\"#cover.jpg\"/></coverpage>\n");
+        }
         b.append("<lang>").append(xml(lang)).append("</lang>\n");
         b.append("</title-info></description>\n<body>\n");
         for (int i = 0; i < parts.size(); i++) {
@@ -372,7 +382,12 @@ final class LibraryPage {
             }
             b.append("</section>\n");
         }
-        b.append("</body>\n</FictionBook>\n");
+        b.append("</body>\n");
+        if (cover != null) {
+            b.append("<binary id=\"cover.jpg\" content-type=\"image/jpeg\">")
+                    .append(java.util.Base64.getMimeEncoder().encodeToString(cover)).append("</binary>\n");
+        }
+        b.append("</FictionBook>\n");
     }
 
     private static String xml(String s) {

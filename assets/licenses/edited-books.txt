@@ -1,0 +1,11 @@
+Edited editions
+
+Books found under "Edited editions" in "Find a free book" are put together from
+Standard Ebooks, a volunteer project that proofreads books whose rights have run
+out against scans of their printed editions. The texts and the paintings on their
+covers are believed to be in the public domain in the United States; they may
+still be under copyright in other countries, so check the law where you live.
+The project's own work on them (markup, corrections, cover layout) is dedicated
+to the public domain under CC0 1.0 Universal
+(https://creativecommons.org/publicdomain/zero/1.0/). Each book keeps its title,
+author and cover; its own pages name its sources and everyone who worked on it.

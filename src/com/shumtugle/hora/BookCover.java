@@ -193,7 +193,7 @@ final class BookCover {
         return null;
     }
 
-    private static byte[] small(Bitmap b) {
+    static byte[] small(Bitmap b) {
         float k = SIDE / (float) Math.max(b.getWidth(), b.getHeight());
         if (k < 1f) {
             b = Bitmap.createScaledBitmap(b, Math.round(b.getWidth() * k), Math.round(b.getHeight() * k), true);
