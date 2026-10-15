@@ -53,12 +53,13 @@ final class Palette {
     private static int generation;
 
     /** One color per voice, in voice order. */
-    // Ring colours, by voice number. Warm and distinct; the fourth was sage green and is caramel now.
-    private static final int[] VOICE = {0xFFE0A84B, 0xFFD98A6E, 0xFF7FB0C4, 0xFFCF9A72, 0xFFB3A5E0,
+    // Ring colours, by voice number. Warm and distinct. A colour belongs to the face it rings: when
+    // the fourth and the fifteenth exchanged faces, they exchanged colours too.
+    private static final int[] VOICE = {0xFFE0A84B, 0xFFD98A6E, 0xFF7FB0C4, 0xFF9DB37E, 0xFFB3A5E0,
         0xFFE58FA0, 0xFFE2C46B, 0xFF8FC1B5, 0xFFC9B48F,
         // The echoes have their source's colour.
         0, 0, 0,
-        0xFFD2697A, 0xFF8EA6D8, 0xFF9DB37E};
+        0xFFD2697A, 0xFF8EA6D8, 0xFFCF9A72};
 
     private static Typeface display;
     private static Typeface body;

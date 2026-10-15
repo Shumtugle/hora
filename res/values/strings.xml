@@ -313,7 +313,7 @@
         <item>Hora</item>
         <item>Teya</item>
         <item>Dima</item>
-        <item>Porfiry</item>
+        <item>Orlov</item>
         <item>Kass</item>
         <item>Nyx</item>
         <item>Mark</item>
@@ -325,7 +325,7 @@
         <item></item>
         <item>Sofia Negrete</item>
         <item>Tomiris</item>
-        <item>Orlov</item>
+        <item>Porfiry</item>
     </string-array>
     <string name="slow_by_pauses">Slow down with pauses, not stretching</string>
     <string name="journal">Journal</string>
@@ -786,7 +786,7 @@
         <item>You are calm, warm and brief.</item>
         <item>You are lively, attentive, gently ironic.</item>
         <item>You are unhurried and soothing.</item>
-        <item>You have seen much; you speak in images, slowly.</item>
+        <item>You are courteous and old-fashioned; you speak thoroughly and with dignity.</item>
         <item>You are young, light and cheerful.</item>
         <item>You are focused, precise and direct.</item>
         <item>You are calm, attentive and kind.</item>
@@ -798,7 +798,7 @@
         <item></item>
         <item>You are low-voiced and warm; you speak plainly, with a light smile.</item>
         <item>You are young, clear-voiced, focused and businesslike.</item>
-        <item>You are courteous and old-fashioned; you speak thoroughly and with dignity.</item>
+        <item>You have seen much; you speak in images, slowly.</item>
     </string-array>
     <string name="brain_trial_question">I am tired today.</string>
     <string name="lab_brain_none">not chosen</string>
@@ -867,7 +867,7 @@
     <string name="dev_already">Already open</string>
     <string name="dev_steps">%1$d more to open the developer section</string>
     <string name="dev_close">Close the section</string>
-    <string name="dev_note">While this section is open, the beta voices stand in the row of faces too: %1$s and the earlier samples of Hora, Teya and Porfiry. They take roles like the others. The sound settings show too: “Tune” on each voice, and character and the fine reading settings in Settings. In the AI model room, a file of your own can take the place of Hora’s.</string>
+    <string name="dev_note">While this section is open, the beta voices stand in the row of faces too: %1$s and the earlier samples of Hora, Teya and Orlov. They take roles like the others. The sound settings show too: “Tune” on each voice, and character and the fine reading settings in Settings. In the AI model room, a file of your own can take the place of Hora’s.</string>
     <string name="voices_beta">beta</string>
     <string name="voice_echo_name">%1$s · %2$s</string>
     <string name="folder_samples">Samples</string>
@@ -968,7 +968,7 @@
         <item>Time, weather and the book are below. Anything else, just type.</item>
         <item>Time, weather and the book are below. Or type.</item>
         <item>Time, weather, the book: the buttons below. Or say it in words.</item>
-        <item>Buttons below. Or type.</item>
+        <item>Time, weather, the book: the buttons below. Or say it in words.</item>
         <item>Time, weather and the book are below. You can type too.</item>
         <item>Time, weather and the book are below. Anything else, just type.</item>
         <item>Time, weather and the book are below. Or type.</item>
@@ -980,13 +980,13 @@
         <item></item>
         <item>Time, weather and the book are below. Anything else, just type.</item>
         <item>Time, weather and the book are below. Or type.</item>
-        <item>Time, weather, the book: the buttons below. Or say it in words.</item>
+        <item>Buttons below. Or type.</item>
     </string-array>
     <string-array name="voice_step_forward">
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m talking now.</item>
         <item>%1$s. I\'m answering now.</item>
-        <item>%1$s. Answering.</item>
+        <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m answering now.</item>
@@ -998,7 +998,7 @@
         <item></item>
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m talking now.</item>
-        <item>%1$s. I\'m answering now.</item>
+        <item>%1$s. Answering.</item>
     </string-array>
     <string name="lang_title">Languages</string>
     <string name="lang_lead">Hora\'s voice and the languages it reads in. Each is downloaded separately from the app.</string>
