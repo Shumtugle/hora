@@ -40,6 +40,13 @@ public final class HoraApp extends Application {
         if (Build.VERSION.SDK_INT >= 30) {
             reportExits();
         }
+        // A demo that no longer ships leaves before any book is opened, in whichever process wakes
+        // first: a player opening it as the current book would put it back on the shelf as a book.
+        try {
+            Demo.forgetRetired(this);
+        } catch (RuntimeException e) {
+            Diag.log(this, "demo: a retired one not taken away", e);
+        }
         // The audiobook queue's wake-up is not kept over a restart of the phone: asked for again here.
         if (getPackageName().equals(processName())) {
             Export.schedule(this);

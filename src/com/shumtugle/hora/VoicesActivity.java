@@ -394,7 +394,10 @@ public final class VoicesActivity extends Activity {
         demoOther.setGravity(Gravity.CENTER);
         demoOther.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14);
         demoOther.setPadding(0, dp(6), 0, dp(6));
-        below.addView(demoOther, Ui.lp(Ui.MATCH, Ui.WRAP));
+        // With a single example there is no other to take: no link that leads back to itself.
+        if (Demo.COUNT > 1) {
+            below.addView(demoOther, Ui.lp(Ui.MATCH, Ui.WRAP));
+        }
         showDemo();
         showListen();
 
@@ -476,7 +479,7 @@ public final class VoicesActivity extends Activity {
      * book was left. A demo found reading stays one found reading: leaving does not stop it.
      */
     private void otherDemo() {
-        if (moving) {
+        if (moving || Demo.COUNT < 2) {
             return;
         }
         Demo.setChosen(this, (Demo.chosen(this) + 1) % Demo.COUNT);

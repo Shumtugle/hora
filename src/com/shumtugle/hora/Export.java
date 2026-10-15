@@ -145,6 +145,34 @@ final class Export {
         ExportService.tell(c);
     }
 
+    /**
+     * Takes a book whose text is gone out of the queue, quietly, before any work has started:
+     * its chosen cover goes too, and the half-made chapter only if this book was the one in work.
+     */
+    static void drop(Context c, String uri) {
+        JSONArray q = queue(c);
+        int first = next(q);
+        int working = first < 0 ? -1 : ready(c, q, first);
+        JSONArray rest = new JSONArray();
+        boolean mine = false;
+        for (int i = 0; i < q.length(); i++) {
+            JSONObject j = q.optJSONObject(i);
+            if (uri.equals(j.optString("uri"))) {
+                mine |= i == working;
+            } else {
+                rest.put(j);
+            }
+        }
+        if (rest.length() == q.length()) {
+            return;
+        }
+        keep(c, rest);
+        if (mine) {
+            pcm(c).delete();
+        }
+        chosenCover(c, uri).delete();
+    }
+
     /** Sees that the queue will be worked on, now or when its window opens. */
     static void schedule(Context c) {
         ExportService.kick(c);

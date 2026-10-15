@@ -81,6 +81,17 @@ final class Reading {
         Widgets.refresh(c);
     }
 
+    /** No current book any more; the caller redraws the widget when it can. */
+    static void clear(Context c) {
+        sp(c).edit().remove(URI).remove(NAME).remove(TITLE).remove(INDEX).remove(TOTAL).remove(PARAGRAPH)
+                .remove(PERMILLE).remove(PLAYING).commit();
+    }
+
+    /** Forgets where a book was left. */
+    static void forgetPlace(Context c, String uri) {
+        sp(c).edit().remove(AT + uri.hashCode()).commit();
+    }
+
     /** The current book brought back from another phone: where it lives and its file name. */
     static void restoreCurrent(Context c, String uri, String name) {
         sp(c).edit().putString(URI, uri).putString(NAME, name == null ? "" : name).commit();

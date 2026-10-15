@@ -1,6 +1,7 @@
 package com.shumtugle.hora;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 
 import java.io.File;
@@ -17,14 +18,16 @@ import java.io.OutputStream;
  */
 final class Demo {
     /** The demos as they ship: text and cover, by number. */
-    private static final String[] TEXTS = {"demo/book.txt", "demo/book2.txt"};
-    private static final String[] COVERS = {"demo/cover.jpg", "demo/cover2.jpg"};
+    private static final String[] TEXTS = {"demo/book.txt"};
+    private static final String[] COVERS = {"demo/cover.jpg"};
     /** The file each is copied to, and the name it goes by on the shelf. */
-    private static final String[] FILES = {"book.txt", "book2.txt"};
+    private static final String[] FILES = {"book.txt"};
     static final int COUNT = TEXTS.length;
     private static final String PREFS = "demo";
     private static final String VOICE = "voice";
     private static final String CHOSEN = "chosen";
+    /** Whether the first demo stands on the shelf; later ones have keys of their own. */
+    private static final String SHELVED = "shelved";
 
     private Demo() {
     }
@@ -216,9 +219,6 @@ final class Demo {
         BookPlayer.revoice(c);
     }
 
-    /** Whether the first demo stands on the shelf; later ones have keys of their own. */
-    private static final String SHELVED = "shelved";
-
     private static String shelvedKey(int i) {
         return i == 0 ? SHELVED : SHELVED + "_" + i;
     }
@@ -289,6 +289,108 @@ final class Demo {
                 Diag.log(c, "demo " + i + ": not put on the shelf", e);
             }
         }
+    }
+
+    /**
+     * Demos earlier builds shipped and this one does not: the file each was copied to and the key
+     * that said it stood on the shelf. Only ever appended to; a step that would touch the file or
+     * key of a demo that ships now is skipped.
+     */
+    private static final String[][] RETIRED = {{"book2.txt", SHELVED + "_1"}};
+    private static final String RETIRED_DONE = "retired";
+
+    /**
+     * A demo that no longer ships leaves once, before any book is opened: its shelf entry, its
+     * copy, its place, its key and any audiobook queued from it. If it was the current book,
+     * nothing is current until a book is chosen;
+     * the book screen opens the demo itself while only demos stand on the shelf.
+     */
+    @SuppressWarnings("deprecation")
+    static void forgetRetired(final Context c) {
+        SharedPreferences sp = c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS);
+        if (sp.getInt(RETIRED_DONE, 0) >= RETIRED.length) {
+            return;
+        }
+        SharedPreferences.Editor ed = sp.edit();
+        boolean cleared = forgetRetiredCurrent(c);
+        for (String[] r : RETIRED) {
+            if (!liveKey(r[1])) {
+                ed.remove(r[1]);
+            }
+            if (liveFile(r[0])) {
+                continue;
+            }
+            File f = retiredFile(c, r[0]);
+            String uri = Uri.fromFile(f).toString();
+            boolean shelf = Library.get(c, uri) != null;
+            if (shelf) {
+                Library.remove(c, uri);
+            }
+            Export.drop(c, uri);
+            Reading.forgetPlace(c, uri);
+            boolean gone = f.delete();
+            if (shelf || gone) {
+                Diag.markOnce(c, "demo-retired-" + r[0], "demo: " + r[0] + " no longer shipped, taken away");
+            }
+        }
+        if (sp.getInt(CHOSEN, 0) >= COUNT) {
+            ed.remove(CHOSEN);
+        }
+        ed.putInt(RETIRED_DONE, RETIRED.length).commit();
+        if (cleared) {
+            // Drawing the widget is not work for the start of a process.
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Widgets.refresh(c);
+                    } catch (RuntimeException e) {
+                        Diag.log(c, "demo: widget not redrawn", e);
+                    }
+                }
+            }, "demo-retired").start();
+        }
+    }
+
+    /** Whether a retired demo's file is one a demo that ships now is copied to. */
+    private static boolean liveFile(String file) {
+        for (int i = 0; i < COUNT; i++) {
+            if (FILES[i].equals(file)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether a retired demo's shelf key is one a demo that ships now uses. */
+    private static boolean liveKey(String key) {
+        for (int i = 0; i < COUNT; i++) {
+            if (shelvedKey(i).equals(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static File retiredFile(Context c, String name) {
+        return new File(new File(c.getFilesDir(), "demo"), name);
+    }
+
+    /**
+     * Nothing is current if the current book is a demo that no longer ships: also after settings
+     * come back from an archive an earlier build made. True when it was; the caller redraws the widget.
+     */
+    static boolean forgetRetiredCurrent(Context c) {
+        String now = Reading.uri(c);
+        for (String[] r : RETIRED) {
+            if (!liveFile(r[0]) && now.equals(Uri.fromFile(retiredFile(c, r[0])).toString())) {
+                Reading.clear(c);
+                Diag.markOnce(c, "demo-retired-current-" + r[0],
+                        "demo: " + r[0] + " no longer shipped, was the current book");
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Where earlier builds kept trial samples taken from Hora's folder. */

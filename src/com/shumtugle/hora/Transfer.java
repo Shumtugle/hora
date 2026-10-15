@@ -269,6 +269,10 @@ final class Transfer {
                     out.write(f.getValue());
                 }
             }
+            // An archive from an earlier build may name a demo that no longer ships as the current book.
+            if (Demo.forgetRetiredCurrent(c)) {
+                Widgets.refresh(c);
+            }
             // The shelf: each book is looked for by name in the books, then in the temporary ones.
             Books.moveOut(c);
             Books.tidy(c);
