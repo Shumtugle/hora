@@ -221,9 +221,29 @@ public final class BookPlayer extends Service {
             if (change == AudioManager.AUDIOFOCUS_LOSS || change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
                 pause(change == AudioManager.AUDIOFOCUS_LOSS
                         ? "another app took the sound" : "another app took the sound for a while");
+            } else if (change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
+                // Something wants to be heard over the book for a moment, the microphone among them.
+                // The system does not lower a book for a request from this same app, so it is done here.
+                if (!focusDucked) {
+                    focusDucked = true;
+                    duck(true);
+                }
+            } else if (change == AudioManager.AUDIOFOCUS_GAIN) {
+                unduckFocus();
             }
         }
     };
+
+    /** Whether the book is lowered because the sound was asked for over it; main thread only. */
+    private boolean focusDucked;
+
+    /** Brings the book back up after a lowering asked by the sound itself, if there was one. */
+    private void unduckFocus() {
+        if (focusDucked) {
+            focusDucked = false;
+            duck(false);
+        }
+    }
 
     /** Main thread only. Pauses a playing book; true if it did. */
     static boolean holdForNews() {
@@ -500,6 +520,7 @@ public final class BookPlayer extends Service {
     @Override
     public void onDestroy() {
         main.removeCallbacks(letButtonGo);
+        unduckFocus();
         MediaSession s = session;
         session = null;
         if (s != null) {
@@ -712,6 +733,7 @@ public final class BookPlayer extends Service {
         if (focus != null) {
             audio.abandonAudioFocusRequest(focus);
         }
+        unduckFocus();
         publish();
     }
 

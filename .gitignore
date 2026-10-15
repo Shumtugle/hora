@@ -1,5 +1,6 @@
 out/
 assets/voice/
+assets/hear/
 lib/
 *.keystore
 *.jks

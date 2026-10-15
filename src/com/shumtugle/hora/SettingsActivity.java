@@ -88,6 +88,15 @@ public final class SettingsActivity extends Activity {
                         Diag.mark(SettingsActivity.this, "settings: phone voice " + (on ? "on" : "off"));
                     }
                 }));
+        voices.addView(Kit.divider(this));
+        // What the microphone heard goes out by itself after a pause, unless asked to wait in the field.
+        voices.addView(Kit.rowToggle(this, getString(R.string.heard_to_field), getString(R.string.heard_to_field_sub),
+                Prefs.heardToField(this), new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Prefs.setHeardToField(SettingsActivity.this, on);
+                    }
+                }));
         list.addView(voices);
 
         // Reading, for every voice: the pace in sight; character and the fine settings only while the

@@ -154,6 +154,7 @@
     <string name="about_lic_trial">model: Apache 2.0</string>
     <string name="about_english">English module</string>
     <string name="about_speech_engine">Speech engine</string>
+    <string name="about_hearing">Speech recognition (microphone)</string>
     <string name="about_text">Text and stress</string>
     <string name="about_stress">Stress dictionary</string>
     <string name="about_stress_extended">Rare words</string>
@@ -718,6 +719,15 @@
     <string name="talk_sub">Ask, request, chat</string>
     <string name="talk_hint">Ask, or write what to say…</string>
     <string name="talk_send">Send</string>
+    <string name="talk_mic">Speak</string>
+    <string name="talk_mic_stop">Stop listening</string>
+    <string name="talk_listening">Listening…</string>
+    <string name="talk_mic_title">The microphone</string>
+    <string name="talk_mic_needed">To listen, Hora needs the microphone. It can be allowed in the phone\'s settings for Hora: Permissions, Microphone.</string>
+    <string name="talk_mic_settings">Open settings</string>
+    <string name="talk_mic_failed">The microphone did not open. Try again in a moment.</string>
+    <string name="heard_to_field">Spoken words go to the field first</string>
+    <string name="heard_to_field_sub">Otherwise they are sent by themselves after a pause.</string>
     <string name="home_book_none">No book chosen</string>
     <string name="home_on_duty">on duty · %1$s</string>
     <string name="talk_where">Where are we</string>
@@ -939,16 +949,16 @@
     <string name="intro_talk_sub">Time, weather, the book, in plain words</string>
     <string name="intro_start">Start</string>
     <string-array name="voice_talk_open">
-        <item>Time, weather and the book are below. Anything else, just type.</item>
-        <item>Time, weather and the book are below. Or type.</item>
-        <item>Time, weather, the book: the buttons below. Or say it in words.</item>
-        <item>Time, weather, the book: the buttons below. Or say it in words.</item>
-        <item>Time, weather and the book are below. You can type too.</item>
-        <item>Time, weather and the book are below. Anything else, just type.</item>
-        <item>Time, weather and the book are below. Or type.</item>
+        <item>Time, weather and the book are below. Anything else, just say it or type.</item>
+        <item>Time, weather and the book are below. Or just say it.</item>
+        <item>Time, weather, the book: the buttons below. Or say it aloud.</item>
+        <item>Time, weather, the book: the buttons below. Or say it aloud.</item>
+        <item>Time, weather and the book are below. You can speak or type.</item>
+        <item>Time, weather and the book are below. Anything else, just say it or type.</item>
+        <item>Time, weather and the book are below. Or just say it.</item>
         <!-- The eighth voice left the troupe. -->
         <item></item>
-        <item>Time, weather and the book are below. You can type too.</item>
+        <item>Time, weather and the book are below. You can speak or type.</item>
     </string-array>
     <string-array name="voice_step_forward">
         <item>%1$s. I\'m answering now.</item>

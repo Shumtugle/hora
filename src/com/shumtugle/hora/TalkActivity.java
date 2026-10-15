@@ -72,6 +72,16 @@ public final class TalkActivity extends Activity {
     private ScrollView scroll;
     private EditText draft;
     private static final int PICK_IMAGE = 81;
+    private static final int ASK_MIC = 82;
+    /** The clip, and the room's loudness that takes its place while the microphone listens. */
+    private ImageView clip;
+    private Level level;
+    /** The round button: listens when the field is empty, sends when it is not, stops a listening. */
+    private ImageView go;
+    /** The listening in progress; null when the microphone is closed. */
+    private Listen listening;
+    /** Whether the phone had been asked for the microphone before the request now on screen. */
+    private boolean micAskedBefore;
     private LinearLayout attached;
     private ImageView attachedThumb;
     /** A picture picked for the next request, ready as a small JPEG; null if none. */
@@ -201,7 +211,7 @@ public final class TalkActivity extends Activity {
 
         // One way to attach: the clip opens a sheet with the camera (when the model can see),
         // the phone's photo picker and the files.
-        ImageView clip = Ui.iconButton(this, R.drawable.ic_attach, Palette.SURFACE, 40, getString(R.string.talk_attach));
+        clip = Ui.iconButton(this, R.drawable.ic_attach, Palette.SURFACE, 40, getString(R.string.talk_attach));
         clip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -210,6 +220,9 @@ public final class TalkActivity extends Activity {
         });
         line.setPadding(dp(6), dp(6), dp(6), dp(6));
         line.addView(clip, Ui.lp(dp(40), dp(40)));
+        level = new Level(this);
+        level.setVisibility(View.GONE);
+        line.addView(level, Ui.lp(dp(40), dp(40)));
         draft = new EditText(this);
         Ui.field(draft);
         // No hint text: everybody knows what a message field is for; the screen reader still says it.
@@ -238,6 +251,20 @@ public final class TalkActivity extends Activity {
                 }
             });
         }
+        draft.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence t, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence t, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable e) {
+                showGo();
+            }
+        });
         draft.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int action, KeyEvent e) {
@@ -246,12 +273,12 @@ public final class TalkActivity extends Activity {
             }
         });
         line.addView(draft, new LinearLayout.LayoutParams(0, dp(44), 1f));
-        ImageView go = Ui.iconButton(this, R.drawable.ic_play, Palette.ACCENT, 44, getString(R.string.talk_send));
+        go = Ui.iconButton(this, R.drawable.ic_mic, Palette.ACCENT, 44, getString(R.string.talk_mic));
         go.setImageTintList(android.content.res.ColorStateList.valueOf(Palette.ON_ACCENT));
         go.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendDraft();
+                goTouched();
             }
         });
         line.addView(go, Ui.lp(dp(44), dp(44)));
@@ -270,6 +297,7 @@ public final class TalkActivity extends Activity {
                 pending = null;
                 pendingShot = null;
                 attached.setVisibility(View.GONE);
+                showGo();
             }
         });
         LinearLayout.LayoutParams dpp = Ui.lp(Ui.WRAP, Ui.WRAP);
@@ -282,6 +310,7 @@ public final class TalkActivity extends Activity {
         lp.topMargin = dp(10);
         root.addView(line, lp);
         Kit.edgeToEdge(this, root, dp(20), dp(16), dp(20), dp(12));
+        showGo();
         return whole;
     }
 
@@ -333,6 +362,186 @@ public final class TalkActivity extends Activity {
         Kit.backdrop(this, backdrop, v);
     }
 
+    /** The round button: what it does depends on what is in the line. */
+    private void goTouched() {
+        if (listening != null) {
+            listening.stop();
+        } else if (draft.getText().toString().trim().isEmpty() && pending == null) {
+            listen();
+        } else {
+            sendDraft();
+        }
+    }
+
+    /** Shows the round button as what a touch would do now: listen, send or stop. */
+    private void showGo() {
+        if (go == null) {
+            return;
+        }
+        boolean mic = draft.getText().toString().trim().isEmpty() && pending == null;
+        int icon = listening != null ? R.drawable.ic_stop : mic ? R.drawable.ic_mic : R.drawable.ic_play;
+        int label = listening != null ? R.string.talk_mic_stop : mic ? R.string.talk_mic : R.string.talk_send;
+        go.setImageResource(icon);
+        go.setContentDescription(getString(label));
+    }
+
+    /** Opens the microphone; the words appear in the field as they are heard. */
+    private void listen() {
+        if (!Listen.allowed(this)) {
+            micAskedBefore = Prefs.micAsked(this);
+            Prefs.setMicAsked(this);
+            requestPermissions(new String[] {android.Manifest.permission.RECORD_AUDIO}, ASK_MIC);
+            return;
+        }
+        // No voice of Hora may be heard as a request: whatever one is saying stops first. Asked only
+        // when one is speaking, so a quiet phone is not made to wake the speaking side for nothing.
+        if (Hush.speaking(this)) {
+            Hush.all(this);
+        }
+        InputMethodManager im = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        im.hideSoftInputFromWindow(draft.getWindowToken(), 0);
+        draft.clearFocus();
+        // The field only shows the words while the microphone is open: no cursor, no keyboard.
+        draft.setEnabled(false);
+        draft.setText("");
+        draft.setHint(R.string.talk_listening);
+        draft.setHintTextColor(Palette.HINT);
+        clip.setVisibility(View.GONE);
+        level.reset();
+        level.setVisibility(View.VISIBLE);
+        listening = Listen.start(this, new Listen.Heard() {
+            @Override
+            public void words(String sofar) {
+                draft.setText(sofar);
+            }
+
+            @Override
+            public void level(float loud) {
+                level.push(loud);
+            }
+
+            @Override
+            public void done(String line, boolean failed) {
+                heard(line, failed);
+            }
+        });
+        showGo();
+    }
+
+    /** The microphone has closed: the line goes out, or waits in the field when that was asked for. */
+    private void heard(String line, boolean failed) {
+        closeMic();
+        if (line.isEmpty()) {
+            draft.setText("");
+            if (failed) {
+                // Silence says nothing; a microphone that let her down is told in her line.
+                add(new Line(false, getString(R.string.talk_mic_failed), ""));
+            }
+        } else if (Prefs.heardToField(this)) {
+            draft.setText(line);
+            draft.setSelection(draft.length());
+        } else {
+            // A picture that arrived while listening goes with the words, as if both were sent at once.
+            draft.setText(line);
+            sendDraft();
+        }
+        showGo();
+    }
+
+    /** Puts the line back as it is without the microphone. */
+    private void closeMic() {
+        listening = null;
+        draft.setEnabled(true);
+        draft.setHint(null);
+        level.setVisibility(View.GONE);
+        clip.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int code, String[] asked, int[] given) {
+        super.onRequestPermissionsResult(code, asked, given);
+        if (code != ASK_MIC) {
+            return;
+        }
+        if (given.length > 0 && given[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            listen();
+        } else if (micAskedBefore && !shouldShowRequestPermissionRationale(android.Manifest.permission.RECORD_AUDIO)) {
+            // Refused for good: the system will not ask again, so the way to allow it is shown here.
+            // A first prompt merely closed without an answer reads the same, hence the earlier ask.
+            micSheet();
+        }
+    }
+
+    private void micSheet() {
+        TextView t = Ui.text(this, getString(R.string.talk_mic_needed), 15, Palette.MUTED);
+        t.setLineSpacing(0, 1.3f);
+        Kit.sheet(this, getString(R.string.talk_mic_title), t, getString(R.string.talk_mic_settings), new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    startActivity(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            android.net.Uri.fromParts("package", getPackageName(), null)));
+                } catch (android.content.ActivityNotFoundException e) {
+                    Diag.log(TalkActivity.this, "listen: no app settings screen");
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Leaving the screen closes the microphone and drops what it was hearing.
+        if (listening != null) {
+            listening.cancel();
+            closeMic();
+            draft.setText("");
+            showGo();
+        }
+    }
+
+    /** The room's loudness as a few bars, the newest on the right. */
+    private static final class Level extends View {
+        private final float[] last = new float[6];
+        private final android.graphics.Paint paint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+        private final android.graphics.RectF bar = new android.graphics.RectF();
+
+        Level(android.content.Context c) {
+            super(c);
+            paint.setColor(Palette.ACCENT_TEXT);
+            setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        }
+
+        void reset() {
+            java.util.Arrays.fill(last, 0f);
+            invalidate();
+        }
+
+        void push(float v) {
+            System.arraycopy(last, 1, last, 0, last.length - 1);
+            last[last.length - 1] = v;
+            invalidate();
+        }
+
+        @Override
+        protected void onDraw(android.graphics.Canvas c) {
+            float d = getResources().getDisplayMetrics().density;
+            float w = 3 * d;
+            float gap = 2.5f * d;
+            float total = last.length * w + (last.length - 1) * gap;
+            float x = (getWidth() - total) / 2;
+            float mid = getHeight() / 2f;
+            float low = 4 * d;
+            float high = getHeight() * 0.7f;
+            for (float v : last) {
+                float h = low + (high - low) * v;
+                bar.set(x, mid - h / 2, x + w, mid + h / 2);
+                c.drawRoundRect(bar, w / 2, w / 2, paint);
+                x += w + gap;
+            }
+        }
+    }
+
     private void sendDraft() {
         String text = draft.getText().toString().trim();
         if (text.isEmpty() && pending == null) {
@@ -345,6 +554,7 @@ public final class TalkActivity extends Activity {
             pendingShot = null;
             attached.setVisibility(View.GONE);
             draft.setText("");
+            showGo();
             InputMethodManager im = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
             im.hideSoftInputFromWindow(draft.getWindowToken(), 0);
             look(text.isEmpty() ? getString(R.string.talk_image_default) : text, jpeg, shotFile);
@@ -858,6 +1068,7 @@ public final class TalkActivity extends Activity {
                         attachedThumb.setImageBitmap(android.graphics.BitmapFactory.decodeByteArray(jpeg, 0,
                                 jpeg.length));
                         attached.setVisibility(View.VISIBLE);
+                        showGo();
                     }
                 });
             }

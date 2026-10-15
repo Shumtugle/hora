@@ -1,0 +1,9 @@
+Speech recognition
+
+The microphone is heard by a small streaming Zipformer model for Russian,
+vosk-model-small-streaming-ru by Alpha Cephei, licensed under the Apache
+License 2.0; the full text is in apache-2.0.txt. The model was converted for
+sherpa-onnx by the Next-gen Kaldi team (k2-fsa); its 8-bit version is used as
+published, unchanged.
+
+It runs on the phone itself: no sound leaves it, and nothing heard is kept.

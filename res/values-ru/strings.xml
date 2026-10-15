@@ -158,6 +158,7 @@
     <string name="about_lic_trial">модель: Apache 2.0</string>
     <string name="about_english">Английский модуль</string>
     <string name="about_speech_engine">Движок речи</string>
+    <string name="about_hearing">Распознавание речи (микрофон)</string>
     <string name="about_text">Текст и ударения</string>
     <string name="about_stress">Словарь ударений</string>
     <string name="about_stress_extended">Редкие слова</string>
@@ -1638,6 +1639,15 @@
     <string name="talk_sub">Спроси, попроси, поболтай</string>
     <string name="talk_hint">Спроси или напиши, что сказать…</string>
     <string name="talk_send">Отправить</string>
+    <string name="talk_mic">Сказать</string>
+    <string name="talk_mic_stop">Хватит слушать</string>
+    <string name="talk_listening">Слушаю…</string>
+    <string name="talk_mic_title">Микрофон</string>
+    <string name="talk_mic_needed">Чтобы слушать, Hora нужен микрофон. Его можно разрешить в настройках телефона для Hora: Разрешения → Микрофон.</string>
+    <string name="talk_mic_settings">Открыть настройки</string>
+    <string name="talk_mic_failed">Микрофон не открылся. Попробуй ещё раз чуть позже.</string>
+    <string name="heard_to_field">Сказанное — сначала в поле</string>
+    <string name="heard_to_field_sub">Иначе оно уходит само после паузы.</string>
     <string name="home_book_none">Книга не выбрана</string>
     <string name="home_on_duty">на дежурстве · %1$s</string>
     <string name="talk_where">Где мы</string>
@@ -1959,16 +1969,16 @@
     <string name="intro_talk_sub">Время, погода, книга — простыми словами</string>
     <string name="intro_start">Начать</string>
     <string-array name="voice_talk_open">
-        <item>Время, погода и книга — внизу. Остальное можно написать.</item>
-        <item>Внизу время, погода и книга. Или напиши.</item>
-        <item>Время, погода, книга — кнопки внизу. Можно и словами.</item>
-        <item>Время, погода, книга — кнопки внизу. Можно и словами.</item>
-        <item>Внизу время, погода и книга. Можно написать.</item>
-        <item>Время, погода и книга — внизу. Остальное можно написать.</item>
-        <item>Внизу время, погода и книга. Или напиши.</item>
+        <item>Время, погода и книга — внизу. Остальное можно сказать или написать.</item>
+        <item>Внизу время, погода и книга. Или скажи.</item>
+        <item>Время, погода, книга — кнопки внизу. Можно и голосом.</item>
+        <item>Время, погода, книга — кнопки внизу. Можно и голосом.</item>
+        <item>Внизу время, погода и книга. Можно сказать или написать.</item>
+        <item>Время, погода и книга — внизу. Остальное можно сказать или написать.</item>
+        <item>Внизу время, погода и книга. Или скажи.</item>
         <!-- The eighth voice left the troupe. -->
         <item></item>
-        <item>Внизу время, погода и книга. Можно написать.</item>
+        <item>Внизу время, погода и книга. Можно сказать или написать.</item>
     </string-array>
     <string-array name="voice_step_forward">
         <item>%1$s. Теперь отвечаю я.</item>

@@ -1342,7 +1342,7 @@ final class Voice {
         }
     }
 
-    private static void copyAssetTree(AssetManager assets, String path, File target)
+    static void copyAssetTree(AssetManager assets, String path, File target)
             throws IOException {
         String[] children = assets.list(path);
         if (children == null || children.length == 0) {
@@ -1375,7 +1375,7 @@ final class Voice {
         }
     }
 
-    private static void deleteTree(File f) {
+    static void deleteTree(File f) {
         File[] kids = f.listFiles();
         if (kids != null) {
             for (File k : kids) {
@@ -1385,7 +1385,7 @@ final class Voice {
         f.delete();
     }
 
-    private static String readSmall(File f) {
+    static String readSmall(File f) {
         try {
             return new String(readAll(f), "UTF-8");
         } catch (IOException e) {
@@ -1393,7 +1393,7 @@ final class Voice {
         }
     }
 
-    private static void writeSmall(File f, String s) throws IOException {
+    static void writeSmall(File f, String s) throws IOException {
         OutputStream out = new FileOutputStream(f);
         try {
             out.write(s.getBytes("UTF-8"));

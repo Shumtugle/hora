@@ -1,5 +1,6 @@
 #!/bin/sh
-# Builds and signs the APK without an IDE. The voice samples (one per voice of the troupe) go to assets/voice, native libraries to lib/;
+# Builds and signs the APK without an IDE. The voice samples (one per voice of the troupe) go to assets/voice, native libraries to lib/,
+# the microphone's small recognizer to assets/hear (tools/fetch_hear.sh);
 # the speech model itself is a separate pack the app fetches, made by the voice module tool.
 set -e
 AJ=${ANDROID_JAR:?set ANDROID_JAR to a platform jar, API 34 or newer}
@@ -8,6 +9,11 @@ rm -rf out && mkdir -p out/gen out/classes out/apk
 # Content stamps: the app unpacks its voice and stress list again only when these change, not with every build.
 if [ -d assets/voice ]; then
   ( cd assets/voice && ls | grep -v '^stamp.txt$' | sort | xargs cat | md5sum | cut -c1-32 ) > assets/voice/stamp.txt
+fi
+# The microphone's model is not in git; a build without it would have a button that cannot hear.
+[ -f assets/hear/encoder.int8.onnx ] || { echo "assets/hear is missing: run tools/fetch_hear.sh"; exit 1; }
+if [ -d assets/hear ]; then
+  ( cd assets/hear && ls | grep -v '^stamp.txt$' | sort | xargs cat | md5sum | cut -c1-32 ) > assets/hear/stamp.txt
 fi
 if [ -f assets/lexicons/stress-big.tsv ]; then
   md5sum < assets/lexicons/stress-big.tsv | cut -c1-32 > assets/lexicons/stress-big.stamp

@@ -31,6 +31,7 @@ public final class AboutActivity extends Activity {
         {R.string.about_voice, R.string.about_samples_trial, R.string.about_lic_trial},
         {R.string.about_voice, R.string.about_english, R.string.about_lic_cc_by},
         {R.string.about_voice, R.string.about_speech_engine, R.string.about_lic_apache_mit},
+        {R.string.about_voice, R.string.about_hearing, R.string.about_lic_apache},
         {R.string.about_text, R.string.about_stress, R.string.about_lic_cc_by_sa_mit},
         {R.string.about_text, R.string.about_stress_extended, R.string.about_lic_apache},
         {R.string.about_text, R.string.about_stress_net, R.string.about_lic_mit},
@@ -49,7 +50,7 @@ public final class AboutActivity extends Activity {
     private static final String[] FILES = {
         "hora.txt", "voice-model.txt", "voices-dialogs.txt", "voices-mozilla.txt", "voices-trial.txt",
         "english-voice.txt",
-        "speech-engine.txt", "stress-dictionary.txt", "stress-extended.txt", "stress-network.txt",
+        "speech-engine.txt", "speech-recognition.txt", "stress-dictionary.txt", "stress-extended.txt", "stress-network.txt",
         "ruaccent-dictionaries.txt", "yo-dictionary.txt", "ai-models.txt", "model-engine.txt",
         "weather-data.txt", "wikipedia.txt", "wikisource.txt", "edited-books.txt", "fonts-ofl.txt", "portraits.txt", "apache-2.0.txt",
     };

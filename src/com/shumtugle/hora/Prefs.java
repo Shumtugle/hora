@@ -103,6 +103,8 @@ final class Prefs {
     }
 
     private static final String SLOW_BY_PAUSES = "slow_by_pauses";
+    private static final String HEARD_TO_FIELD = "heard_to_field";
+    private static final String MIC_ASKED = "mic_asked";
     private static final String RESPELL = "respell";
     private static final String EVEN_TEMPO = "even_tempo";
     private static final String ROLE_PREFIX = "role_";
@@ -222,6 +224,24 @@ final class Prefs {
         if (role == Cast.NARRATOR || role == Cast.SPEAKER_A || role == Cast.SPEAKER_B) {
             BookPlayer.revoice(c);
         }
+    }
+
+    /** Spoken words wait in the chat's field for a touch, instead of going out after a pause. */
+    static boolean heardToField(Context c) {
+        return sp(c).getBoolean(HEARD_TO_FIELD, false);
+    }
+
+    static void setHeardToField(Context c, boolean on) {
+        sp(c).edit().putBoolean(HEARD_TO_FIELD, on).apply();
+    }
+
+    /** Whether the phone has already been asked for the microphone once. */
+    static boolean micAsked(Context c) {
+        return sp(c).getBoolean(MIC_ASKED, false);
+    }
+
+    static void setMicAsked(Context c) {
+        sp(c).edit().putBoolean(MIC_ASKED, true).apply();
     }
 
     /** Slowing down lengthens the pauses instead of stretching the speech itself. */
