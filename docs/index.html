@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hora — a voice for books, notifications and talk</title>
+<meta name="description" content="Hora is a voice assistant and a reader for Android. Eight voices of its own, books read aloud, notifications in your own headphones, talk by buttons or by voice. Everything lives on the phone.">
+<meta property="og:title" content="Hora">
+<meta property="og:description" content="A voice for books, notifications and talk. Everything lives on the phone.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="favicon.png">
+<style>
+@font-face { font-family: "Hora Display"; src: url("fonts/display.ttf") format("truetype"); font-display: swap; }
+@font-face { font-family: "Hora Text"; src: url("fonts/text.ttf") format("truetype"); font-display: swap; }
+@font-face { font-family: "Hora Text"; src: url("fonts/text-strong.ttf") format("truetype"); font-weight: 600 800; font-display: swap; }
+
+:root {
+  --bg: #140B0D;
+  --surface: #21151A;
+  --raised: #2E1D22;
+  --line: #3A262B;
+  --ink: #F3E7CF;
+  --muted: #B8A79A;
+  --hint: #8E7B72;
+  --accent: #B83A2B;
+  --accent-ink: #F3E7CF;
+  --accent-text: #E8826C;
+  --gap: clamp(16px, 4vw, 40px);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 17px/1.6 "Hora Text", system-ui, sans-serif;
+  overflow-x: hidden;
+}
+a { color: var(--accent-text); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+img { display: block; max-width: 100%; height: auto; }
+
+.wrap { width: min(1080px, 100% - 32px); margin: 0 auto; }
+
+/* The first screen: the sign, the line the app opens with, and the way to get it. */
+.hero {
+  position: relative;
+  padding: clamp(48px, 9vw, 112px) 0 clamp(40px, 7vw, 88px);
+  overflow: hidden;
+}
+.hero::before {
+  content: "";
+  position: absolute; inset: -20% -10% auto auto;
+  width: 70vmax; height: 70vmax;
+  background: radial-gradient(closest-side, rgba(184, 58, 43, 0.20), transparent 70%);
+  pointer-events: none;
+}
+.hero .wrap {
+  position: relative;
+  display: grid;
+  gap: var(--gap);
+  align-items: center;
+}
+@media (min-width: 820px) {
+  .hero .wrap { grid-template-columns: 1.15fr 0.85fr; }
+}
+.sign { width: 96px; height: 96px; margin-bottom: 20px; }
+h1, h2, h3 {
+  font-family: "Hora Display", Georgia, serif;
+  font-weight: 500;
+  line-height: 1.05;
+  margin: 0;
+}
+h1 { font-size: clamp(64px, 12vw, 112px); letter-spacing: -0.01em; }
+.lead {
+  font-family: "Hora Display", Georgia, serif;
+  font-size: clamp(24px, 3.4vw, 32px);
+  line-height: 1.25;
+  color: var(--ink);
+  margin: 12px 0 28px;
+  max-width: 22ch;
+}
+.actions { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
+.button {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 0 28px;
+  border-radius: 26px;
+  background: var(--accent); color: var(--accent-ink);
+  font-weight: 600; font-size: 17px;
+}
+.button:hover { text-decoration: none; filter: brightness(1.08); }
+.small { color: var(--hint); font-size: 14px; margin-top: 16px; }
+
+/* A phone: the screenshot itself, rounded like the glass it came from. */
+.phone {
+  width: min(300px, 78vw);
+  margin: 0 auto;
+  border-radius: 34px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.9), 0 0 0 6px var(--surface);
+  background: var(--surface);
+}
+.phone.tilt { transform: rotate(2deg); }
+.pair { display: flex; gap: 18px; justify-content: center; align-items: flex-start; }
+.pair .phone { width: min(250px, 44vw); margin: 0; }
+.pair .phone:last-child { margin-top: 48px; }
+
+/* The rest: what Hora does, one thing per band, the picture beside the words. */
+section.band { padding: clamp(48px, 8vw, 96px) 0; border-top: 1px solid var(--line); }
+section.band .wrap { display: grid; gap: var(--gap); align-items: center; }
+@media (min-width: 820px) {
+  section.band .wrap { grid-template-columns: 1fr 1fr; }
+  section.band.flip .words { order: 2; }
+}
+.eyebrow {
+  font-weight: 600; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent-text); margin: 0 0 10px;
+}
+h2 { font-size: clamp(36px, 5.5vw, 54px); margin-bottom: 18px; max-width: 16ch; }
+.words p { color: var(--muted); margin: 0 0 14px; max-width: 52ch; }
+.words p strong { color: var(--ink); font-weight: 600; }
+
+.strip {
+  width: min(460px, 100%);
+  margin: 0 auto;
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.9);
+}
+
+/* Facts without pictures: notifications, audiobooks, moving to a new phone. */
+.facts { display: grid; gap: 16px; margin-top: 8px; }
+@media (min-width: 820px) { .facts { grid-template-columns: repeat(3, 1fr); } }
+.fact {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 24px;
+}
+.fact h3 { font-size: 26px; margin-bottom: 10px; }
+.fact p { color: var(--muted); margin: 0; font-size: 16px; }
+
+.list { margin: 18px 0 0; padding: 0; list-style: none; max-width: 420px; background: var(--surface); border-radius: 22px; }
+.list li { display: flex; justify-content: space-between; gap: 16px; padding: 14px 20px; color: var(--ink); }
+.list li + li { border-top: 1px solid var(--line); }
+.list span { color: var(--muted); white-space: nowrap; }
+
+footer { border-top: 1px solid var(--line); padding: 56px 0 72px; text-align: center; }
+footer .sign { margin: 0 auto 16px; width: 64px; height: 64px; }
+footer p { color: var(--hint); font-size: 14px; margin: 14px auto 0; max-width: 60ch; }
+footer .actions { justify-content: center; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <img class="sign" src="logo.png" alt="" width="96" height="96">
+      <h1>Hora</h1>
+      <p class="lead">A voice for books, notifications and talk. Everything lives on the phone.</p>
+      <div class="actions">
+        <a class="button" href="https://github.com/Shumtugle/hora/releases/latest">Download for Android</a>
+        <a href="https://github.com/Shumtugle/hora">Source code</a>
+      </div>
+      <p class="small">Version 1.0.1 · Android 8 or newer, 64-bit ARM · free, GPL-3.0 · Hora speaks Russian; English books have an English voice</p>
+    </div>
+    <div class="phone tilt">
+      <img src="screens/voice.webp" width="720" height="1682" alt="Hora's main screen: her portrait, her name, the eight faces of the voices, and buttons for the time, the weather, talk and the book.">
+    </div>
+  </div>
+</header>
+
+<section class="band">
+  <div class="wrap">
+    <div class="words">
+      <p class="eyebrow">Voices</p>
+      <h2>Eight voices, each with a face</h2>
+      <p>Hora has voices of her own, made for her and licensed for her, each with a portrait, a name and a manner. Touch a face and that voice answers from now on; give it a name of your own if you like.</p>
+      <p>Who reads a book and who answers the talk are separate choices: one voice can read the novel while another tells you the time.</p>
+    </div>
+    <div class="phone">
+      <img src="screens/voice-second.webp" width="720" height="1682" alt="The same screen with another voice chosen: her portrait, the row of faces with hers marked, and her greeting.">
+    </div>
+  </div>
+</section>
+
+<section class="band flip">
+  <div class="wrap">
+    <div class="words">
+      <p class="eyebrow">Books</p>
+      <h2>Books, read aloud</h2>
+      <p>Put your own books on the shelf, or take one from the free libraries and the carefully edited English classics inside the app. Russian books are read by the voices; English books by an English voice.</p>
+      <p>The paragraph being read stands raised on the page, so the eye can follow the ear. The cover comes from the book file itself, never invented. A quiet background — rain, surf, a fireplace, soft music — can play under the voice.</p>
+      <p>Headphone buttons do what they do in any player: play, pause, forward, back.</p>
+    </div>
+    <div class="pair">
+      <div class="phone"><img src="screens/book.webp" width="720" height="1682" alt="A book being read: the title, the chapter and paragraph, the current paragraph on a raised plate, and the reader's face beside the play controls."></div>
+      <div class="phone"><img src="screens/shelf.webp" width="720" height="1682" alt="The shelf: the book listened to now with its cover, and the books on the shelf below."></div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="words">
+      <p class="eyebrow">Talk</p>
+      <h2>Ask with a button, or out loud</h2>
+      <p>The time, the weather, where you are in the book: one touch. Anything else, type it — or press the round button, speak, and pause. The words appear as you say them and go out by themselves. Hearing runs on the phone; no sound leaves it.</p>
+      <p>With the optional AI model, the talk goes further: free questions, short answers, and a look at a photo you show it. The model runs on the phone too.</p>
+    </div>
+    <div class="strip">
+      <img src="screens/listen.webp" width="720" height="315" alt="The bottom of the talk while it listens: ready buttons for the time, the weather, reading, where we are and what Hora can do, and the line showing Listening with a stop button.">
+    </div>
+  </div>
+</section>
+
+<section class="band flip">
+  <div class="wrap">
+    <div class="words">
+      <p class="eyebrow">Privacy</p>
+      <h2>Everything lives on the phone</h2>
+      <p>The voices and the models are downloaded once, inside the app, over Wi-Fi and in the background. Take all of it, or only the voice.</p>
+      <ul class="list">
+        <li>Hora's voice <span>100 MB</span></li>
+        <li>English <span>100 MB</span></li>
+        <li>AI model <span>3.1 GB</span></li>
+        <li>For photos <span>1 GB</span></li>
+      </ul>
+      <p style="margin-top:18px">Nothing you say or read is sent anywhere. The network is used only for the weather, the libraries, answers from the encyclopedia and these downloads. Hora asks for no access to all your files: only the one folder you show it.</p>
+    </div>
+    <div class="phone">
+      <img src="screens/everything.webp" width="720" height="1682" alt="The first-run screen offering everything for Hora in one download, with each part and its size.">
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap" style="grid-template-columns:1fr">
+    <div class="facts">
+      <div class="fact">
+        <h3>Notifications in your ears</h3>
+        <p>Hora reads new messages into your own headphones, and only there. A wireless device is asked about once: yours hears everything, a car or a speaker hears nothing private.</p>
+      </div>
+      <div class="fact">
+        <h3>Audiobooks overnight</h3>
+        <p>Turn any book into chapters of sound while the phone charges at night, ready for any player in the morning.</p>
+      </div>
+      <div class="fact">
+        <h3>A new phone in one file</h3>
+        <p>Settings, places in books and your own names for the voices are kept in one file in Hora's folder. Copy the folder to a new phone, and Hora finds where you left off.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <img class="sign" src="logo.png" alt="" width="64" height="64">
+    <div class="actions">
+      <a class="button" href="https://github.com/Shumtugle/hora/releases/latest">Download for Android</a>
+      <a href="https://github.com/Shumtugle/hora">Source code</a>
+    </div>
+    <p>Open the downloaded file on the phone; Android asks once to allow installs from where you opened it. Hora is free software under the GPL-3.0. The licences of the voices, models, fonts and data are listed in the app, under About.</p>
+  </div>
+</footer>
+
+</body>
+</html>
