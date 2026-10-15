@@ -103,6 +103,10 @@ final class Listen {
         AudioFocusRequest focus = null;
         AudioRecord rec = null;
         long began = SystemClock.elapsedRealtime();
+        // How long the model took over the sound it was given: near or over the sound's own length
+        // means a slow phone that loses words, which the journal should show.
+        long working = 0;
+        long heardMs = 0;
         String ending = "stopped";
         boolean failed = false;
         synchronized (LOCK) {
@@ -120,6 +124,7 @@ final class Listen {
                         ending = cancelled ? "cancelled while loading" : "stopped while loading";
                         break body;
                     }
+                    String names = names();
                     int min = AudioRecord.getMinBufferSize(Hearing.RATE, AudioFormat.CHANNEL_IN_MONO,
                             AudioFormat.ENCODING_PCM_16BIT);
                     // Two seconds of room, so a slow moment on the phone loses nothing.
@@ -151,7 +156,7 @@ final class Listen {
                     }
                     rec.startRecording();
                     long opened = SystemClock.elapsedRealtime();
-                    h.begin();
+                    h.begin(names);
                     short[] pcm = new short[PIECE];
                     float[] f = new float[PIECE];
                     ending = "paused";
@@ -178,7 +183,10 @@ final class Listen {
                             sum += v * v;
                         }
                         final float loud = loudness(Math.sqrt(sum / n));
-                        final boolean changed = h.feed(piece);
+                        long t = SystemClock.elapsedRealtime();
+                    final boolean changed = h.feed(piece);
+                    working += SystemClock.elapsedRealtime() - t;
+                    heardMs += n * 1000L / Hearing.RATE;
                         final String sofar = h.words();
                         post(new Runnable() {
                             @Override
@@ -218,7 +226,8 @@ final class Listen {
             }
         }
         Diag.mark(app, "listen: " + ending + " after " + (SystemClock.elapsedRealtime() - began) + " ms, "
-                + (line.isEmpty() ? "nothing heard" : words(line) + " words"));
+                + (line.isEmpty() ? "nothing heard" : words(line) + " words")
+                + (heardMs > 0 ? ", model busy " + (working * 100 / heardMs) + " % of the sound's time" : ""));
         final String result = line;
         final boolean broke = failed;
         post(new Runnable() {
@@ -230,6 +239,26 @@ final class Listen {
                 to.done(result, broke);
             }
         });
+    }
+
+    /**
+     * The names this phone's talk is likely to hold: the voices as the person calls them and the
+     * place of the weather. Read anew each time, since either may have been changed.
+     */
+    private String names() {
+        java.util.List<String> all = new java.util.ArrayList<String>();
+        // The recognizer hears Russian whatever the screen's language: the names it is given are
+        // the Russian ones, and any name the person chose, which it keeps if it can spell it.
+        String[] given = SpeechLanguage.resources(app, new java.util.Locale("ru")).getStringArray(R.array.voice_names);
+        for (int i = 0; i < Cast.size(app); i++) {
+            int v = Cast.at(i);
+            all.add(Prefs.voiceName(app, v));
+            if (v >= 1 && v <= given.length) {
+                all.add(given[v - 1]);
+            }
+        }
+        all.add(Weather.placeName(app));
+        return Hearing.expect(all);
     }
 
     /** Called with the lock held: the model, unpacked and loaded once. */

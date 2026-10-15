@@ -35,6 +35,8 @@ final class Diag {
     private static final long EVENT_LIFE_MS = 12 * 60 * 60 * 1000L;
     private static final long PRUNE_EVERY_MS = 60 * 1000L;
     private static final int LIMIT = 128 * 1024;
+    /** The fewest lines a copy of the journal's end carries. */
+    private static final int FEWEST = 40;
     private static final String STAMP = "MM-dd HH:mm:ss.SSS";
     private static long pruned;
 
@@ -115,8 +117,74 @@ final class Diag {
         return Lexicon.readText(file(c));
     }
 
+    /**
+     * The end of the journal: every line of the last span of time, and never fewer than a few
+     * dozen lines, so a quiet hour still shows what came before it. Small enough to paste anywhere.
+     */
+    static String recent(Context c, long spanMs) {
+        String all = read(c);
+        if (all.isEmpty()) {
+            return "";
+        }
+        String[] lines = all.split("\n");
+        long now = System.currentTimeMillis();
+        int from = lines.length;
+        for (int i = lines.length - 1; i >= 0; i--) {
+            String line = lines[i];
+            // Lines of a trace carry no stamp and go with the line above them.
+            if (line.length() <= STAMP.length() || !Character.isDigit(line.charAt(0))) {
+                continue;
+            }
+            long at = stampTime(line, now);
+            if (at < 0) {
+                continue;
+            }
+            if (now - at > spanMs) {
+                break;
+            }
+            from = i;
+        }
+        from = Math.min(from, Math.max(0, lines.length - FEWEST));
+        StringBuilder b = new StringBuilder();
+        for (int i = from; i < lines.length; i++) {
+            b.append(lines[i]).append('\n');
+        }
+        return b.toString();
+    }
+
     static void clear(Context c) {
         file(c).delete();
+    }
+
+    /**
+     * When a line was written, or -1 if it carries no stamp. The stamp has no year: this year is
+     * put in front before reading it, so that the 29th of February is read as a real day, and a
+     * time ahead of now belongs to the year before.
+     */
+    private static long stampTime(String line, long now) {
+        if (line.length() <= STAMP.length() || !Character.isDigit(line.charAt(0))) {
+            return -1;
+        }
+        SimpleDateFormat parse = new SimpleDateFormat("yyyy-" + STAMP, Locale.ROOT);
+        parse.setLenient(false);
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(now);
+        int year = cal.get(Calendar.YEAR);
+        String stamp = line.substring(0, STAMP.length());
+        try {
+            long at = parse.parse(year + "-" + stamp).getTime();
+            if (at > now + EVENT_LIFE_MS) {
+                at = parse.parse((year - 1) + "-" + stamp).getTime();
+            }
+            return at;
+        } catch (ParseException e) {
+            // The 29th of February of last year, read in a year that has none, or a broken line.
+            try {
+                return parse.parse((year - 1) + "-" + stamp).getTime();
+            } catch (ParseException again) {
+                return -1;
+            }
+        }
     }
 
     /** Drops details older than their life and events older than theirs; then the oldest half if still too big. */
@@ -126,9 +194,6 @@ final class Diag {
         }
         String all = Lexicon.readText(f);
         StringBuilder kept = new StringBuilder(all.length());
-        SimpleDateFormat parse = new SimpleDateFormat(STAMP, Locale.ROOT);
-        Calendar when = Calendar.getInstance();
-        int year = when.get(Calendar.YEAR);
         long age = 0;
         boolean event = true;
         for (String line : all.split("\n")) {
@@ -137,16 +202,12 @@ final class Diag {
             }
             // Lines of a trace carry no stamp and follow the fate of the line above.
             if (line.length() > STAMP.length() && Character.isDigit(line.charAt(0))) {
-                try {
-                    when.setTime(parse.parse(line.substring(0, STAMP.length())));
-                    when.set(Calendar.YEAR, year);
-                    if (when.getTimeInMillis() > now + EVENT_LIFE_MS) {
-                        when.set(Calendar.YEAR, year - 1);
-                    }
-                    age = now - when.getTimeInMillis();
+                long at = stampTime(line, now);
+                if (at >= 0) {
+                    age = now - at;
                     int close = line.indexOf("] ");
                     event = close > 0 && line.startsWith(EVENT, close + 2);
-                } catch (ParseException e) {
+                } else {
                     age = 0;
                     event = true;
                 }

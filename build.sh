@@ -11,7 +11,7 @@ if [ -d assets/voice ]; then
   ( cd assets/voice && ls | grep -v '^stamp.txt$' | sort | xargs cat | md5sum | cut -c1-32 ) > assets/voice/stamp.txt
 fi
 # The microphone's model is not in git; a build without it would have a button that cannot hear.
-[ -f assets/hear/encoder.int8.onnx ] || { echo "assets/hear is missing: run tools/fetch_hear.sh"; exit 1; }
+[ -f assets/hear/encoder.int8.onnx ] && [ -f assets/hear/bpe.vocab ] || { echo "assets/hear is missing: run tools/fetch_hear.sh"; exit 1; }
 if [ -d assets/hear ]; then
   ( cd assets/hear && ls | grep -v '^stamp.txt$' | sort | xargs cat | md5sum | cut -c1-32 ) > assets/hear/stamp.txt
 fi

@@ -100,7 +100,9 @@ public final class JournalActivity extends Activity {
         row1.addView(action(R.string.journal_copy, true, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                copy(Diag.read(JournalActivity.this));
+                // The last hour: what is needed after a test, and short enough to paste whole.
+                // The whole journal goes out as a file with the button beside this one.
+                copy(Diag.recent(JournalActivity.this, 60 * 60 * 1000L));
             }
         }), half(false));
         row1.addView(action(R.string.journal_save, false, new View.OnClickListener() {

@@ -512,7 +512,7 @@
     <string name="widget_waits">%1$s waiting</string>
     <string name="role_herald">Notifications</string>
     <string name="role_talk">Talk</string>
-    <string name="journal_copy">Copy</string>
+    <string name="journal_copy">Copy the last hour</string>
     <string name="journal_copied">Journal copied</string>
     <string name="journal_note">Events are kept for 12 hours, details for 15 minutes. Hold a line to copy it.</string>
     <string name="journal_clear_sure">Clear for good?</string>

@@ -944,7 +944,7 @@
     <string name="widget_waits">%1$s ждёт</string>
     <string name="role_herald">Уведомления</string>
     <string name="role_talk">Разговор</string>
-    <string name="journal_copy">Копировать</string>
+    <string name="journal_copy">Копировать час</string>
     <string name="journal_copied">Журнал скопирован</string>
     <string name="journal_note">События хранятся 12 часов, подробности — 15 минут. Удержи строку, чтобы скопировать её.</string>
     <string name="journal_clear_sure">Точно очистить?</string>

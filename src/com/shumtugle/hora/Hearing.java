@@ -15,7 +15,7 @@ import java.io.File;
 final class Hearing {
     static final int RATE = 16000;
     /** The model files, as they lie in the app and once unpacked. */
-    static final String[] FILES = {"encoder.int8.onnx", "decoder.onnx", "joiner.int8.onnx", "tokens.txt"};
+    static final String[] FILES = {"encoder.int8.onnx", "decoder.onnx", "joiner.int8.onnx", "tokens.txt", "bpe.vocab"};
 
     private final OnlineRecognizer recognizer;
     private OnlineStream stream;
@@ -28,6 +28,13 @@ final class Hearing {
         c.modelConfig.transducer.joiner = new File(dir, FILES[2]).getPath();
         c.modelConfig.tokens = new File(dir, FILES[3]).getPath();
         c.modelConfig.numThreads = threads;
+        // A search that keeps a few guesses open, so names it was told to expect can win over
+        // look-alike words. The names come with each utterance.
+        c.decodingMethod = "modified_beam_search";
+        c.maxActivePaths = 4;
+        c.hotwordsScore = 2f;
+        c.modelConfig.modelingUnit = "bpe";
+        c.modelConfig.bpeVocab = new File(dir, FILES[4]).getPath();
         c.featConfig.sampleRate = RATE;
         c.featConfig.featureDim = 80;
         // Nothing said for five seconds: done, with nothing. Something said, then a second of
@@ -38,10 +45,10 @@ final class Hearing {
         recognizer = new OnlineRecognizer(c);
     }
 
-    /** Starts a new utterance, forgetting the last one. */
-    void begin() {
+    /** Starts a new utterance, forgetting the last one; names are what it should expect, as from expect(). */
+    void begin(String names) {
         drop();
-        stream = recognizer.createStream("");
+        stream = recognizer.createStream(names);
         words = "";
     }
 
@@ -72,8 +79,9 @@ final class Hearing {
         if (stream == null) {
             return words;
         }
-        // A little silence lets the last word out of the model before the input closes.
-        stream.acceptWaveform(new float[RATE / 4], RATE);
+        // A second of silence lets the last word out of the model before the input closes:
+        // with less, a stop pressed right after speaking loses that word.
+        stream.acceptWaveform(new float[RATE], RATE);
         stream.inputFinished();
         while (recognizer.isReady(stream)) {
             recognizer.decode(stream);
@@ -104,6 +112,31 @@ final class Hearing {
             stream.release();
             stream = null;
         }
+    }
+
+    /**
+     * Names to expect, as the recognizer takes them: lower case, one per item, separated by
+     * slashes. Only what the model can spell is kept: letters of its own alphabet and spaces.
+     */
+    static String expect(Iterable<String> names) {
+        java.util.LinkedHashSet<String> kept = new java.util.LinkedHashSet<String>();
+        for (String n : names) {
+            if (n == null) {
+                continue;
+            }
+            String w = n.toLowerCase(java.util.Locale.ROOT).replace('-', ' ').trim().replaceAll("\\s+", " ");
+            if (!w.isEmpty() && w.matches("[\\u0430-\\u044f\\u0451 ]+")) {
+                kept.add(w);
+            }
+        }
+        StringBuilder b = new StringBuilder();
+        for (String w : kept) {
+            if (b.length() > 0) {
+                b.append('/');
+            }
+            b.append(w);
+        }
+        return b.toString();
     }
 
     /** The heard words as a line to send: first letter up, nothing else touched. */
