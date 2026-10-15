@@ -196,6 +196,12 @@ public final class ShelfActivity extends Activity {
             return;
         }
         drawn = key.toString();
+        // Covers of books no longer on the shelf are let go.
+        java.util.Set<String> here = new java.util.HashSet<String>();
+        for (Library.Entry e : all) {
+            here.add(e.uri);
+        }
+        pictures.keySet().retainAll(here);
         list.removeAllViews();
         if (asList) {
             showList(all, current, order, narrator);
@@ -335,15 +341,48 @@ public final class ShelfActivity extends Activity {
         startActivityForResult(i, PICK_BOOK);
     }
 
-    /** A book's cover: its own picture for the demo, the paper one drawn by Hora otherwise. */
+    /**
+     * A book's cover: the picture the book carries in its own file when it has one, the paper one
+     * drawn by Hora until it is found and when there is none.
+     */
     private Cover cover(Library.Entry e, int widthDp) {
-        Cover c = new Cover(this);
+        final Cover c = new Cover(this);
         c.set(titleOf(e), e.author);
         if (Demo.is(this, e.uri)) {
             c.setPicture(Demo.coverBitmap(this, e.uri, dp(widthDp)));
+            return c;
         }
+        final String uri = e.uri;
+        android.graphics.Bitmap known = pictures.get(uri);
+        if (known == null) {
+            known = Covers.shown(uri);
+        }
+        if (known != null) {
+            // Held by the shelf while it is open: drawn again, it shows the picture at once.
+            pictures.put(uri, known);
+            c.setPicture(known);
+            return c;
+        }
+        Covers.find(this, uri, e.name, new Covers.Ready() {
+            @Override
+            public void ready(final android.graphics.Bitmap picture) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isFinishing() && !isDestroyed()) {
+                            pictures.put(uri, picture);
+                            c.setPicture(picture);
+                        }
+                    }
+                });
+            }
+        });
         return c;
     }
+
+    /** The covers found while the shelf is open. */
+    private final java.util.Map<String, android.graphics.Bitmap> pictures =
+            new java.util.HashMap<String, android.graphics.Bitmap>();
 
     /** Three dots by every book: the same sheet a long press opens, for those who do not guess it. */
     private View more(final Library.Entry e) {

@@ -158,6 +158,8 @@ final class Library {
 
     /** A book that moved keeps everything under its new address. */
     static synchronized void move(Context c, String from, String to) {
+        // The cover is kept by address: under the new one it is taken out of the book again.
+        Covers.forget(c, from);
         List<Entry> list = all(c);
         for (Entry x : list) {
             if (x.uri.equals(from)) {
@@ -223,6 +225,8 @@ final class Library {
     }
 
     static synchronized void remove(Context c, String uri) {
+        // The cover taken out of the book goes with it.
+        Covers.forget(c, uri);
         List<Entry> list = all(c);
         for (int i = list.size() - 1; i >= 0; i--) {
             if (list.get(i).uri.equals(uri)) {

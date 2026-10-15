@@ -16,10 +16,11 @@ import java.util.Locale;
 
 /**
  * A book cover Hora draws itself: paper, a thread of the accent along the
- * top, the title in the display face and the author in spaced capitals.
- * Books bring no pictures of their own (a text file has none and never will),
- * so one plain cover keeps the shelf whole. Two to three, at any size: the
- * title takes about a sixth of the width, the author about a sixteenth.
+ * top, the title in the display face and the author in spaced capitals; or
+ * the picture a book carries in its own file, drawn in its place. Many books
+ * bring none (a text file never will), so the paper cover keeps the shelf
+ * whole. Two to three, at any size: the title takes about a sixth of the
+ * width, the author about a sixteenth.
  */
 final class Cover extends View {
     private static final int PAPER = 0xFFF3E7CF;

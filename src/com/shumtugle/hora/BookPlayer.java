@@ -1267,6 +1267,36 @@ public final class BookPlayer extends Service {
         }
     }
 
+    /** The book whose cover the notice shows, and the picture once found: looked for once per book, apart. */
+    private volatile String iconFor = "";
+    private volatile android.graphics.Bitmap iconPicture;
+
+    private volatile long iconAskedAt;
+
+    /**
+     * The book's own cover for the notice, small; null until found and for a book without one.
+     * Only what the app's own process has kept is taken: this process holds the voice and does
+     * not read books for their covers. While none is kept, it is asked again now and then.
+     */
+    private android.graphics.Bitmap icon(final String uri) {
+        long now = android.os.SystemClock.uptimeMillis();
+        if (!uri.equals(iconFor) || iconPicture == null && now - iconAskedAt > 30_000L) {
+            iconFor = uri;
+            iconPicture = null;
+            iconAskedAt = now;
+            Covers.findKept(this, uri, new Covers.Ready() {
+                @Override
+                public void ready(android.graphics.Bitmap p) {
+                    if (uri.equals(iconFor)) {
+                        iconPicture = android.graphics.Bitmap.createScaledBitmap(p, 200,
+                                Math.max(1, 200 * p.getHeight() / Math.max(1, p.getWidth())), true);
+                    }
+                }
+            });
+        }
+        return iconPicture;
+    }
+
     private Notification note() {
         List<String> p = paragraphs;
         String text = p == null ? getString(R.string.book_opening)
@@ -1283,7 +1313,8 @@ public final class BookPlayer extends Service {
                 .addAction(action(playing ? R.drawable.ic_pause : R.drawable.ic_play_small,
                         playing ? R.string.book_pause : R.string.book_play, ACTION_TOGGLE, 2))
                 .addAction(action(R.drawable.ic_next, R.string.book_next, ACTION_NEXT, 3))
-                .setLargeIcon(Demo.coverBitmap(this, uri, 200))
+                .setLargeIcon(uri == null || uri.isEmpty() || Demo.is(this, uri) ? Demo.coverBitmap(this, uri, 200)
+                        : icon(uri))
                 .setStyle(style())
                 .setOngoing(playing)
                 .setShowWhen(false)

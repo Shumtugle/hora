@@ -669,23 +669,62 @@ public final class BookActivity extends Activity {
         });
     }
 
-    /** The reader's scene behind the screen, blurred; none in the contrast look. */
+    /** The book whose own cover was looked for, and the picture once found; null while none is known. */
+    private String coverAsked = "";
+    private android.graphics.Bitmap coverFound;
+    private int lastBackdropVoice;
+
+    /**
+     * Behind the screen, blurred: the book's own cover when it carries one, the reader's scene
+     * when it does not; none in the contrast look.
+     */
     private void setBackdrop(int voice) {
-        // The demo has its own cover: it stands behind the screen instead of the reader's scene.
-        boolean demo = Demo.is(this, Reading.uri(this));
-        int key = demo ? DEMO_BACKDROP - Demo.which(this, Reading.uri(this)) : voice;
+        lastBackdropVoice = voice;
+        String uri = Reading.uri(this);
+        boolean demo = Demo.is(this, uri);
+        if (!demo && !uri.isEmpty() && !uri.equals(coverAsked)) {
+            // Another book: its cover is looked for, and the backdrop is drawn anew either way.
+            coverAsked = uri;
+            backdropVoice = Integer.MIN_VALUE;
+            coverFound = Covers.shown(uri);
+            if (coverFound == null) {
+                final String asked = uri;
+                Covers.find(this, uri, Reading.name(this), new Covers.Ready() {
+                    @Override
+                    public void ready(final android.graphics.Bitmap picture) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (isFinishing() || isDestroyed() || !asked.equals(coverAsked)
+                                        || !asked.equals(Reading.uri(BookActivity.this))) {
+                                    return;
+                                }
+                                coverFound = picture;
+                                backdropVoice = Integer.MIN_VALUE;
+                                setBackdrop(lastBackdropVoice);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+        boolean own = !demo && !uri.isEmpty() && uri.equals(coverAsked) && coverFound != null;
+        int key = demo ? DEMO_BACKDROP - Demo.which(this, uri) : own ? COVER_BACKDROP : voice;
         if (key == backdropVoice) {
             return;
         }
         backdropVoice = key;
         if (demo) {
-            Kit.backdrop(this, backdrop, Demo.coverBitmap(this, Reading.uri(this), 270));
+            Kit.backdrop(this, backdrop, Demo.coverBitmap(this, uri, 270));
+        } else if (own) {
+            Kit.backdrop(this, backdrop, coverFound);
         } else {
             Kit.backdrop(this, backdrop, voice);
         }
     }
 
     private static final int DEMO_BACKDROP = -100;
+    private static final int COVER_BACKDROP = -200;
 
     /** Where a chosen place should take the voice: reading on from there if it reads, else only moving. */
     private void goTo(int index) {

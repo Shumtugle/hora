@@ -32,24 +32,126 @@ final class BookCover {
      * the same folder may be anything, a private photo too.
      */
     static byte[] jpeg(Context c, String uri, String name) {
-        byte[] own = null;
         if (Demo.is(c, uri)) {
             // The demo book's cover ships with the app.
-            own = Demo.cover(c, uri);
-            Bitmap d = own == null ? null : BitmapFactory.decodeByteArray(own, 0, own.length);
-            return d == null ? null : small(d);
+            byte[] own = Demo.cover(c, uri);
+            return own == null ? null : smallFrom(own);
         }
-        try (InputStream in = c.getContentResolver().openInputStream(Uri.parse(uri))) {
-            if (in != null) {
-                own = fromBook(name, BookText.readAll(in, BookText.MAX_BYTES));
-            }
+        try {
+            // An audiobook is made once, so its cover may come from a longer book than the shelf reads.
+            return own(c, uri, name, BookText.MAX_BYTES);
         } catch (Exception e) {
             Diag.log(c, "export: no cover in the book", e);
-        }
-        if (own == null) {
             return null;
         }
-        Bitmap b = BitmapFactory.decodeByteArray(own, 0, own.length);
+    }
+
+    /** More than this is not read for a cover: such a book is taken as one without. */
+    static final int READ_LIMIT = 24 * 1024 * 1024;
+
+    /** Whether a book of this kind can carry a cover at all, by its file's name. */
+    static boolean mayCarry(String name) {
+        String n = name == null ? "" : name.toLowerCase(Locale.ROOT);
+        return n.endsWith(".fb2") || n.endsWith(".fb2.zip") || n.endsWith(".epub");
+    }
+
+    /**
+     * The book's own cover as a small JPEG; null when the book was read whole and carries none
+     * (or is too long to be read for it). A book that could not be read throws, so a passing
+     * failure is not taken for a book without a cover.
+     */
+    static byte[] own(Context c, String uri, String name) throws java.io.IOException {
+        return own(c, uri, name, READ_LIMIT);
+    }
+
+    private static byte[] own(Context c, String uri, String name, int limit) throws java.io.IOException {
+        String n = name == null ? "" : name.toLowerCase(Locale.ROOT);
+        if (n.endsWith(".epub")) {
+            // An epub is read as it streams, twice, with nothing of it held whole: any size will do.
+            byte[] picture = epubStreamed(c, Uri.parse(uri));
+            return picture == null ? null : smallFrom(picture);
+        }
+        byte[] data;
+        try (InputStream in = open(c, Uri.parse(uri))) {
+            data = BookText.readAll(in, limit + 1);
+        }
+        if (data.length > limit) {
+            return null;
+        }
+        byte[] picture;
+        try {
+            picture = n.endsWith(".fb2.zip") ? zippedFb2(data, limit) : fromBook(name, data);
+        } catch (java.io.IOException | RuntimeException e) {
+            // Read whole but not understood: a book without a cover, as far as can be told.
+            return null;
+        }
+        return picture == null ? null : smallFrom(picture);
+    }
+
+    /** The book's stream; a book that cannot be opened is a failure to read, not a book without a cover. */
+    private static InputStream open(Context c, Uri uri) throws java.io.IOException {
+        try {
+            InputStream in = c.getContentResolver().openInputStream(uri);
+            if (in == null) {
+                throw new java.io.IOException("cover: the book cannot be opened");
+            }
+            return in;
+        } catch (SecurityException e) {
+            throw new java.io.IOException("cover: no access to the book", e);
+        }
+    }
+
+    /** The fb2 inside a zip, its cover; no more of it unpacked than a book read for its cover may be. */
+    private static byte[] zippedFb2(byte[] data, int limit) throws java.io.IOException {
+        byte[] inner = firstEntry(data, ".fb2", limit + 1);
+        return inner == null || inner.length > limit ? null : fb2(new String(inner, "UTF-8"));
+    }
+
+    /** An epub's cover, read as the book streams: its package on the first pass, the picture on the second. */
+    private static byte[] epubStreamed(Context c, Uri uri) throws java.io.IOException {
+        String opfName = null;
+        byte[] opfData = null;
+        try (ZipInputStream z = new ZipInputStream(open(c, uri))) {
+            ZipEntry e;
+            while ((e = z.getNextEntry()) != null) {
+                if (e.getName().toLowerCase(Locale.ROOT).endsWith(".opf")) {
+                    opfName = e.getName();
+                    opfData = BookText.readAll(z, 4 * 1024 * 1024);
+                    break;
+                }
+            }
+        } catch (java.util.zip.ZipException | IllegalArgumentException e) {
+            return null;
+        }
+        String path = opfName == null ? null : coverPath(opfName, new String(opfData, "UTF-8"));
+        if (path == null) {
+            return null;
+        }
+        try (ZipInputStream z = new ZipInputStream(open(c, uri))) {
+            ZipEntry e;
+            while ((e = z.getNextEntry()) != null) {
+                if (e.getName().equals(path)) {
+                    return BookText.readAll(z, 16 * 1024 * 1024);
+                }
+            }
+        } catch (java.util.zip.ZipException | IllegalArgumentException e) {
+            return null;
+        }
+        return null;
+    }
+
+    /** A picture decoded already scaled down near the size kept, then made small. */
+    private static byte[] smallFrom(byte[] picture) {
+        BitmapFactory.Options o = new BitmapFactory.Options();
+        o.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(picture, 0, picture.length, o);
+        int sample = 1;
+        while (Math.max(o.outWidth, o.outHeight) / (sample * 2) >= SIDE) {
+            sample *= 2;
+        }
+        o = new BitmapFactory.Options();
+        o.inSampleSize = sample;
+        Bitmap b = BitmapFactory.decodeByteArray(picture, 0, picture.length, o);
         return b == null ? null : small(b);
     }
 
@@ -94,7 +196,7 @@ final class BookCover {
             return fb2(new String(data, "UTF-8"));
         }
         if (n.endsWith(".fb2.zip")) {
-            byte[] inner = firstEntry(data, ".fb2");
+            byte[] inner = firstEntry(data, ".fb2", BookText.MAX_BYTES);
             return inner == null ? null : fb2(new String(inner, "UTF-8"));
         }
         if (n.endsWith(".epub")) {
@@ -128,24 +230,39 @@ final class BookCover {
     private static final Pattern ITEM = Pattern.compile("<item\\s[^>]*>");
 
     private static byte[] epub(byte[] data) throws java.io.IOException {
-        java.util.Map<String, byte[]> files = new java.util.HashMap<String, byte[]>();
+        // Two passes over the book: the package first, then only the picture it names.
         String opfName = null;
+        byte[] opfData = null;
         try (ZipInputStream z = new ZipInputStream(new java.io.ByteArrayInputStream(data))) {
             ZipEntry e;
             while ((e = z.getNextEntry()) != null) {
-                String low = e.getName().toLowerCase(Locale.ROOT);
-                if (low.endsWith(".opf") || low.endsWith(".jpg") || low.endsWith(".jpeg") || low.endsWith(".png")) {
-                    files.put(e.getName(), BookText.readAll(z, BookText.MAX_BYTES));
-                    if (low.endsWith(".opf")) {
-                        opfName = e.getName();
-                    }
+                if (e.getName().toLowerCase(Locale.ROOT).endsWith(".opf")) {
+                    opfName = e.getName();
+                    opfData = BookText.readAll(z, BookText.MAX_BYTES);
+                    break;
                 }
             }
         }
         if (opfName == null) {
             return null;
         }
-        String opf = new String(files.get(opfName), "UTF-8");
+        String path = coverPath(opfName, new String(opfData, "UTF-8"));
+        if (path == null) {
+            return null;
+        }
+        try (ZipInputStream z = new ZipInputStream(new java.io.ByteArrayInputStream(data))) {
+            ZipEntry e;
+            while ((e = z.getNextEntry()) != null) {
+                if (e.getName().equals(path)) {
+                    return BookText.readAll(z, BookText.MAX_BYTES);
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Where the package says the cover lies, as a path in the book; null when it names none. */
+    private static String coverPath(String opfName, String opf) {
         String coverId = null;
         Matcher m = OPF_META.matcher(opf);
         if (m.find()) {
@@ -173,7 +290,7 @@ final class BookCover {
         int slash = opfName.lastIndexOf('/');
         String path = (slash < 0 ? "" : opfName.substring(0, slash + 1)) + Uri.decode(href);
         path = path.replaceAll("[^/]+/\\.\\./", "");
-        return files.get(path);
+        return path;
     }
 
     private static String attr(String tag, String name) {
@@ -181,12 +298,12 @@ final class BookCover {
         return m.find() ? m.group(1) : null;
     }
 
-    private static byte[] firstEntry(byte[] data, String ending) throws java.io.IOException {
+    private static byte[] firstEntry(byte[] data, String ending, int limit) throws java.io.IOException {
         try (ZipInputStream z = new ZipInputStream(new java.io.ByteArrayInputStream(data))) {
             ZipEntry e;
             while ((e = z.getNextEntry()) != null) {
                 if (e.getName().toLowerCase(Locale.ROOT).endsWith(ending)) {
-                    return BookText.readAll(z, BookText.MAX_BYTES);
+                    return BookText.readAll(z, limit);
                 }
             }
         }
