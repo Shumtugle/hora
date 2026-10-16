@@ -276,6 +276,8 @@ final class Brain {
         wokeInSeconds = 0;
         boolean seeing = photo && has(SLOT_VISION) && !visionRefused;
         if (alive() && healthy() && (servingVision || !seeing)) {
+            // The hold may have been lost meanwhile (the voice ended anyway): asking again is harmless.
+            BrainHold.hold(context, PORT);
             return;
         }
         if (!hasModel()) {
@@ -380,6 +382,8 @@ final class Brain {
                 }
                 wokeInSeconds = (System.nanoTime() - started) / 1e9;
                 Diag.mark(context, String.format(java.util.Locale.ROOT, "%s: awake in %.1f s", TAG, wokeInSeconds));
+                // The model now holds gigabytes: the voice is guarded so it is not the one the system ends.
+                BrainHold.hold(context, PORT);
                 return;
             }
             try {
@@ -651,6 +655,7 @@ final class Brain {
             process.destroy();
             process = null;
             Diag.mark(context, TAG + ": asleep");
+            BrainHold.let(context);
         }
     }
 

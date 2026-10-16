@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.shumtugle.hora"
-    android:versionCode="259"
-    android:versionName="1.0.1">
+    android:versionCode="260"
+    android:versionName="1.0.2">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34"/>
     <!-- Lets the app's own processes talk to each other's receivers, and nobody else. -->
     <permission android:name="com.shumtugle.hora.permission.SELF" android:protectionLevel="signature"/>
@@ -16,6 +16,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION"/>
     <!-- Only to read the headphones' charge for the morning line, asked when that is switched on. -->
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30"/>
@@ -221,6 +222,13 @@
         <service android:name=".VoiceService" android:exported="false"
             android:process=":voice"
             android:foregroundServiceType="mediaPlayback"/>
+        <service android:name=".BrainHold" android:exported="false"
+            android:process=":voice"
+            android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps the speech process alive while the on-device language model is loaded, so its answers can be spoken."/>
+        </service>
+        <receiver android:name=".BrainSleep" android:exported="false"/>
         <service android:name=".HoraTtsService" android:exported="true"
             android:process=":voice"
             android:label="@string/app_name">

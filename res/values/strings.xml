@@ -866,6 +866,8 @@
     <string name="brain_title_prompt">Name this conversation in three to five words, no quotes, no final period. Only the title.</string>
     <string name="brain_title">AI model</string>
     <string name="brain_sleep_now">Unload</string>
+    <string name="brain_held_title">The AI model is in memory</string>
+    <string name="brain_held_text">The voice stays ready while the model is awake.</string>
     <string name="brain_try">Try</string>
     <string name="brain_files">Files</string>
     <string name="brain_slot_model">Model</string>

@@ -1884,6 +1884,8 @@
     <string name="brain_title_prompt">Назови эту беседу тремя-пятью словами по-русски, без кавычек и без точки в конце. Только название.</string>
     <string name="brain_title">Модель ИИ</string>
     <string name="brain_sleep_now">Выгрузить</string>
+    <string name="brain_held_title">Модель ИИ в памяти</string>
+    <string name="brain_held_text">Голос наготове, пока модель не уснёт.</string>
     <string name="brain_try">Проверить</string>
     <string name="brain_files">Файлы</string>
     <string name="brain_slot_model">Модель</string>
