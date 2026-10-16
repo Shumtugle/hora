@@ -655,6 +655,21 @@ public final class SettingsActivity extends Activity {
                         showDeveloper();
                     }
                 }), Kit.wide());
+        if (News.on(this)) {
+            // The paper's sources open from the paper itself; the settings, being the table of contents, list them too.
+            int on = News.active(this).size();
+            View sources = Kit.rowNav(this, getString(R.string.news_title), on + "\u00a0/\u00a0" + News.MAX_CHOSEN,
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            startActivity(new Intent(SettingsActivity.this, NewsActivity.class));
+                        }
+                    });
+            // Heard as words, not as a slash between two numbers.
+            sources.setContentDescription(getString(R.string.news_title) + ", "
+                    + getString(R.string.news_on, on, News.MAX_CHOSEN));
+            newsPlate.addView(sources, Kit.wide());
+        }
         beta.addView(newsPlate, Kit.below(this, 12));
         beta.addView(Kit.link(this, getString(R.string.dev_close), new View.OnClickListener() {
             @Override
