@@ -118,7 +118,7 @@ public final class TalkActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         built = Ui.prepare(this);
-        // The same voice as on the main screen: the one chosen there answers here.
+        // The same voice as on the Voice screen: the one chosen there answers here.
         voice = Prefs.role(this, Cast.TALK);
         setContentView(build());
         takeShared(getIntent());

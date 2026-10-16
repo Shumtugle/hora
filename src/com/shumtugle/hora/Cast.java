@@ -26,7 +26,7 @@ final class Cast {
     static final int SPEAKER_B = 2;
     /** Reads notifications into headphones; a voice of its own, apart from the book. */
     static final int HERALD = 3;
-    /** Hosts the talk and the main screen: the one who answers. */
+    /** Hosts the talk and the Voice screen: the one who answers. */
     static final int TALK = 4;
 
     private Cast() {

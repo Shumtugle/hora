@@ -297,7 +297,7 @@ final class Prefs {
     private static final String GRIM_TIMBRE = "grim_timbre_";
     private static final String GRIM_PITCH = "grim_pitch_";
 
-    /** The voice on the main screen and in the workshop. */
+    /** The voice on the Voice screen and in the workshop. */
     static int homeVoice(Context c) {
         int v = sp(c).getInt(HOME_VOICE, 1);
         return Cast.available(c, v) ? v : 1;

@@ -249,7 +249,10 @@ public final class VoiceService extends Service {
                 new Intent(this, VoiceService.class).setAction(ACTION_STOP),
                 PendingIntent.FLAG_IMMUTABLE);
         PendingIntent open = PendingIntent.getActivity(this, 0,
-                new Intent(this, MainActivity.class), PendingIntent.FLAG_IMMUTABLE);
+                // The same as the launcher icon: the app comes forward as it was left.
+                Intent.makeMainActivity(new android.content.ComponentName(this, DayActivity.class))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED),
+                PendingIntent.FLAG_IMMUTABLE);
         String preview = text.length() > PREVIEW_CHARS
                 ? text.substring(0, PREVIEW_CHARS).trim() + "…" : text;
         return new Notification.Builder(this, CHANNEL)

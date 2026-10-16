@@ -479,16 +479,16 @@ final class Ui {
         return head;
     }
 
-    static final int NAV_VOICE = 0;
-    static final int NAV_BOOK = 1;
-    static final int NAV_SHELF = 2;
-    static final int NAV_DAY = 3;
+    static final int NAV_DAY = 0;
+    static final int NAV_VOICE = 1;
+    static final int NAV_BOOK = 2;
+    static final int NAV_SHELF = 3;
 
     /** The bottom bar shared by the main screens; the current one is lit and does nothing. */
     static LinearLayout navBar(final android.app.Activity a, int current) {
         // Four places, one door each: roles live in the settings and in the book's reader sheet.
-        final Class<?>[] screens = {MainActivity.class, BookActivity.class, ShelfActivity.class, DayActivity.class};
-        int[] labels = {R.string.nav_voice, R.string.nav_book, R.string.nav_shelf, R.string.nav_day};
+        final Class<?>[] screens = {DayActivity.class, MainActivity.class, BookActivity.class, ShelfActivity.class};
+        int[] labels = {R.string.nav_day, R.string.nav_voice, R.string.nav_book, R.string.nav_shelf};
         LinearLayout nav = row(a);
         nav.setPadding(0, dp(a, 14), 0, 0);
         for (int i = 0; i < screens.length; i++) {
@@ -507,12 +507,17 @@ final class Ui {
                     @Override
                     public void onClick(View v) {
                         android.content.Intent go = new android.content.Intent(a, screens[which]);
-                        if (which == NAV_VOICE) {
-                            // The main screen is already underneath: return to it rather than stack another.
+                        if (which == NAV_DAY) {
+                            // The Day is the first screen and always underneath: return to it rather than stack another.
                             go.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
                                     | android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         }
                         a.startActivity(go);
+                        if (which != NAV_DAY && current != NAV_DAY && !a.isTaskRoot()) {
+                            // One tab at a time above the Day: Back always leads home, never through a trail of tabs.
+                            // A tab that is the task's root stays, so the next one is never taken for a lone start.
+                            a.finish();
+                        }
                     }
                 });
             }

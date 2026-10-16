@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.shumtugle.hora"
-    android:versionCode="265"
-    android:versionName="1.1.1">
+    android:versionCode="266"
+    android:versionName="1.2.0">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34"/>
     <!-- Lets the app's own processes talk to each other's receivers, and nobody else. -->
     <permission android:name="com.shumtugle.hora.permission.SELF" android:protectionLevel="signature"/>
@@ -44,13 +44,14 @@
         android:allowBackup="false"
         android:extractNativeLibs="true"
         android:allowAudioPlaybackCapture="false">
-        <activity android:name=".MainActivity" android:exported="true"
-            android:windowSoftInputMode="adjustResize|stateHidden">
+        <activity android:name=".DayActivity" android:exported="true" android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize|stateHidden"/>
         <activity android:name=".AboutActivity" android:exported="false"
             android:label="@string/about_title"/>
         <activity android:name=".ExportActivity" android:exported="false"
@@ -105,8 +106,6 @@
         </receiver>
         <activity android:name=".ShelfActivity" android:exported="false"
             android:label="@string/shelf_title" android:launchMode="singleTop"/>
-        <activity android:name=".DayActivity" android:exported="false"
-            android:label="@string/nav_day" android:launchMode="singleTop"/>
         <activity android:name=".BrainActivity" android:exported="false"
             android:label="@string/brain_title" android:windowSoftInputMode="adjustResize|stateHidden"/>
         <activity android:name=".TalkActivity" android:exported="false"

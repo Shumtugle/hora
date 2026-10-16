@@ -261,7 +261,7 @@ public final class RestoreActivity extends Activity {
 
     /** Starts Hora afresh: every process goes, so each reads the restored settings anew. */
     private void restart() {
-        Intent again = new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+        Intent again = new Intent(this, DayActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pi = PendingIntent.getActivity(this, 0, again,
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_CANCEL_CURRENT);

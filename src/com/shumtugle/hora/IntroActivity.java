@@ -113,7 +113,7 @@ public final class IntroActivity extends Activity {
         showSpeaking(true);
     }
 
-    /** Makes a voice the host, as on the main screen: it greets here and answers in the talk. */
+    /** Makes a voice the host, as on the Voice screen: it greets here and answers in the talk. */
     private void choose(int v) {
         if (speaking) {
             VoiceService.stop(this);
@@ -218,7 +218,7 @@ public final class IntroActivity extends Activity {
         bp.topMargin = dp(18);
         root.addView(listen, bp);
 
-        // Rows of equal length, as on the main screen.
+        // Rows of equal length, as on the Voice screen.
         LinearLayout troupe = Ui.column(this);
         troupe.setGravity(Gravity.CENTER_HORIZONTAL);
         LinearLayout line = null;

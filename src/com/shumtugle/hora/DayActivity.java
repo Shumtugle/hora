@@ -19,7 +19,7 @@ import android.widget.TextView;
 import java.util.Locale;
 
 /**
- * The Day: what today holds, top to bottom. The date, with two buttons that make the talking
+ * The Day, the first screen: what today holds, top to bottom. The date, with two buttons that make the talking
  * voice tell the time or the weather; the sky over the chosen place; the book being heard;
  * the last words of the talk. Nothing here speaks by itself: every voice is a touch.
  */
@@ -79,6 +79,29 @@ public final class DayActivity extends Activity {
         super.onCreate(state);
         built = Ui.prepare(this);
         setContentView(build());
+        if (state == null && !Prefs.introSeen(this)) {
+            // The first start opens on its scene and questions, then the title page; the Day waits under them.
+            startActivity(new Intent(this, FirstRunActivity.class));
+            return;
+        }
+        if (Prefs.introSeen(this)) {
+            askNotify();
+        }
+    }
+
+    private static final String NOTIFY_PERMISSION = "android.permission.POST_NOTIFICATIONS";
+    private boolean askedNotify;
+
+    /** Without this the speech notification, and its stop button, stay hidden. Asked once per screen. */
+    private void askNotify() {
+        if (askedNotify) {
+            return;
+        }
+        askedNotify = true;
+        if (Build.VERSION.SDK_INT >= 33
+                && checkSelfPermission(NOTIFY_PERMISSION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[] {NOTIFY_PERMISSION}, 1);
+        }
     }
 
     @Override
@@ -86,6 +109,11 @@ public final class DayActivity extends Activity {
         super.onResume();
         if (Ui.stale(this, built)) {
             return;
+        }
+        // After a restore from another phone: what this phone still has to give.
+        RestoreActivity.checkIfPending(this);
+        if (Prefs.introSeen(this)) {
+            askNotify();
         }
         drawnWeather = NONE;
         drawnBook = NONE;

@@ -3,9 +3,7 @@ package com.shumtugle.hora;
 import android.animation.AnimatorSet;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.Gravity;
@@ -20,13 +18,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /**
- * The main screen: the current voice as a portrait, its troupe, the line it
+ * The Voice screen: the current voice as a portrait, its troupe, the line it
  * speaks when touched, and the way into the talk. Time and weather live on the Day.
  */
 public final class MainActivity extends Activity {
     /** The look this screen was built with. */
     private int built;
-    private static final String NOTIFY_PERMISSION = "android.permission.POST_NOTIFICATIONS";
 
     private int voice;
     private ImageView[] dots = new ImageView[0];
@@ -44,29 +41,15 @@ public final class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        if (state == null && isTaskRoot()) {
+            // Opened on its own, by a shortcut kept from the days it was the first screen: the Day comes first now.
+            startActivity(new Intent(this, DayActivity.class));
+            finish();
+            return;
+        }
         built = Ui.prepare(this);
         setContentView(build());
         showCard(Prefs.role(this, Cast.TALK));
-        if (state == null && !Prefs.introSeen(this)) {
-            // The first start opens on its scene and questions, then the title page; the voice screen waits under them.
-            startActivity(new Intent(this, FirstRunActivity.class));
-            return;
-        }
-        askNotify();
-    }
-
-    private boolean askedNotify;
-
-    /** Without this the speech notification, and its stop button, stay hidden. Asked once per screen. */
-    private void askNotify() {
-        if (askedNotify) {
-            return;
-        }
-        askedNotify = true;
-        if (Build.VERSION.SDK_INT >= 33
-                && checkSelfPermission(NOTIFY_PERMISSION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[] {NOTIFY_PERMISSION}, 1);
-        }
     }
 
     @Override
@@ -75,14 +58,9 @@ public final class MainActivity extends Activity {
         if (Ui.stale(this, built)) {
             return;
         }
-        // After a restore from another phone: what this phone still has to give.
-        RestoreActivity.checkIfPending(this);
         // The voices, or the title page, may have changed the voice.
         showVoice(Prefs.role(this, Cast.TALK));
         showCard(voice);
-        if (Prefs.introSeen(this)) {
-            askNotify();
-        }
         breathGlow.start();
         breathRing.start();
     }
@@ -95,7 +73,7 @@ public final class MainActivity extends Activity {
     }
 
     /**
-     * Makes a voice the host: the one on the main screen and in the talk.
+     * Makes a voice the host: the one on the Voice screen and in the talk.
      * Books and notifications keep their own readers. It steps forward and greets.
      */
     private void choose(int v) {

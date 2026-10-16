@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * What a voice says when its line on the main screen is touched: its name and
+ * What a voice says when its line on the Voice screen is touched: its name and
  * one thing that is true right now (the time, the date, where the book is,
  * the charge, the weather fetched lately, what this voice reads, quiet hours).
  * The variety comes from the facts, which really change, and not from words
