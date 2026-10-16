@@ -23,6 +23,24 @@ final class SpareVoice {
     private static final int USAGE_ASSISTANT = 16;
     private static final String SERVICE = "android.intent.action.TTS_SERVICE";
     private static boolean told;
+    /**
+     * Why the last phrase was not said, in a few words for the journal; empty when it was. "called
+     * off" means the caller stopped it: everything else is the engine's own trouble.
+     */
+    private static final ThreadLocal<String> failure = new ThreadLocal<String>() {
+        @Override
+        protected String initialValue() {
+            return "";
+        }
+    };
+    /** Said once per process: the engine has no voice for the language. */
+    private static boolean langTold;
+    /** The engine and language last found without a voice: later phrases skip straight past it. */
+    private static volatile String voiceless = "";
+    static final String CALLED_OFF = "called off";
+    /** The engine's error code for a phrase, kept until its turn is over. */
+    private static final java.util.Map<String, Integer> errors =
+            new java.util.concurrent.ConcurrentHashMap<String, Integer>();
 
     private SpareVoice() {
     }
@@ -151,6 +169,15 @@ final class SpareVoice {
             }
 
             @Override
+            public void onError(String id, int code) {
+                // Kept only for a phrase still waiting: a late error after a timeout is dropped.
+                if (waiting.containsKey(id)) {
+                    errors.put(id, code);
+                }
+                onError(id);
+            }
+
+            @Override
             public void onStop(String id, boolean interrupted) {
                 CountDownLatch l = waiting.remove(id);
                 if (l != null) {
@@ -176,11 +203,45 @@ final class SpareVoice {
     static boolean say(Context c, String text, float pace, final Voice.Cancel cancel) {
         synchronized (TURN) {
             busy = true;
+            failure.set("");
             try {
                 return sayNow(c, text, pace, cancel);
             } finally {
                 busy = false;
                 letGoLater();
+            }
+        }
+    }
+
+    /** Why the last phrase failed, or "" when it was said. */
+    static String failure() {
+        return failure.get();
+    }
+
+    /** Forgets the last failure on this thread, before an attempt that may not reach the engine. */
+    static void clearFailure() {
+        failure.set("");
+    }
+
+    /** Whether the last phrase failed through the engine itself, not because the caller stopped it. */
+    static boolean failedOnItsOwn() {
+        String f = failure.get();
+        return !f.isEmpty() && !CALLED_OFF.equals(f);
+    }
+
+    /** Whether the last phrase may have been heard in part before the engine gave up on it. */
+    static boolean partlyHeard() {
+        return SLOW.equals(failure.get());
+    }
+
+    private static final String SLOW = "engine too slow";
+
+    /** A refused phrase may mean a dead connection: the kept engine is started afresh next time. */
+    private static void dropKept() {
+        synchronized (ENGINE) {
+            if (kept != null) {
+                kept.shutdown();
+                kept = null;
             }
         }
     }
@@ -205,18 +266,36 @@ final class SpareVoice {
         String engine = engine(c.getApplicationContext());
         if (engine == null) {
             Diag.mark(c, "spare voice: the phone has no other speech engine");
+            failure.set("no engine");
+            return false;
+        }
+        if (voiceless.equals(engine + "|" + SpeechLanguage.locale())) {
+            // Found without a voice for this language already: no reason to wait for it again.
+            failure.set("no voice for the language");
             return false;
         }
         try {
             TextToSpeech tts = engineFor(c, engine);
             if (tts == null) {
+                failure.set("engine did not start");
                 return false;
             }
-            tts.setLanguage(SpeechLanguage.locale());
+            int lang = tts.setLanguage(SpeechLanguage.locale());
+            if (lang == TextToSpeech.LANG_MISSING_DATA || lang == TextToSpeech.LANG_NOT_SUPPORTED) {
+                // The engine has no voice for the language on this phone: it would say nothing.
+                if (!langTold) {
+                    langTold = true;
+                    Diag.mark(c, "spare voice: " + engine + " has no voice for the language, " + lang);
+                }
+                failure.set("no voice for the language");
+                voiceless = engine + "|" + SpeechLanguage.locale();
+                return false;
+            }
             // The engine's own normal pace stands for the default tempo of the settings.
             tts.setSpeechRate(Math.max(0.5f, Math.min(2f, Prefs.speedShared(c) / Prefs.SPEED_DEFAULT * pace)));
             if (cancel != null && cancel.cancelled()) {
                 // Called off while waiting for the turn or for the engine to start.
+                failure.set(CALLED_OFF);
                 return false;
             }
             String id = "spare-" + (++next);
@@ -224,28 +303,40 @@ final class SpareVoice {
             waiting.put(id, done);
             if (tts.speak(said, TextToSpeech.QUEUE_FLUSH, null, id) != TextToSpeech.SUCCESS) {
                 waiting.remove(id);
+                failure.set("engine refused the phrase");
+                dropKept();
                 return false;
             }
             if (!told) {
                 told = true;
-                Diag.mark(c, "spare voice: the phone's own voice speaks");
+                Diag.mark(c, "spare voice: the phone's own voice speaks, " + engine);
             }
             // Long enough for slow speech; cut short when the caller says so.
             long limit = System.currentTimeMillis() + 3000 + 150L * said.length();
             while (!done.await(200, TimeUnit.MILLISECONDS)) {
-                if ((cancel != null && cancel.cancelled()) || System.currentTimeMillis() > limit) {
+                boolean off = cancel != null && cancel.cancelled();
+                if (off || System.currentTimeMillis() > limit) {
                     tts.stop();
                     waiting.remove(id);
+                    errors.remove(id);
+                    failure.set(off ? CALLED_OFF : SLOW);
                     return false;
                 }
             }
             lastUsed = System.currentTimeMillis();
-            return fine.remove(id);
+            if (fine.remove(id)) {
+                return true;
+            }
+            Integer code = errors.remove(id);
+            failure.set(code != null ? "engine error " + code : "engine stopped");
+            return false;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            failure.set(CALLED_OFF);
             return false;
         } catch (RuntimeException e) {
             Diag.log(c, "spare voice: failed", e);
+            failure.set("engine failed");
             synchronized (ENGINE) {
                 if (kept != null) {
                     kept.shutdown();

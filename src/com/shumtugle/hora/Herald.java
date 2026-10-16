@@ -1065,7 +1065,15 @@ public final class Herald extends NotificationListenerService {
                 return;
             }
             why = "headphones gone";
-            boolean whole = pcm != null ? playMade(pcm.pcm, pcm.rate) : speak(s.text);
+            final NavWhisper.Said hint = s;
+            boolean whole = pcm != null ? playMade(pcm.pcm, pcm.rate) : speak(s.text, new Fresh() {
+                @Override
+                public boolean still() {
+                    // A turn told after it is passed is worse than silence.
+                    return hint.sample || (android.os.SystemClock.elapsedRealtime() - hint.at <= ROUTE_STALE_MS
+                            && NavWhisper.current(hint));
+                }
+            });
             Diag.mark(this, String.format(java.util.Locale.ROOT, "%s%s, %s, %.1f s after",
                     whole ? "nav: said " : "nav: cut, " + why + ", ", what, ahead ? "made ahead" : phone ? "phone voice" : "made now",
                     age / 1000f));
@@ -1461,25 +1469,57 @@ public final class Herald extends NotificationListenerService {
         return result[0];
     }
 
+    /** Whether a phrase is still worth saying after a delay. */
+    private interface Fresh {
+        boolean still();
+    }
+
     /** Returns true when everything was said, false when cut short. */
     private boolean speak(String said) throws Exception {
+        return speak(said, null);
+    }
+
+    /** The same, given up rather than said late when fresh says the moment has passed. */
+    private boolean speak(String said, Fresh fresh) throws Exception {
+        boolean phoneTried = false;
         if (SpareVoice.wanted(this)) {
+            phoneTried = true;
+            SpareVoice.clearFailure();
             // Asked for: the phone's own voice says it, quickly, still only into the headphones.
-            return speakByPhone(said);
+            if (speakByPhone(said)) {
+                return true;
+            }
+            if (cut || !SpareVoice.failedOnItsOwn() || SpareVoice.partlyHeard()) {
+                // Stopped for a reason of its own (headphones gone, another sound), or perhaps heard
+                // in part before the engine gave up: saying it all again would be worse.
+                return false;
+            }
+            if (fresh != null && !fresh.still()) {
+                Diag.mark(this, "spare voice: " + SpareVoice.failure() + ", too late for Hora's voice");
+                return false;
+            }
+            // The phone's engine let it down: Hora's own voice says it rather than nobody.
+            Diag.mark(this, "spare voice: " + SpareVoice.failure() + ", Hora's voice instead");
         }
         Voice voice = Voice.get(this);
         try {
             voice.prepare();
         } catch (Voice.Missing m) {
-            // No voice pack yet: the phone's own voice reads it, still only into the headphones.
-            return speakByPhone(said);
+            // No voice pack yet: the phone's own voice reads it, still only into the headphones,
+            // unless it has just failed at that very phrase.
+            return !phoneTried && speakByPhone(said);
         }
-        return speakOwn(voice, said);
+        if (phoneTried && (cut || (fresh != null && !fresh.still()))) {
+            // Cut, or overtaken, while the voice was being made ready.
+            return false;
+        }
+        return speakOwn(voice, said, !phoneTried);
     }
 
     /** The phone's own engine says it, only while the headphones are on. */
     private boolean speakByPhone(String said) {
         if (Earpiece.find(audio) == null) {
+            why = "headphones gone";
             return false;
         }
         cut = false;
@@ -1501,14 +1541,17 @@ public final class Herald extends NotificationListenerService {
             });
         } finally {
             phoneSpeaking = false;
+            if (!cut && SpareVoice.failedOnItsOwn()) {
+                why = "phone voice: " + SpareVoice.failure();
+            }
         }
     }
 
     /** Whether the phone's voice is saying this service's words now. */
     private volatile boolean phoneSpeaking;
 
-    /** Hora's own voice says it into the headphones. */
-    private boolean speakOwn(Voice voice, String said) throws Exception {
+    /** Hora's own voice says it; resetCut is false when it takes over a phrase, so a cut meanwhile stands. */
+    private boolean speakOwn(Voice voice, String said, boolean resetCut) throws Exception {
         String spoken = voice.normalize(Lexicon.get(this).applyRules(TextPrep.clean(said)));
         int rate = voice.sampleRate();
         float speed = Prefs.speedShared(this);
@@ -1520,7 +1563,12 @@ public final class Herald extends NotificationListenerService {
         }
         AudioTrack out = openTrack(rate);
         out.setPreferredDevice(ear);
-        cut = false;
+        if (resetCut) {
+            cut = false;
+        } else if (cut) {
+            out.release();
+            return false;
+        }
         current = out;
         try {
             boolean started = false;
