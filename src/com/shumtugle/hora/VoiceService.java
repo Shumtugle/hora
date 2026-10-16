@@ -32,6 +32,8 @@ public final class VoiceService extends Service {
     private static final String EXTRA_VOICE = "voice";
     /** The bot speaking for itself: the phone's voice may say it, when asked for. */
     private static final String EXTRA_ANSWER = "answer";
+    /** The text carries its own language marks, set by Hora where it knows the language, as for a headline. */
+    private static final String EXTRA_MARKED = "marked";
     private static final String CHANNEL = "speech";
     private static final int NOTE_ID = 1;
     private static final int PREVIEW_CHARS = 80;
@@ -61,12 +63,25 @@ public final class VoiceService extends Service {
      * read aloud, is never handed over: that is speak().
      */
     static void answer(Context c, String text, int voice) {
-        speak(c, text, voice, 1f, true);
+        speak(c, text, voice, 1f, true, false);
+    }
+
+    /**
+     * An answer whose English parts Hora marked itself (Foreign.whole), because it knows their language:
+     * they are read by the English model even when too short to be found as English.
+     */
+    static void answerMarked(Context c, String text, int voice) {
+        speak(c, text, voice, 1f, true, true);
     }
 
     private static void speak(Context c, String text, int voice, float pace, boolean answer) {
+        speak(c, text, voice, pace, answer, false);
+    }
+
+    private static void speak(Context c, String text, int voice, float pace, boolean answer, boolean marked) {
         Intent i = new Intent(c, VoiceService.class)
                 .putExtra(EXTRA_ANSWER, answer)
+                .putExtra(EXTRA_MARKED, marked)
                 .setAction(ACTION_SPEAK)
                 .putExtra(EXTRA_TEXT, text)
                 .putExtra(EXTRA_SPEED, Math.max(Prefs.SPEED_MIN, Prefs.speedShared(c) * pace))
@@ -108,13 +123,14 @@ public final class VoiceService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && ACTION_SPEAK.equals(intent.getAction())) {
             String text = intent.getStringExtra(EXTRA_TEXT);
-            startForeground(NOTE_ID, notification(text == null ? "" : text));
+            startForeground(NOTE_ID, notification(text == null ? "" : Foreign.plain(text)));
             if (text != null && !text.trim().isEmpty()) {
                 enqueue(text,
                         intent.getFloatExtra(EXTRA_SPEED, 1.0f),
                         intent.getIntExtra(EXTRA_PAUSE, 0),
                         intent.getIntExtra(EXTRA_VOICE, 0),
-                        intent.getBooleanExtra(EXTRA_ANSWER, false));
+                        intent.getBooleanExtra(EXTRA_ANSWER, false),
+                        intent.getBooleanExtra(EXTRA_MARKED, false));
                 return START_NOT_STICKY;
             }
         } else {
@@ -134,7 +150,7 @@ public final class VoiceService extends Service {
     }
 
     private void enqueue(final String text, final float speed, final int pauseMs, final int voiceNo,
-            final boolean answer) {
+            final boolean answer, final boolean marked) {
         final int gen = generation.incrementAndGet();
         pending.incrementAndGet();
         worker.execute(new Runnable() {
@@ -157,8 +173,23 @@ public final class VoiceService extends Service {
                             phone = true;
                         }
                     }
-                    String spoken = phone ? TextPrep.clean(text)
-                            : voice.normalize(Lexicon.get(VoiceService.this).applyRules(TextPrep.clean(text)));
+                    String spoken;
+                    if (phone) {
+                        spoken = TextPrep.clean(Foreign.plain(text));
+                    } else if (marked && Foreign.has(text) && voice.speaksEnglish()) {
+                        // Each part in its own language: the marked ones whole by the English model.
+                        StringBuilder said = new StringBuilder();
+                        for (Foreign.Piece p : Foreign.pieces(text)) {
+                            if (said.length() > 0) {
+                                said.append(' ');
+                            }
+                            said.append(p.english ? voice.normalizeEnglish(TextPrep.clean(p.text))
+                                    : voice.normalize(Lexicon.get(VoiceService.this).applyRules(TextPrep.clean(p.text))));
+                        }
+                        spoken = said.toString();
+                    } else {
+                        spoken = voice.normalize(Lexicon.get(VoiceService.this).applyRules(TextPrep.clean(Foreign.plain(text))));
+                    }
                     // Speech asks for the floor and gives way when another sound takes it.
                     android.media.AudioManager audio = (android.media.AudioManager) getSystemService(AUDIO_SERVICE);
                     android.media.AudioFocusRequest focus = new android.media.AudioFocusRequest.Builder(

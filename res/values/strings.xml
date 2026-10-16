@@ -388,7 +388,7 @@
     <string name="nav_day">Day</string>
     <string name="day_feels">feels like %s</string>
     <string name="day_tomorrow">Tomorrow up to %1$s, %2$s</string>
-    <string name="day_news">News</string>
+    <string name="day_news">The paper</string>
     <plurals name="day_news_count">
         <item quantity="one">%d headline</item>
         <item quantity="other">%d headlines</item>
@@ -400,6 +400,28 @@
     <string name="day_news_read">Read aloud: %s</string>
     <string name="settings_news">News on the Day</string>
     <string name="settings_news_sub">Headlines only, read aloud when touched.</string>
+    <plurals name="day_news_sources">
+        <item quantity="one">%d source</item>
+        <item quantity="other">%d sources</item>
+    </plurals>
+    <string name="day_news_pick">no sources chosen</string>
+    <string name="day_news_sources_link">Sources</string>
+    <string name="news_title">Sources</string>
+    <string name="news_lead">The paper gathers headlines from the feeds switched on. Eight at most at once.</string>
+    <string name="news_on">In the paper \u00b7 %1$d of %2$d</string>
+    <string name="news_needs_english">needs the English voice</string>
+    <string name="news_catalog">Catalogue</string>
+    <plurals name="news_feeds">
+        <item quantity="one">%d feed</item>
+        <item quantity="other">%d feeds</item>
+    </plurals>
+    <string name="news_lang_ru">in Russian</string>
+    <string name="news_lang_en">in English</string>
+    <string name="news_limit">%d at most: switch one off first.</string>
+    <string name="news_no_english">English rubrics appear once the English voice is downloaded.</string>
+    <string name="news_rubric_lead">A paper\'s name appears when its feed first answers.</string>
+    <string name="news_not_yet">has not answered yet</string>
+    <string name="about_news">News feed catalogue</string>
     <string name="day_talk_on">Continue the talk</string>
     <string-array name="day_sky">
         <item>clear</item>

@@ -46,12 +46,11 @@ public final class DayActivity extends Activity {
     private LinearLayout news;
     private String drawnNews = NONE;
     private boolean fetchingNews;
-    /** The broadcaster the last asking failed for; a failure for another one is not shown. */
+    /** The choice of feeds the last asking came back empty for; a failure for another choice is not shown. */
     private String newsFailedFor;
     /** When headlines were last asked for, so the screen asks again on its own every half hour, not every second. */
     private long lastNewsTry;
-    private static final long NEWS_AGAIN_MS = 30 * 60 * 1000L;
-    private static final long NEWS_RETRY_MS = 5 * 60 * 1000L;
+    private static final long NEWS_FLOOR_MS = 60 * 1000L;
     /** Whether the headlines are unfolded; kept while the app runs, folded again on the next start. */
     private static boolean newsOpen;
     /** What each part was last drawn from, so it is drawn again only when that changed; NONE draws anew. */
@@ -734,27 +733,31 @@ public final class DayActivity extends Activity {
     }
 
     private void fetchNews() {
+        fetchNews(false);
+    }
+
+    /** Asks for the paper; again, after a touch, also asks at once the feeds that failed a moment ago. */
+    private void fetchNews(final boolean again) {
         if (fetchingNews || !newsShown()) {
             return;
         }
         fetchingNews = true;
         lastNewsTry = System.currentTimeMillis();
-        final News.Source asked = News.source(this);
+        final String asked = News.signature(this);
         final android.content.Context app = getApplicationContext();
         new Thread(new Runnable() {
             @Override
             public void run() {
-                News.Kept k = null;
+                News.Paper p = null;
                 try {
-                    k = News.fetch(app);
+                    p = News.fetch(app, again);
                 } finally {
-                    final boolean failed = k == null || asked == null || !k.source.equals(asked.id)
-                            || System.currentTimeMillis() - k.at > NEWS_AGAIN_MS;
+                    final boolean failed = p == null || p.items.isEmpty();
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
                             fetchingNews = false;
-                            newsFailedFor = failed && asked != null ? asked.id : null;
+                            newsFailedFor = failed ? asked : null;
                             drawnNews = NONE;
                         }
                     });
@@ -763,49 +766,60 @@ public final class DayActivity extends Activity {
         }, "day-news").start();
     }
 
-    /**
-     * Asks again when nothing is kept for the chosen broadcaster or what is kept is half an hour old;
-     * after a failure, not before five minutes. Called every tick; does nothing most of the time.
-     */
+    /** Asks again when a feed switched on is due. Called every tick; does nothing most of the time. */
     private void newsDue() {
-        if (fetchingNews || !newsShown()) {
+        if (fetchingNews || !newsShown() || News.active(this).isEmpty() || !News.due(this)) {
             return;
         }
-        News.Source s = News.source(this);
-        if (s == null) {
-            return;
-        }
+        // Which feed is due, and when, the paper decides (half an hour, five minutes after a failure);
+        // the Day only never asks more often than once a minute.
         long now = System.currentTimeMillis();
-        News.Kept k = News.kept(this);
-        boolean stale = k == null || now < k.at || now - k.at >= NEWS_AGAIN_MS;
-        long wait = s.id.equals(newsFailedFor) ? NEWS_RETRY_MS : (k == null ? 0 : NEWS_AGAIN_MS);
-        if (stale && (lastNewsTry == 0 || now < lastNewsTry || now - lastNewsTry >= wait)) {
+        if (lastNewsTry == 0 || now < lastNewsTry || now - lastNewsTry >= NEWS_FLOOR_MS) {
             fetchNews();
         }
     }
 
+    private void openSources() {
+        startActivity(new Intent(this, NewsActivity.class));
+    }
+
     private void showNews() {
         boolean shown = newsShown();
-        News.Source s = shown ? News.source(this) : null;
-        News.Kept k = s != null ? News.kept(this) : null;
-        boolean failed = s != null && s.id.equals(newsFailedFor);
+        String sig = shown ? News.signature(this) : "";
+        News.Paper p = shown && !sig.isEmpty() ? News.paper(this) : null;
+        boolean failed = shown && sig.equals(newsFailedFor);
+        final List<News.Item> items = p == null || p.items.isEmpty() ? null : p.items;
         // The same headlines fetched again redraw nothing; the asking shows only while there is nothing to show.
-        String key = (s == null ? "" : s.id) + "|" + newsOpen + "|"
-                + (k == null ? "none|" + fetchingNews + "|" + failed : String.valueOf(k.titles.hashCode()));
+        StringBuilder heads = new StringBuilder();
+        if (items != null) {
+            for (News.Item it : items) {
+                heads.append(it.key()).append('\n');
+            }
+        }
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        // Also drawn anew for a name learned meanwhile, and on a new day, when "20:15" turns into a date.
+        String key = shown + "|" + sig.hashCode() + "|" + newsOpen + "|" + News.namesVersion() + "|"
+                + now.get(java.util.Calendar.DAY_OF_YEAR) + "|"
+                + (items == null ? "none|" + fetchingNews + "|" + failed : heads.toString().hashCode() + "|" + p.sources);
         if (key.equals(drawnNews)) {
             return;
         }
         drawnNews = key;
         news.removeAllViews();
-        news.setVisibility(s == null ? View.GONE : View.VISIBLE);
-        if (s == null) {
+        news.setVisibility(shown ? View.VISIBLE : View.GONE);
+        if (!shown) {
             return;
         }
-        final List<String> titles = k == null ? null : k.titles;
-        String state = titles != null
-                ? getResources().getQuantityString(R.plurals.day_news_count, titles.size(), titles.size()) + ", " + s.name
-                : s.name + ", " + getString(fetchingNews ? R.string.day_news_wait : R.string.day_news_none);
-        boolean open = newsOpen && titles != null;
+        String state;
+        if (sig.isEmpty()) {
+            state = getString(R.string.day_news_pick);
+        } else if (items != null) {
+            state = getResources().getQuantityString(R.plurals.day_news_count, items.size(), items.size()) + ", "
+                    + getResources().getQuantityString(R.plurals.day_news_sources, p.sources, p.sources);
+        } else {
+            state = getString(fetchingNews || p == null && !failed ? R.string.day_news_wait : R.string.day_news_none);
+        }
+        boolean open = newsOpen && items != null;
 
         LinearLayout head = Ui.row(this);
         head.setGravity(Gravity.CENTER_VERTICAL);
@@ -817,8 +831,8 @@ public final class DayActivity extends Activity {
         wp.leftMargin = dp(10);
         head.addView(what, wp);
         head.setContentDescription(getString(R.string.day_news) + ", " + state
-                + (titles == null && !fetchingNews ? ", " + getString(R.string.day_news_retry) : ""));
-        if (titles != null) {
+                + (items == null && !fetchingNews && !sig.isEmpty() ? ", " + getString(R.string.day_news_retry) : ""));
+        if (items != null) {
             // The chevron of the folds in the settings: down while folded, up while open.
             TextView mark = Ui.text(this, "\u203a", 20, Palette.MUTED);
             mark.setRotation(open ? -90f : 90f);
@@ -830,7 +844,7 @@ public final class DayActivity extends Activity {
                     newsOpen = !newsOpen;
                     drawnNews = NONE;
                     showNews();
-                    // The screen reader stays on the headlines' title, drawn anew under it, once it is laid out.
+                    // The screen reader stays on the paper's title, drawn anew under it, once it is laid out.
                     if (news.getChildCount() > 0) {
                         final View again = news.getChildAt(0) instanceof LinearLayout
                                 && ((LinearLayout) news.getChildAt(0)).getChildCount() > 0 && newsOpen
@@ -845,6 +859,14 @@ public final class DayActivity extends Activity {
                     }
                 }
             });
+        } else if (sig.isEmpty()) {
+            // Nothing switched on: a touch goes to the sources.
+            head.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openSources();
+                }
+            });
         } else if (!fetchingNews) {
             // No answer: a touch asks again at once.
             head.setOnClickListener(new View.OnClickListener() {
@@ -852,7 +874,7 @@ public final class DayActivity extends Activity {
                 public void onClick(View v) {
                     newsFailedFor = null;
                     lastNewsTry = 0;
-                    fetchNews();
+                    fetchNews(true);
                     drawnNews = NONE;
                     showNews();
                 }
@@ -869,7 +891,11 @@ public final class DayActivity extends Activity {
         LinearLayout plate = Kit.plate(this);
         head.setBackground(Ui.pressable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)));
         plate.addView(head, Ui.lp(Ui.MATCH, Ui.WRAP));
-        for (final String t : titles) {
+        java.text.DateFormat clock = android.text.format.DateFormat.getTimeFormat(this);
+        java.util.Calendar today = java.util.Calendar.getInstance();
+        java.text.DateFormat day = new java.text.SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(
+                getResources().getConfiguration().getLocales().get(0), "dMMM"), getResources().getConfiguration().getLocales().get(0));
+        for (final News.Item it : items) {
             View line = new View(this);
             line.setBackgroundColor(Palette.LINE);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Ui.MATCH, Math.max(1, dp(1)));
@@ -880,23 +906,37 @@ public final class DayActivity extends Activity {
             row.setGravity(Gravity.CENTER_VERTICAL);
             row.setPadding(dp(20), dp(10), dp(12), dp(10));
             row.setBackground(Ui.pressable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)));
-            TextView words = Ui.text(this, t, 15, Palette.INK);
-            words.setMaxLines(3);
-            words.setEllipsize(android.text.TextUtils.TruncateAt.END);
-            words.setLineSpacing(0, 1.15f);
+            LinearLayout words = Ui.column(this);
+            TextView t = Ui.text(this, it.title, 15, Palette.INK);
+            t.setMaxLines(3);
+            t.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            t.setLineSpacing(0, 1.15f);
+            words.addView(t);
+            java.util.Calendar when = java.util.Calendar.getInstance();
+            when.setTimeInMillis(it.at);
+            boolean sameDay = when.get(java.util.Calendar.YEAR) == today.get(java.util.Calendar.YEAR)
+                    && when.get(java.util.Calendar.DAY_OF_YEAR) == today.get(java.util.Calendar.DAY_OF_YEAR);
+            String from = News.name(this, it.feed) + (!it.dated ? ""
+                    : " \u00b7 " + (sameDay ? clock.format(when.getTime()) : day.format(when.getTime())));
+            TextView meta = Ui.text(this, from, 12, Palette.HINT);
+            meta.setSingleLine(true);
+            meta.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            LinearLayout.LayoutParams mp = Ui.lp(Ui.MATCH, Ui.WRAP);
+            mp.topMargin = dp(3);
+            words.addView(meta, mp);
             LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
             tp.rightMargin = dp(12);
             row.addView(words, tp);
             ImageView read = Ui.iconButton(this, R.drawable.ic_play, Palette.RAISED, 36,
-                    getString(R.string.day_news_read, t));
+                    getString(R.string.day_news_read, it.title));
             read.setImageTintList(ColorStateList.valueOf(Palette.INK));
             // The whole row reads the headline: the screen reader hears it once, as one thing to touch.
             read.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-            row.setContentDescription(getString(R.string.day_news_read, t));
+            row.setContentDescription(getString(R.string.day_news_read, it.title) + ", " + from);
             View.OnClickListener say = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    say(t);
+                    VoiceService.answerMarked(DayActivity.this, spoken(it), voice);
                 }
             };
             read.setOnClickListener(say);
@@ -904,15 +944,29 @@ public final class DayActivity extends Activity {
             row.addView(read, Ui.lp(dp(36), dp(36)));
             plate.addView(row, Ui.lp(Ui.MATCH, Ui.WRAP));
         }
+        LinearLayout links = Ui.row(this);
+        links.setGravity(Gravity.CENTER_VERTICAL);
         TextView all = Kit.link(this, getString(R.string.day_news_all), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                say(together(titles));
+                VoiceService.answerMarked(DayActivity.this, together(items), voice);
             }
         });
-        all.setPadding(dp(20), dp(12), dp(20), dp(16));
-        plate.addView(all, Ui.lp(Ui.MATCH, Ui.WRAP));
+        links.addView(all, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        links.addView(Kit.link(this, getString(R.string.day_news_sources_link), new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openSources();
+            }
+        }));
+        links.setPadding(dp(20), 0, dp(20), dp(4));
+        plate.addView(links, Ui.lp(Ui.MATCH, Ui.WRAP));
         news.addView(plate, Ui.lp(Ui.MATCH, Ui.WRAP));
+    }
+
+    /** A headline as it is to be said: an English one whole for the English voice, as its feed's language says. */
+    private static String spoken(News.Item it) {
+        return "en".equals(it.lang) ? Foreign.whole(it.title) : it.title;
     }
 
     /** The folded headlines: a pill of the screen's own surface with a thin edge. */
@@ -922,18 +976,19 @@ public final class DayActivity extends Activity {
         return g;
     }
 
-    /** All the headlines as one text to be read, each ending as a sentence does. */
-    private static String together(List<String> titles) {
+    /** All the headlines as one text to be read, each ending as a sentence does, each in its own language. */
+    private static String together(List<News.Item> items) {
         StringBuilder b = new StringBuilder();
-        for (String t : titles) {
+        for (News.Item it : items) {
             if (b.length() > 0) {
                 b.append(' ');
             }
-            b.append(t);
+            String t = it.title;
             char end = t.isEmpty() ? '.' : t.charAt(t.length() - 1);
             if (end != '.' && end != '!' && end != '?' && end != '\u2026') {
-                b.append('.');
+                t = t + ".";
             }
+            b.append("en".equals(it.lang) ? Foreign.whole(t) : t);
         }
         return b.toString();
     }

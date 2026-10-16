@@ -824,7 +824,7 @@
     <string name="nav_day">День</string>
     <string name="day_feels">ощущается как %s</string>
     <string name="day_tomorrow">Завтра до %1$s, %2$s</string>
-    <string name="day_news">Новости</string>
+    <string name="day_news">Газета</string>
     <plurals name="day_news_count">
         <item quantity="one">%d заголовок</item>
         <item quantity="few">%d заголовка</item>
@@ -838,6 +838,32 @@
     <string name="day_news_read">Прочитать вслух: %s</string>
     <string name="settings_news">Новости на Дне</string>
     <string name="settings_news_sub">Только заголовки, вслух — по касанию.</string>
+    <plurals name="day_news_sources">
+        <item quantity="one">%d источник</item>
+        <item quantity="few">%d источника</item>
+        <item quantity="many">%d источников</item>
+        <item quantity="other">%d источника</item>
+    </plurals>
+    <string name="day_news_pick">источники не выбраны</string>
+    <string name="day_news_sources_link">Источники</string>
+    <string name="news_title">Источники</string>
+    <string name="news_lead">Газета собирает заголовки из включённых лент. Сразу — не больше восьми.</string>
+    <string name="news_on">В газете · %1$d из %2$d</string>
+    <string name="news_needs_english">нужен английский голос</string>
+    <string name="news_catalog">Каталог</string>
+    <plurals name="news_feeds">
+        <item quantity="one">%d лента</item>
+        <item quantity="few">%d ленты</item>
+        <item quantity="many">%d лент</item>
+        <item quantity="other">%d ленты</item>
+    </plurals>
+    <string name="news_lang_ru">по-русски</string>
+    <string name="news_lang_en">по-английски</string>
+    <string name="news_limit">Не больше %d: сначала выключи одну.</string>
+    <string name="news_no_english">Английские рубрики появятся, когда будет скачан английский голос.</string>
+    <string name="news_rubric_lead">Имя издания появится, когда лента ответит в первый раз.</string>
+    <string name="news_not_yet">ещё не отвечала</string>
+    <string name="about_news">Каталог лент новостей</string>
     <string name="day_talk_on">Продолжить разговор</string>
     <string-array name="day_sky">
         <item>ясно</item>

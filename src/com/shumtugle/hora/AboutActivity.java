@@ -43,6 +43,7 @@ public final class AboutActivity extends Activity {
         {R.string.about_data, R.string.about_wikipedia, R.string.about_lic_cc_by_sa},
         {R.string.about_data, R.string.about_wikisource, R.string.about_lic_pd_cc_by_sa},
         {R.string.about_data, R.string.about_edited, R.string.about_lic_pd_us_cc0},
+        {R.string.about_data, R.string.about_news, R.string.about_lic_mit},
         {R.string.about_look, R.string.about_fonts, R.string.about_lic_ofl},
         {R.string.about_look, R.string.about_portraits, R.string.portraits_note},
         {R.string.about_texts, R.string.about_apache_text, R.string.about_lic_apache},
@@ -52,7 +53,7 @@ public final class AboutActivity extends Activity {
         "english-voice.txt",
         "speech-engine.txt", "speech-recognition.txt", "stress-dictionary.txt", "stress-extended.txt", "stress-network.txt",
         "ruaccent-dictionaries.txt", "yo-dictionary.txt", "ai-models.txt", "model-engine.txt",
-        "weather-data.txt", "wikipedia.txt", "wikisource.txt", "edited-books.txt", "fonts-ofl.txt", "portraits.txt", "apache-2.0.txt",
+        "weather-data.txt", "wikipedia.txt", "wikisource.txt", "edited-books.txt", "news-catalog.txt", "fonts-ofl.txt", "portraits.txt", "apache-2.0.txt",
     };
 
     private int built;
