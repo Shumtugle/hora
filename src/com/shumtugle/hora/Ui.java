@@ -466,17 +466,34 @@ final class Ui {
         tp.rightMargin = dp(a, 8);
         head.addView(t, tp);
         if (main) {
-            ImageView gear = iconButton(a, R.drawable.ic_settings, Palette.SURFACE, 44,
-                    a.getString(R.string.settings));
-            gear.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    a.startActivity(new android.content.Intent(a, SettingsActivity.class));
-                }
-            });
-            head.addView(gear);
+            head.addView(gear(a), gearSpot(a));
         }
         return head;
+    }
+
+    /** The settings gear of the main screens: one look, one size, one place on all four. */
+    static ImageView gear(final android.app.Activity a) {
+        ImageView gear = iconButton(a, R.drawable.ic_settings, Palette.SURFACE, GEAR_DP, a.getString(R.string.settings));
+        gear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                a.startActivity(new android.content.Intent(a, SettingsActivity.class));
+            }
+        });
+        return gear;
+    }
+
+    private static final int GEAR_DP = 48;
+
+    /**
+     * Where the gear goes in a header row: at the row's top, so its top meets the screen's top margin;
+     * every main screen keeps the same side margins, so its right edge is in the same place too.
+     */
+    static LinearLayout.LayoutParams gearSpot(Context c) {
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(c, GEAR_DP), dp(c, GEAR_DP));
+        p.gravity = android.view.Gravity.TOP;
+        p.leftMargin = dp(c, 10);
+        return p;
     }
 
     static final int NAV_DAY = 0;

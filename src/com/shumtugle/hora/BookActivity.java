@@ -50,6 +50,8 @@ public final class BookActivity extends Activity {
     private LinearLayout book;
     private TextView title;
     private TextView where;
+    /** The place with the contents and the search beside it; hidden as a whole without a book. */
+    private LinearLayout placeRow;
     private ImageView readerFace;
     private TextView readerName;
     private TextView bedState;
@@ -229,7 +231,8 @@ public final class BookActivity extends Activity {
         whole.addView(root, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
-        // The book's own header: its title (two lines at most), where the voice is, and the contents.
+        // The book's own header: its title (two lines at most) and the settings gear, as on every main
+        // screen; under it the place in the book, with the contents and the search beside it.
         LinearLayout head = Ui.row(this);
         head.setGravity(Gravity.TOP);
         LinearLayout names = Ui.column(this);
@@ -243,7 +246,7 @@ public final class BookActivity extends Activity {
         title.setOnClickListener(pick());
         names.addView(title, Ui.lp(Ui.MATCH, Ui.WRAP));
         head.addView(names, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        contents = Ui.iconButton(this, R.drawable.ic_contents, Palette.SURFACE, 48, getString(R.string.book_contents));
+        contents = Ui.iconButton(this, R.drawable.ic_contents, Palette.SURFACE, 40, getString(R.string.book_contents));
         contents.setImageTintList(ColorStateList.valueOf(Palette.INK));
         contents.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -252,10 +255,7 @@ public final class BookActivity extends Activity {
             }
         });
         contents.setVisibility(View.GONE);
-        LinearLayout.LayoutParams cbp = new LinearLayout.LayoutParams(dp(48), dp(48));
-        cbp.leftMargin = dp(10);
-        head.addView(contents, cbp);
-        finder = Ui.iconButton(this, R.drawable.ic_search, Palette.SURFACE, 48, getString(R.string.search_title));
+        finder = Ui.iconButton(this, R.drawable.ic_search, Palette.SURFACE, 40, getString(R.string.search_title));
         finder.setImageTintList(ColorStateList.valueOf(Palette.INK));
         finder.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -264,15 +264,27 @@ public final class BookActivity extends Activity {
             }
         });
         finder.setVisibility(View.GONE);
-        LinearLayout.LayoutParams fbp = new LinearLayout.LayoutParams(dp(48), dp(48));
-        fbp.leftMargin = dp(10);
-        head.addView(finder, fbp);
+        head.addView(Ui.gear(this), Ui.gearSpot(this));
         root.addView(head, Ui.lp(Ui.MATCH, Ui.WRAP));
-        // The place runs the whole width under the title and its buttons, so it never breaks early.
+        // The place, and beside it the book's own two buttons, a little smaller than the gear above.
+        placeRow = Ui.row(this);
+        placeRow.setGravity(Gravity.CENTER_VERTICAL);
+        // As tall as its buttons from the start, so the text below does not move when they appear.
+        placeRow.setMinimumHeight(dp(40));
         where = Ui.text(this, "", 13, Palette.MUTED);
+        where.setMaxLines(2);
+        where.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        placeRow.addView(where, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        LinearLayout.LayoutParams cbp = new LinearLayout.LayoutParams(dp(40), dp(40));
+        cbp.leftMargin = dp(8);
+        placeRow.addView(contents, cbp);
+        LinearLayout.LayoutParams fbp = new LinearLayout.LayoutParams(dp(40), dp(40));
+        fbp.leftMargin = dp(8);
+        fbp.rightMargin = dp(4);
+        placeRow.addView(finder, fbp);
         LinearLayout.LayoutParams wp = Ui.lp(Ui.MATCH, Ui.WRAP);
         wp.topMargin = dp(6);
-        root.addView(where, wp);
+        root.addView(placeRow, wp);
 
         FrameLayout stage = new FrameLayout(this);
 
@@ -542,7 +554,8 @@ public final class BookActivity extends Activity {
         empty.setVisibility(has ? View.GONE : View.VISIBLE);
         book.setVisibility(has ? View.VISIBLE : View.GONE);
         controls.setVisibility(has ? View.VISIBLE : View.INVISIBLE);
-        where.setVisibility(has ? View.VISIBLE : View.GONE);
+        // The place goes with its row, the book's buttons beside it too.
+        placeRow.setVisibility(has ? View.VISIBLE : View.GONE);
         contents.setVisibility(has && text != null && !chapters.isEmpty() ? View.VISIBLE : View.GONE);
         finder.setVisibility(has && text != null ? View.VISIBLE : View.GONE);
         searchIfWanted();

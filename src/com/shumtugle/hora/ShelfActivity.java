@@ -69,14 +69,7 @@ public final class ShelfActivity extends Activity {
         head.setGravity(Gravity.CENTER_VERTICAL);
         head.addView(Ui.title(this, getString(R.string.shelf_title), 40),
                 new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        ImageView gear = Ui.iconButton(this, R.drawable.ic_settings, Palette.SURFACE, 48, getString(R.string.settings));
-        gear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(ShelfActivity.this, SettingsActivity.class));
-            }
-        });
-        head.addView(gear, Ui.lp(dp(48), dp(48)));
+        head.addView(Ui.gear(this), Ui.gearSpot(this));
         root.addView(head, Ui.lp(Ui.MATCH, Ui.WRAP));
 
         ScrollView scroll = new ScrollView(this);
@@ -84,11 +77,13 @@ public final class ShelfActivity extends Activity {
         scroll.setVerticalFadingEdgeEnabled(true);
         scroll.setFadingEdgeLength(dp(24));
         list = Ui.column(this);
-        list.setPadding(0, 0, 0, dp(24));
+        // The books keep their old distance from the edge; the header and the tabs share the other screens' margin.
+        list.setPadding(dp(4), 0, dp(4), dp(24));
         scroll.addView(list);
         root.addView(scroll, new LinearLayout.LayoutParams(Ui.MATCH, 0, 1f));
         root.addView(Ui.navBar(this, Ui.NAV_SHELF), Ui.lp(Ui.MATCH, Ui.WRAP));
-        Kit.edgeToEdge(this, root, dp(24), dp(20), dp(24), dp(16));
+        // The same side margins as the other main screens: the header, its gear and the tabs line up.
+        Kit.edgeToEdge(this, root, dp(20), dp(20), dp(20), dp(16));
         setContentView(whole);
     }
 

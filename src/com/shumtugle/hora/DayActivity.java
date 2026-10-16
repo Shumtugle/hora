@@ -38,7 +38,6 @@ public final class DayActivity extends Activity {
     private int built;
     private int voice = -1;
     private ImageView backdrop;
-    private ImageView face;
     private TextView date;
     private LinearLayout weather;
     private LinearLayout book;
@@ -178,17 +177,8 @@ public final class DayActivity extends Activity {
         date = Ui.text(this, "", 14, Palette.MUTED);
         words.addView(date);
         head.addView(words, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        // The voice that answers here; a touch opens the voices at it, as the portrait on the Voice does.
-        face = Ui.portrait(this, Cast.HOST);
-        int pad = dp(3);
-        face.setPadding(pad, pad, pad, pad);
-        face.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                VoicesActivity.open(DayActivity.this, voice);
-            }
-        });
-        head.addView(face, Ui.lp(dp(48), dp(48)));
+        // The settings, where every main screen has them; the faces live on the Voice.
+        head.addView(Ui.gear(this), Ui.gearSpot(this));
         root.addView(head, Ui.lp(Ui.MATCH, Ui.WRAP));
 
         ScrollView scroll = new ScrollView(this);
@@ -261,9 +251,6 @@ public final class DayActivity extends Activity {
         int v = Prefs.role(this, Cast.TALK);
         if (v != voice) {
             voice = v;
-            Ui.setFace(face, v);
-            face.setBackground(Ui.oval(Palette.BG, Palette.voice(v), 2, this));
-            face.setContentDescription(Cast.name(this, v));
             Kit.backdrop(this, backdrop, v);
         }
         Locale here = getResources().getConfiguration().getLocales().get(0);
