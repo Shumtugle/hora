@@ -1,0 +1,5 @@
+# Headlines for the Day, in the language of the voices: key|name shown|feed address.
+# Titles only are read from a feed; the first line is the one chosen until another is.
+yle|Yle|https://yle.fi/rss/novosti
+bbc|BBC|https://feeds.bbci.co.uk/russian/rss.xml
+dw|DW|https://rss.dw.com/xml/rss-ru-all

@@ -388,6 +388,18 @@
     <string name="nav_day">Day</string>
     <string name="day_feels">feels like %s</string>
     <string name="day_tomorrow">Tomorrow up to %1$s, %2$s</string>
+    <string name="day_news">News</string>
+    <plurals name="day_news_count">
+        <item quantity="one">%d headline</item>
+        <item quantity="other">%d headlines</item>
+    </plurals>
+    <string name="day_news_wait">on its way</string>
+    <string name="day_news_none">no answer</string>
+    <string name="day_news_retry">touch to ask again</string>
+    <string name="day_news_all">Read them all</string>
+    <string name="day_news_read">Read aloud: %s</string>
+    <string name="settings_news">News on the Day</string>
+    <string name="settings_news_sub">Headlines only, read aloud when touched.</string>
     <string name="day_talk_on">Continue the talk</string>
     <string-array name="day_sky">
         <item>clear</item>

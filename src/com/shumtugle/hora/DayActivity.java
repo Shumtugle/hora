@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -42,6 +43,17 @@ public final class DayActivity extends Activity {
     private LinearLayout weather;
     private LinearLayout book;
     private LinearLayout talk;
+    private LinearLayout news;
+    private String drawnNews = NONE;
+    private boolean fetchingNews;
+    /** The broadcaster the last asking failed for; a failure for another one is not shown. */
+    private String newsFailedFor;
+    /** When headlines were last asked for, so the screen asks again on its own every half hour, not every second. */
+    private long lastNewsTry;
+    private static final long NEWS_AGAIN_MS = 30 * 60 * 1000L;
+    private static final long NEWS_RETRY_MS = 5 * 60 * 1000L;
+    /** Whether the headlines are unfolded; kept while the app runs, folded again on the next start. */
+    private static boolean newsOpen;
     /** What each part was last drawn from, so it is drawn again only when that changed; NONE draws anew. */
     private static final String NONE = "-";
     private String drawnWeather = NONE;
@@ -118,6 +130,8 @@ public final class DayActivity extends Activity {
         drawnWeather = NONE;
         drawnBook = NONE;
         drawnTalk = NONE;
+        drawnNews = NONE;
+        lastNewsTry = 0;
         bookUri = NONE;
         handler.post(tick);
         fetch();
@@ -209,6 +223,8 @@ public final class DayActivity extends Activity {
         list.addView(weather, gap(14));
         book = Ui.column(this);
         list.addView(book, gap(14));
+        news = Ui.column(this);
+        list.addView(news, gap(14));
         talk = Ui.column(this);
         list.addView(talk, Ui.lp(Ui.MATCH, Ui.WRAP));
 
@@ -265,6 +281,8 @@ public final class DayActivity extends Activity {
         }
         showWeather();
         showBook();
+        newsDue();
+        showNews();
         showTalk();
     }
 
@@ -706,6 +724,218 @@ public final class DayActivity extends Activity {
             }
         });
         return c;
+    }
+
+    // ---- The news ----
+
+    /** Headlines are a developer-room thing: shown only while it is open and they are switched on there. */
+    private boolean newsShown() {
+        return Beta.open(this) && News.on(this);
+    }
+
+    private void fetchNews() {
+        if (fetchingNews || !newsShown()) {
+            return;
+        }
+        fetchingNews = true;
+        lastNewsTry = System.currentTimeMillis();
+        final News.Source asked = News.source(this);
+        final android.content.Context app = getApplicationContext();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                News.Kept k = null;
+                try {
+                    k = News.fetch(app);
+                } finally {
+                    final boolean failed = k == null || asked == null || !k.source.equals(asked.id)
+                            || System.currentTimeMillis() - k.at > NEWS_AGAIN_MS;
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            fetchingNews = false;
+                            newsFailedFor = failed && asked != null ? asked.id : null;
+                            drawnNews = NONE;
+                        }
+                    });
+                }
+            }
+        }, "day-news").start();
+    }
+
+    /**
+     * Asks again when nothing is kept for the chosen broadcaster or what is kept is half an hour old;
+     * after a failure, not before five minutes. Called every tick; does nothing most of the time.
+     */
+    private void newsDue() {
+        if (fetchingNews || !newsShown()) {
+            return;
+        }
+        News.Source s = News.source(this);
+        if (s == null) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        News.Kept k = News.kept(this);
+        boolean stale = k == null || now < k.at || now - k.at >= NEWS_AGAIN_MS;
+        long wait = s.id.equals(newsFailedFor) ? NEWS_RETRY_MS : (k == null ? 0 : NEWS_AGAIN_MS);
+        if (stale && (lastNewsTry == 0 || now < lastNewsTry || now - lastNewsTry >= wait)) {
+            fetchNews();
+        }
+    }
+
+    private void showNews() {
+        boolean shown = newsShown();
+        News.Source s = shown ? News.source(this) : null;
+        News.Kept k = s != null ? News.kept(this) : null;
+        boolean failed = s != null && s.id.equals(newsFailedFor);
+        // The same headlines fetched again redraw nothing; the asking shows only while there is nothing to show.
+        String key = (s == null ? "" : s.id) + "|" + newsOpen + "|"
+                + (k == null ? "none|" + fetchingNews + "|" + failed : String.valueOf(k.titles.hashCode()));
+        if (key.equals(drawnNews)) {
+            return;
+        }
+        drawnNews = key;
+        news.removeAllViews();
+        news.setVisibility(s == null ? View.GONE : View.VISIBLE);
+        if (s == null) {
+            return;
+        }
+        final List<String> titles = k == null ? null : k.titles;
+        String state = titles != null
+                ? getResources().getQuantityString(R.plurals.day_news_count, titles.size(), titles.size()) + ", " + s.name
+                : s.name + ", " + getString(fetchingNews ? R.string.day_news_wait : R.string.day_news_none);
+        boolean open = newsOpen && titles != null;
+
+        LinearLayout head = Ui.row(this);
+        head.setGravity(Gravity.CENTER_VERTICAL);
+        head.addView(Ui.text(this, getString(R.string.day_news), 16, Palette.INK));
+        TextView what = Ui.text(this, "\u00b7 " + state, 14, Palette.MUTED);
+        what.setSingleLine(true);
+        what.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        LinearLayout.LayoutParams wp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        wp.leftMargin = dp(10);
+        head.addView(what, wp);
+        head.setContentDescription(getString(R.string.day_news) + ", " + state
+                + (titles == null && !fetchingNews ? ", " + getString(R.string.day_news_retry) : ""));
+        if (titles != null) {
+            // The chevron of the folds in the settings: down while folded, up while open.
+            TextView mark = Ui.text(this, "\u203a", 20, Palette.MUTED);
+            mark.setRotation(open ? -90f : 90f);
+            mark.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+            head.addView(mark);
+            head.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    newsOpen = !newsOpen;
+                    drawnNews = NONE;
+                    showNews();
+                    // The screen reader stays on the headlines' title, drawn anew under it, once it is laid out.
+                    if (news.getChildCount() > 0) {
+                        final View again = news.getChildAt(0) instanceof LinearLayout
+                                && ((LinearLayout) news.getChildAt(0)).getChildCount() > 0 && newsOpen
+                                ? ((LinearLayout) news.getChildAt(0)).getChildAt(0) : news.getChildAt(0);
+                        again.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                again.performAccessibilityAction(
+                                        android.view.accessibility.AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null);
+                            }
+                        });
+                    }
+                }
+            });
+        } else if (!fetchingNews) {
+            // No answer: a touch asks again at once.
+            head.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    newsFailedFor = null;
+                    lastNewsTry = 0;
+                    fetchNews();
+                    drawnNews = NONE;
+                    showNews();
+                }
+            });
+        }
+        head.setPadding(dp(20), dp(14), dp(16), dp(14));
+        head.setMinimumHeight(dp(52));
+
+        if (!open) {
+            head.setBackground(Ui.pressable(pill()));
+            news.addView(head, Ui.lp(Ui.MATCH, Ui.WRAP));
+            return;
+        }
+        LinearLayout plate = Kit.plate(this);
+        head.setBackground(Ui.pressable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)));
+        plate.addView(head, Ui.lp(Ui.MATCH, Ui.WRAP));
+        for (final String t : titles) {
+            View line = new View(this);
+            line.setBackgroundColor(Palette.LINE);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Ui.MATCH, Math.max(1, dp(1)));
+            lp.leftMargin = dp(20);
+            lp.rightMargin = dp(20);
+            plate.addView(line, lp);
+            LinearLayout row = Ui.row(this);
+            row.setGravity(Gravity.CENTER_VERTICAL);
+            row.setPadding(dp(20), dp(10), dp(12), dp(10));
+            row.setBackground(Ui.pressable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)));
+            TextView words = Ui.text(this, t, 15, Palette.INK);
+            words.setMaxLines(3);
+            words.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            words.setLineSpacing(0, 1.15f);
+            LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+            tp.rightMargin = dp(12);
+            row.addView(words, tp);
+            ImageView read = Ui.iconButton(this, R.drawable.ic_play, Palette.RAISED, 36,
+                    getString(R.string.day_news_read, t));
+            read.setImageTintList(ColorStateList.valueOf(Palette.INK));
+            // The whole row reads the headline: the screen reader hears it once, as one thing to touch.
+            read.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+            row.setContentDescription(getString(R.string.day_news_read, t));
+            View.OnClickListener say = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    say(t);
+                }
+            };
+            read.setOnClickListener(say);
+            row.setOnClickListener(say);
+            row.addView(read, Ui.lp(dp(36), dp(36)));
+            plate.addView(row, Ui.lp(Ui.MATCH, Ui.WRAP));
+        }
+        TextView all = Kit.link(this, getString(R.string.day_news_all), new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                say(together(titles));
+            }
+        });
+        all.setPadding(dp(20), dp(12), dp(20), dp(16));
+        plate.addView(all, Ui.lp(Ui.MATCH, Ui.WRAP));
+        news.addView(plate, Ui.lp(Ui.MATCH, Ui.WRAP));
+    }
+
+    /** The folded headlines: a pill of the screen's own surface with a thin edge. */
+    private android.graphics.drawable.GradientDrawable pill() {
+        android.graphics.drawable.GradientDrawable g = Ui.round(Palette.SURFACE, 26, this);
+        g.setStroke(Math.max(1, dp(1)), Palette.LINE);
+        return g;
+    }
+
+    /** All the headlines as one text to be read, each ending as a sentence does. */
+    private static String together(List<String> titles) {
+        StringBuilder b = new StringBuilder();
+        for (String t : titles) {
+            if (b.length() > 0) {
+                b.append(' ');
+            }
+            b.append(t);
+            char end = t.isEmpty() ? '.' : t.charAt(t.length() - 1);
+            if (end != '.' && end != '!' && end != '?' && end != '\u2026') {
+                b.append('.');
+            }
+        }
+        return b.toString();
     }
 
     // ---- The talk ----

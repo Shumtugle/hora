@@ -824,6 +824,20 @@
     <string name="nav_day">День</string>
     <string name="day_feels">ощущается как %s</string>
     <string name="day_tomorrow">Завтра до %1$s, %2$s</string>
+    <string name="day_news">Новости</string>
+    <plurals name="day_news_count">
+        <item quantity="one">%d заголовок</item>
+        <item quantity="few">%d заголовка</item>
+        <item quantity="many">%d заголовков</item>
+        <item quantity="other">%d заголовка</item>
+    </plurals>
+    <string name="day_news_wait">загружаются</string>
+    <string name="day_news_none">нет ответа</string>
+    <string name="day_news_retry">коснись, чтобы спросить снова</string>
+    <string name="day_news_all">Прочитать все подряд</string>
+    <string name="day_news_read">Прочитать вслух: %s</string>
+    <string name="settings_news">Новости на Дне</string>
+    <string name="settings_news_sub">Только заголовки, вслух — по касанию.</string>
     <string name="day_talk_on">Продолжить разговор</string>
     <string-array name="day_sky">
         <item>ясно</item>

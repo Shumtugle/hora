@@ -644,6 +644,37 @@ public final class SettingsActivity extends Activity {
         note.setLineSpacing(0, 1.3f);
         note.setPadding(dp(4), 0, dp(4), 0);
         beta.addView(note, Kit.wide());
+        // Headlines on the Day: only here, and only when switched on; then the broadcaster under it.
+        LinearLayout newsPlate = Kit.plate(this);
+        newsPlate.addView(Kit.rowToggle(this, getString(R.string.settings_news), getString(R.string.settings_news_sub),
+                News.on(this), new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        News.setOn(SettingsActivity.this, on);
+                        Diag.mark(SettingsActivity.this, "settings: news on the day " + (on ? "on" : "off"));
+                        showDeveloper();
+                    }
+                }), Kit.wide());
+        beta.addView(newsPlate, Kit.below(this, 12));
+        final java.util.List<News.Source> sources = News.sources(this);
+        News.Source chosen = News.source(this);
+        if (News.on(this) && sources.size() > 1 && sources.size() <= 4 && chosen != null) {
+            String[] names = new String[sources.size()];
+            int at = 0;
+            for (int i = 0; i < names.length; i++) {
+                names[i] = sources.get(i).name;
+                if (sources.get(i).id.equals(chosen.id)) {
+                    at = i;
+                }
+            }
+            beta.addView(Kit.segments(this, names, at, new Kit.Chosen() {
+                @Override
+                public void chose(int which) {
+                    News.setSource(SettingsActivity.this, sources.get(which).id);
+                    Diag.mark(SettingsActivity.this, "settings: news from " + sources.get(which).id);
+                }
+            }), Kit.below(this, 8));
+        }
         beta.addView(Kit.link(this, getString(R.string.dev_close), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
