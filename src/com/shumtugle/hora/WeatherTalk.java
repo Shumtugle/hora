@@ -35,6 +35,9 @@ final class WeatherTalk {
         boolean duskPassed;
         /** Weather codes for the coming hours, the first being the next hour. */
         int[] next = new int[0];
+        /** Degrees for the same coming hours, and the hour of the day each one is for. */
+        int[] nextTemp = new int[0];
+        int[] nextHour = new int[0];
         String dusk = "";
         String dawn = "";
         /** Whether the sun is up; night lines replace day lines when it is not. */

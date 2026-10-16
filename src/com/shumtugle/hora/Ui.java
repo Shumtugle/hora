@@ -482,12 +482,13 @@ final class Ui {
     static final int NAV_VOICE = 0;
     static final int NAV_BOOK = 1;
     static final int NAV_SHELF = 2;
+    static final int NAV_DAY = 3;
 
     /** The bottom bar shared by the main screens; the current one is lit and does nothing. */
     static LinearLayout navBar(final android.app.Activity a, int current) {
-        // Three places, one door each: roles live in the settings and in the book's reader sheet.
-        final Class<?>[] screens = {MainActivity.class, BookActivity.class, ShelfActivity.class};
-        int[] labels = {R.string.nav_voice, R.string.nav_book, R.string.nav_shelf};
+        // Four places, one door each: roles live in the settings and in the book's reader sheet.
+        final Class<?>[] screens = {MainActivity.class, BookActivity.class, ShelfActivity.class, DayActivity.class};
+        int[] labels = {R.string.nav_voice, R.string.nav_book, R.string.nav_shelf, R.string.nav_day};
         LinearLayout nav = row(a);
         nav.setPadding(0, dp(a, 14), 0, 0);
         for (int i = 0; i < screens.length; i++) {

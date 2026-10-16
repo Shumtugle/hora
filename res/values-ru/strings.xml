@@ -821,6 +821,20 @@
     <string name="home_greeting">Здравствуй. Теперь говорю я.</string>
     <string name="home_no_weather">Погоду я пока не знаю. Скоро научусь.</string>
     <string name="nav_voice">Голос</string>
+    <string name="nav_day">День</string>
+    <string name="day_feels">ощущается как %s</string>
+    <string name="day_tomorrow">Завтра до %1$s, %2$s</string>
+    <string name="day_talk_on">Продолжить разговор</string>
+    <string-array name="day_sky">
+        <item>ясно</item>
+        <item>облачно</item>
+        <item>пасмурно</item>
+        <item>туман</item>
+        <item>морось</item>
+        <item>дождь</item>
+        <item>снег</item>
+        <item>гроза</item>
+    </string-array>
     <string name="nav_book">Книга</string>
     <string name="ws_back">Назад</string>
     <string name="ws_listen">Послушать</string>
@@ -1723,7 +1737,6 @@
     <string name="talk_mic_failed">Микрофон не открылся. Попробуй ещё раз чуть позже.</string>
     <string name="heard_to_field">Сказанное — сначала в поле</string>
     <string name="heard_to_field_sub">Иначе оно уходит само после паузы.</string>
-    <string name="home_book_none">Книга не выбрана</string>
     <string name="home_on_duty">на дежурстве · %1$s</string>
     <string name="talk_where">Где мы</string>
     <string name="bot_help_chip">Что ты умеешь</string>

@@ -20,19 +20,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /**
- * The main screen: the current voice as a portrait, what it last said, a few
- * quick questions and a line to type anything for it to read.
+ * The main screen: the current voice as a portrait, its troupe, the line it
+ * speaks when touched, and the way into the talk. Time and weather live on the Day.
  */
 public final class MainActivity extends Activity {
     /** The look this screen was built with. */
     private int built;
     private static final String NOTIFY_PERMISSION = "android.permission.POST_NOTIFICATIONS";
-    private static final String STATE_SPOKEN = "spoken";
-    private static final String STATE_CARD = "card";
-    /** The last answer on screen as it is to be spoken; a tap on it says it again. */
-    private String shown;
-    /** The line on screen is the voice's card: a tap makes the voice speak about itself, never word for word. */
-    private boolean card = true;
 
     private int voice;
     private ImageView[] dots = new ImageView[0];
@@ -44,7 +38,6 @@ public final class MainActivity extends Activity {
     private TextView epithet;
     private TextView spoken;
     private ImageView backdrop;
-    private View bookWay;
     private AnimatorSet breathGlow;
     private AnimatorSet breathRing;
 
@@ -53,12 +46,7 @@ public final class MainActivity extends Activity {
         super.onCreate(state);
         built = Ui.prepare(this);
         setContentView(build());
-        if (state != null && state.getCharSequence(STATE_SPOKEN) != null) {
-            spoken.setText(state.getCharSequence(STATE_SPOKEN));
-            card = state.getBoolean(STATE_CARD, true);
-        } else {
-            showCard(Prefs.role(this, Cast.TALK));
-        }
+        showCard(Prefs.role(this, Cast.TALK));
         if (state == null && !Prefs.introSeen(this)) {
             // The first start opens on its scene and questions, then the title page; the voice screen waits under them.
             startActivity(new Intent(this, FirstRunActivity.class));
@@ -91,9 +79,7 @@ public final class MainActivity extends Activity {
         RestoreActivity.checkIfPending(this);
         // The voices, or the title page, may have changed the voice.
         showVoice(Prefs.role(this, Cast.TALK));
-        if (card) {
-            showCard(voice);
-        }
+        showCard(voice);
         if (Prefs.introSeen(this)) {
             askNotify();
         }
@@ -106,177 +92,6 @@ public final class MainActivity extends Activity {
         breathGlow.cancel();
         breathRing.cancel();
         super.onPause();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle out) {
-        super.onSaveInstanceState(out);
-        out.putCharSequence(STATE_SPOKEN, spoken.getText());
-        out.putBoolean(STATE_CARD, card);
-    }
-
-    private void say(String phrase) {
-        spoken.setText(Ui.plain(phrase));
-        shown = phrase;
-        card = false;
-        VoiceService.answer(this, phrase, voice);
-    }
-
-    private void askTime() {
-        say(TimePhrase.dateAndTime(SpeechLanguage.resources(this)));
-    }
-
-    private static final int REQUEST_PLACE = 40;
-    private static final int REQUEST_LOCATION = 41;
-    private static final String LOCATION_PERMISSION = "android.permission.ACCESS_COARSE_LOCATION";
-
-    /** The weather, told by the voice on stage; without a place, the voice asks for one first. */
-    private void askWeather() {
-        if (!Weather.hasPlace(this)) {
-            say(Weather.line(this, "ask." + voice));
-            Ui.choose(this, getString(R.string.place_question), getString(R.string.place_by_phone),
-                    getString(R.string.place_by_name), getString(R.string.place_later),
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            locate();
-                        }
-                    },
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            pickPlace();
-                        }
-                    });
-            return;
-        }
-        spoken.setText(Weather.line(this, "wait"));
-        final int teller = voice;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final String told = Weather.report(MainActivity.this, teller);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        say(told != null ? told : Weather.line(MainActivity.this, "fail"));
-                    }
-                });
-            }
-        }, "weather").start();
-    }
-
-    /** Waits this long for the phone to tell where it is, then turns to the search by name. */
-    private static final long LOCATE_MS = 8000;
-    private boolean locating;
-
-    private void pickPlace() {
-        startActivityForResult(new android.content.Intent(this, PlaceActivity.class), REQUEST_PLACE);
-    }
-
-    /** Asks the phone once, roughly, where it is; the answer becomes the weather's place. */
-    private void locate() {
-        if (checkSelfPermission(LOCATION_PERMISSION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[] {LOCATION_PERMISSION}, REQUEST_LOCATION);
-            return;
-        }
-        android.location.LocationManager lm =
-                (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
-        android.location.Location best = null;
-        try {
-            for (String provider : lm.getProviders(true)) {
-                android.location.Location l = lm.getLastKnownLocation(provider);
-                if (l != null && (best == null || l.getTime() > best.getTime())) {
-                    best = l;
-                }
-            }
-            boolean network = lm.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
-            if (best == null && network && Build.VERSION.SDK_INT >= 30) {
-                // A fresh answer, but never waited for longer than a few seconds.
-                final android.os.CancellationSignal stop = new android.os.CancellationSignal();
-                locating = true;
-                spoken.setText(Weather.line(this, "wait"));
-                lm.getCurrentLocation(android.location.LocationManager.NETWORK_PROVIDER, stop, getMainExecutor(),
-                        new java.util.function.Consumer<android.location.Location>() {
-                            @Override
-                            public void accept(android.location.Location l) {
-                                if (locating) {
-                                    locating = false;
-                                    placed(l);
-                                }
-                            }
-                        });
-                spoken.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (locating) {
-                            locating = false;
-                            stop.cancel();
-                            placed(null);
-                        }
-                    }
-                }, LOCATE_MS);
-                return;
-            }
-        } catch (SecurityException | IllegalArgumentException e) {
-            best = null;
-        }
-        placed(best);
-    }
-
-    private void placed(final android.location.Location l) {
-        if (l == null) {
-            // The phone kept silent: the search by name is the way on.
-            say(Weather.line(this, "nolocation"));
-            pickPlace();
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String name = "";
-                try {
-                    if (android.location.Geocoder.isPresent()) {
-                        java.util.List<android.location.Address> a = new android.location.Geocoder(
-                                MainActivity.this, SpeechLanguage.locale()).getFromLocation(l.getLatitude(),
-                                l.getLongitude(), 1);
-                        if (a != null && !a.isEmpty() && a.get(0).getLocality() != null) {
-                            name = a.get(0).getLocality();
-                        }
-                    }
-                } catch (Exception ignored) {
-                    // Without a name the place is still known by where it lies.
-                }
-                Weather.setPlace(MainActivity.this, name, l.getLatitude(), l.getLongitude());
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        askWeather();
-                    }
-                });
-            }
-        }, "place-name").start();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int request, String[] names, int[] results) {
-        super.onRequestPermissionsResult(request, names, results);
-        if (request != REQUEST_LOCATION) {
-            return;
-        }
-        if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {
-            locate();
-        } else {
-            placed(null);
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int request, int result, android.content.Intent data) {
-        super.onActivityResult(request, result, data);
-        if (request == REQUEST_PLACE && result == RESULT_OK) {
-            askWeather();
-        }
     }
 
     /**
@@ -323,9 +138,7 @@ public final class MainActivity extends Activity {
             public void run() {
                 Prefs.setVoiceName(MainActivity.this, v, field.getText().toString());
                 showVoice(voice);
-                if (card) {
-                    showCard(voice);
-                }
+                showCard(voice);
                 Widgets.refresh(MainActivity.this);
             }
         };
@@ -346,19 +159,14 @@ public final class MainActivity extends Activity {
     }
 
     private void showCard(int v) {
-        card = true;
         spoken.setText(Ui.plain(String.format(Cast.say(this, R.array.voice_step_forward, v), Cast.spokenName(this, v))));
     }
 
-    /** A tap on the line: the card makes the voice speak about itself; an answer is said again. */
+    /** A tap on the line: the voice speaks about itself, never word for word. */
     private void tapLine() {
-        if (card || shown == null) {
-            TapTalk.Reply r = TapTalk.next(this, voice);
-            if (r != null) {
-                VoiceService.speak(this, r.text, voice, r.flat ? TapTalk.FLAT_PACE : 1f);
-            }
-        } else {
-            VoiceService.answer(this, shown, voice);
+        TapTalk.Reply r = TapTalk.next(this, voice);
+        if (r != null) {
+            VoiceService.speak(this, r.text, voice, r.flat ? TapTalk.FLAT_PACE : 1f);
         }
     }
 
@@ -386,15 +194,6 @@ public final class MainActivity extends Activity {
         }
         hint.setVisibility(Prefs.troupeHintsLeft(this) > 0 ? View.VISIBLE : View.GONE);
         Kit.backdrop(this, backdrop, v);
-        String uri = Reading.uri(this);
-        Library.Entry e = uri.isEmpty() ? null : Library.get(this, uri);
-        String sub = getString(R.string.home_book_none);
-        if (e != null) {
-            String title = e.title != null && !e.title.isEmpty() ? e.title : Reading.title(this);
-            int ch = e.chapterAt(e.index);
-            sub = ch < 0 ? title : title + " \u00b7 " + Bot.chapterLabel(this, e.chapters.get(ch).label);
-        }
-        Kit.setEntry(bookWay, getString(R.string.nav_book), sub);
     }
 
     private View build() {
@@ -412,8 +211,9 @@ public final class MainActivity extends Activity {
         LinearLayout head = Ui.header(this, null, true);
         root.addView(head, Ui.lp(Ui.MATCH, dp(48)));
 
+        // The face, the name, the troupe and the line stand as one group in the middle of what is left.
         LinearLayout stage = Ui.column(this);
-        stage.setGravity(Gravity.CENTER_HORIZONTAL);
+        stage.setGravity(Gravity.CENTER);
         FrameLayout face = new FrameLayout(this);
         face.setClipChildren(false);
         glow = new View(this);
@@ -457,6 +257,7 @@ public final class MainActivity extends Activity {
         // The glow and ring breathe past their size; the frame leaves room so they are never cut.
         // The portrait takes the height that is left and shrinks on a shorter screen.
         Kit.Fit fit = new Kit.Fit(this);
+        fit.cap(dp(228));
         fit.addView(face, new FrameLayout.LayoutParams(dp(228), dp(228), Gravity.CENTER));
         stage.addView(fit, new LinearLayout.LayoutParams(Ui.MATCH, 0, 1f));
         breathGlow = Ui.breathe(glow, 0.92f, 1.02f, 0.5f, 1f);
@@ -542,31 +343,11 @@ public final class MainActivity extends Activity {
         stage.addView(spoken, sp);
         root.addView(stage, new LinearLayout.LayoutParams(Ui.MATCH, 0, 1f));
 
-        LinearLayout quick = Ui.row(this);
-        quick.setGravity(Gravity.CENTER);
-        quick.addView(chip(R.string.home_time, new Runnable() {
-            @Override
-            public void run() {
-                askTime();
-            }
-        }));
-        quick.addView(chip(R.string.home_weather, new Runnable() {
-            @Override
-            public void run() {
-                askWeather();
-            }
-        }));
-        LinearLayout.LayoutParams qp = Ui.lp(Ui.MATCH, Ui.WRAP);
-        qp.bottomMargin = dp(14);
-        root.addView(quick, qp);
-
-        // Two ways on from here: the talk and the book. The voices are behind the portrait.
+        // One way on from here: the talk. The book is a tab of its own; the voices are behind the portrait.
         LinearLayout ways = Kit.plate(this);
         ways.setPadding(0, dp(4), 0, dp(4));
         ways.addView(Kit.rowEntry(this, R.drawable.ic_talk, getString(R.string.talk_title),
                 getString(R.string.talk_sub), open(TalkActivity.class)), Ui.lp(Ui.MATCH, Ui.WRAP));
-        bookWay = Kit.rowEntry(this, R.drawable.ic_book, getString(R.string.nav_book), "", open(BookActivity.class));
-        ways.addView(bookWay, Ui.lp(Ui.MATCH, Ui.WRAP));
         root.addView(ways, Ui.lp(Ui.MATCH, Ui.WRAP));
         LinearLayout.LayoutParams navGap = Ui.lp(Ui.MATCH, Ui.WRAP);
         navGap.topMargin = dp(10);
@@ -574,23 +355,6 @@ public final class MainActivity extends Activity {
         root.addView(nav, navGap);
         Kit.edgeToEdge(this, root, dp(20), dp(20), dp(20), dp(16));
         return whole;
-    }
-
-    private TextView chip(int label, final Runnable action) {
-        TextView b = Ui.pill(this, getString(label), Palette.SURFACE, Palette.LINE, Palette.INK, false);
-        b.setPadding(dp(8), 0, dp(8), 0);
-        Ui.oneLine(b, 11, 15);
-        b.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                action.run();
-            }
-        });
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, dp(44), 1f);
-        p.leftMargin = dp(4);
-        p.rightMargin = dp(4);
-        b.setLayoutParams(p);
-        return b;
     }
 
     private View.OnClickListener open(final Class<?> screen) {

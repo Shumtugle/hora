@@ -32,10 +32,25 @@ final class Weather {
     private static final long FRESH_MS = 20 * 60 * 1000L;
     private static final int TIMEOUT_MS = 8000;
 
-    private static WeatherTalk.Facts cached;
-    private static long cachedAt;
-    private static String cachedFor = "";
-    private static WeatherTalk talk;
+    /**
+     * The last answer, with when and for which place it came, as one snapshot. Read by screens
+     * without the lock, so a fetch in progress, which holds the lock, never makes a screen wait.
+     */
+    static final class Kept {
+        final WeatherTalk.Facts facts;
+        final long at;
+        final String place;
+
+        Kept(WeatherTalk.Facts facts, long at, String place) {
+            this.facts = facts;
+            this.at = at;
+            this.place = place;
+        }
+    }
+
+    private static volatile Kept kept;
+    private static volatile WeatherTalk talk;
+    private static final Object TALK_LOCK = new Object();
 
     /** A found place: a name, where it lies, and words that tell it apart from its namesakes. */
     static final class Place {
@@ -72,7 +87,21 @@ final class Weather {
     static void setPlace(Context c, String name, double lat, double lon) {
         sp(c).edit().putString(NAME, name == null ? "" : name)
                 .putString(LAT, String.valueOf(lat)).putString(LON, String.valueOf(lon)).commit();
-        cached = null;
+        kept = null;
+    }
+
+    /** The words the voices use for the sky, read once from the bundle; never waits for a fetch. */
+    private static WeatherTalk talk(Context c) throws IOException {
+        WeatherTalk t = talk;
+        if (t == null) {
+            synchronized (TALK_LOCK) {
+                if (talk == null) {
+                    talk = new WeatherTalk(c.getAssets().open("talk/weather.txt"));
+                }
+                t = talk;
+            }
+        }
+        return t;
     }
 
     /** The report for a voice, or null when the sky could not be reached. Call off the main thread. */
@@ -81,15 +110,14 @@ final class Weather {
         if (f == null) {
             return null;
         }
+        WeatherTalk words;
         try {
-            if (talk == null) {
-                talk = new WeatherTalk(c.getAssets().open("talk/weather.txt"));
-            }
+            words = talk(c);
         } catch (IOException e) {
             return null;
         }
         final SharedPreferences sp = sp(c);
-        return talk.say(f, voice, new Random(), new WeatherTalk.Memory() {
+        return words.say(f, voice, new Random(), new WeatherTalk.Memory() {
             @Override
             public int last(String key) {
                 return sp.getInt(SAID + key, -1);
@@ -112,22 +140,37 @@ final class Weather {
             return null;
         }
         try {
-            if (talk == null) {
-                talk = new WeatherTalk(c.getAssets().open("talk/weather.txt"));
-            }
+            return talk(c).morning(f, new Random());
         } catch (IOException e) {
             return null;
         }
-        return talk.morning(f, new Random());
+    }
+
+    /**
+     * What is known of the sky for the screen, from the network when nothing fresh is kept;
+     * null without a place or an answer. Call off the main thread.
+     */
+    static synchronized WeatherTalk.Facts now(Context c) {
+        return facts(c);
+    }
+
+    /**
+     * What was fetched lately and when, as one snapshot, without going to the network;
+     * null when nothing is kept for the chosen place.
+     */
+    static Kept kept(Context c) {
+        Kept k = kept;
+        return k != null && k.place.equals(placeKey(c)) ? k : null;
+    }
+
+    private static String placeKey(Context c) {
+        return sp(c).getString(LAT, "") + "," + sp(c).getString(LON, "");
     }
 
     /** One line from the talk file for a key, picked at random; empty if there is none. */
-    static synchronized String line(Context c, String key) {
+    static String line(Context c, String key) {
         try {
-            if (talk == null) {
-                talk = new WeatherTalk(c.getAssets().open("talk/weather.txt"));
-            }
-            return talk.any(key, new Random());
+            return talk(c).any(key, new Random());
         } catch (IOException e) {
             return "";
         }
@@ -137,12 +180,16 @@ final class Weather {
      * The weather in a few words from what was fetched lately, without going
      * to the network: degrees and sky, then degrees alone. Null when nothing is fresh.
      */
-    static synchronized String[] brief(Context c) {
-        if (cached == null || System.currentTimeMillis() - cachedAt >= FRESH_MS) {
+    static String[] brief(Context c) {
+        Kept k = kept(c);
+        if (k == null || System.currentTimeMillis() - k.at >= FRESH_MS) {
             return null;
         }
-        line(c, "");
-        return talk == null ? null : talk.brief(cached);
+        try {
+            return talk(c).brief(k.facts);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     private static WeatherTalk.Facts facts(Context c) {
@@ -153,20 +200,19 @@ final class Weather {
         }
         String key = lat + "," + lon;
         long now = System.currentTimeMillis();
-        if (cached != null && key.equals(cachedFor) && now - cachedAt < FRESH_MS) {
-            return cached;
+        Kept k = kept;
+        if (k != null && key.equals(k.place) && now - k.at < FRESH_MS) {
+            return k.facts;
         }
         try {
             String url = asset(c, "talk/forecast-url.txt").replace("%lat", lat).replace("%lon", lon);
             WeatherTalk.Facts f = parse(new JSONObject(get(url)));
-            cached = f;
-            cachedAt = now;
-            cachedFor = key;
+            kept = new Kept(f, now, key);
             return f;
         } catch (Exception e) {
             // The kind of failure only: the message of some may carry the address, and with it the place.
             Diag.log(c, "weather: no answer, " + e.getClass().getSimpleName());
-            return cached != null && key.equals(cachedFor) ? cached : null;
+            return k != null && key.equals(k.place) ? k.facts : null;
         }
     }
 
@@ -188,11 +234,30 @@ final class Weather {
             f.minutes = f.hour * 60 + there.get(java.util.Calendar.MINUTE);
         }
         f.isDay = now.optInt("is_day", f.hour >= 7 && f.hour < 19 ? 1 : 0) == 1;
-        JSONArray hours = o.getJSONObject("hourly").getJSONArray("weather_code");
+        JSONObject hourly = o.getJSONObject("hourly");
+        JSONArray hours = hourly.getJSONArray("weather_code");
         int n = Math.max(0, hours.length() - 1);
         f.next = new int[n];
         for (int i = 0; i < n; i++) {
             f.next[i] = hours.optInt(i + 1, f.code);
+        }
+        // Degrees by the hour, for the screen; an answer without them leaves the row empty.
+        JSONArray temps = hourly.optJSONArray("temperature_2m");
+        JSONArray times = hourly.optJSONArray("time");
+        if (temps != null && times != null && temps.length() == hours.length() && times.length() == hours.length()) {
+            int[] deg = new int[n];
+            int[] at = new int[n];
+            try {
+                for (int i = 0; i < n; i++) {
+                    deg[i] = (int) Math.round(temps.optDouble(i + 1, f.temp));
+                    String t = times.optString(i + 1, "");
+                    at[i] = t.length() >= 13 ? Integer.parseInt(t.substring(11, 13)) : (f.hour + i + 1) % 24;
+                }
+                f.nextTemp = deg;
+                f.nextHour = at;
+            } catch (NumberFormatException e) {
+                // An hour that does not read leaves the row empty; the rest of the answer stands.
+            }
         }
         JSONObject d = o.getJSONObject("daily");
         f.high = (int) Math.round(d.getJSONArray("temperature_2m_max").optDouble(0, f.temp));

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.shumtugle.hora"
-    android:versionCode="263"
-    android:versionName="1.0.5">
+    android:versionCode="264"
+    android:versionName="1.1.0">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34"/>
     <!-- Lets the app's own processes talk to each other's receivers, and nobody else. -->
     <permission android:name="com.shumtugle.hora.permission.SELF" android:protectionLevel="signature"/>
@@ -105,6 +105,8 @@
         </receiver>
         <activity android:name=".ShelfActivity" android:exported="false"
             android:label="@string/shelf_title" android:launchMode="singleTop"/>
+        <activity android:name=".DayActivity" android:exported="false"
+            android:label="@string/nav_day" android:launchMode="singleTop"/>
         <activity android:name=".BrainActivity" android:exported="false"
             android:label="@string/brain_title" android:windowSoftInputMode="adjustResize|stateHidden"/>
         <activity android:name=".TalkActivity" android:exported="false"

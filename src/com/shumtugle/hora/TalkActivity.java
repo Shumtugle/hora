@@ -58,6 +58,29 @@ public final class TalkActivity extends Activity {
     /** The talk lasts as long as the app does; nothing of it is written anywhere. */
     private static final List<Line> talk = new ArrayList<Line>();
     private static final int KEPT = 60;
+    /**
+     * The last thing asked and the answer that followed it, for the Day screen; null when nothing
+     * was asked in this run of the app. The question may be empty when only a picture went.
+     */
+    static String[] lastExchange() {
+        for (int i = talk.size() - 1; i >= 0; i--) {
+            if (!talk.get(i).mine) {
+                continue;
+            }
+            // Every answer after it, together: a question about time and weather has two.
+            StringBuilder answer = new StringBuilder();
+            for (int j = i + 1; j < talk.size(); j++) {
+                String t = talk.get(j).text;
+                if (!talk.get(j).mine && !t.isEmpty()) {
+                    answer.append(answer.length() == 0 ? "" : " ").append(t);
+                }
+            }
+            String asked = talk.get(i).text;
+            return asked.isEmpty() && answer.length() == 0 ? null : new String[] {asked, answer.toString()};
+        }
+        return null;
+    }
+
     /** Whether this talk has already offered the AI model; it is offered once, not on every miss. */
     private static boolean offeredModel;
 

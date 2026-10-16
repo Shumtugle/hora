@@ -385,6 +385,20 @@
     <string name="home_greeting">Hello. Now I am speaking.</string>
     <string name="home_no_weather">I do not know the weather yet.</string>
     <string name="nav_voice">Voice</string>
+    <string name="nav_day">Day</string>
+    <string name="day_feels">feels like %s</string>
+    <string name="day_tomorrow">Tomorrow up to %1$s, %2$s</string>
+    <string name="day_talk_on">Continue the talk</string>
+    <string-array name="day_sky">
+        <item>clear</item>
+        <item>partly cloudy</item>
+        <item>overcast</item>
+        <item>fog</item>
+        <item>drizzle</item>
+        <item>rain</item>
+        <item>snow</item>
+        <item>thunderstorm</item>
+    </string-array>
     <string name="nav_book">Book</string>
     <string name="ws_back">Back</string>
     <string name="ws_listen">Listen</string>
@@ -731,7 +745,6 @@
     <string name="talk_mic_failed">The microphone did not open. Try again in a moment.</string>
     <string name="heard_to_field">Spoken words go to the field first</string>
     <string name="heard_to_field_sub">Otherwise they are sent by themselves after a pause.</string>
-    <string name="home_book_none">No book chosen</string>
     <string name="home_on_duty">on duty · %1$s</string>
     <string name="talk_where">Where are we</string>
     <string name="bot_help_chip">What can you do</string>

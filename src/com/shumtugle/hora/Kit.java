@@ -754,9 +754,24 @@ final class Kit {
      * shorter one, and the words under it are never covered.
      */
     static final class Fit extends android.widget.FrameLayout {
+        /** The most height it takes even when more is offered, so a centred column can stand it in the middle; 0 is none. */
+        private int cap;
+
         Fit(Context c) {
             super(c);
             setClipChildren(false);
+        }
+
+        void cap(int px) {
+            cap = px;
+        }
+
+        @Override
+        protected void onMeasure(int w, int h) {
+            super.onMeasure(w, h);
+            if (cap > 0 && getMeasuredHeight() > cap) {
+                setMeasuredDimension(getMeasuredWidth(), cap);
+            }
         }
 
         @Override
