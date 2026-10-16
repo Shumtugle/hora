@@ -22,6 +22,8 @@ final class Intents {
     static final class Hit {
         final String intent;
         final Map<String, String> slots;
+        /** The name the request called a voice by, folded; empty when it named none. */
+        String called = "";
 
         Hit(String intent, Map<String, String> slots) {
             this.intent = intent;
@@ -51,7 +53,8 @@ final class Intents {
     /**
      * @param rows "intent=template" lines
      * @param fillers words dropped at either end of a request (please, well)
-     * @param callnames names a request may open with, dropped at the start only
+     * @param callnames names a voice may be called by: dropped at the start, or anywhere when the
+     *        sentence fits no template with it ("read, Nix", "read Nix, you yourself")
      * @param numbers "value=stem|stem" lines for numbers said in words
      */
     Intents(String[] rows, String[] fillers, String[] callnames, String[] numbers) {
@@ -156,15 +159,53 @@ final class Intents {
 
     /** The sentence as templates see it: lower case, yo as ye, no punctuation, no fillers at the ends. */
     String clean(String text) {
+        return clean(text, false)[0];
+    }
+
+    /**
+     * The sentence cleaned, and the name it called a voice by. A name in front is always dropped,
+     * and is only an address ("Hora, go on"), never a choice of voice. With anywhere set, the name
+     * that comes first among the words is dropped wherever it stands, and that one is the choice.
+     */
+    private String[] clean(String text, boolean anywhere) {
         String t = fold(text);
         t = NOT_WORD.matcher(t).replaceAll(" ");
         t = SPACES.matcher(t).replaceAll(" ").trim();
         List<String> names = new ArrayList<String>(ownNames);
         names.addAll(callnames);
-        for (String n : names) {
-            if (t.startsWith(n + " ")) {
-                t = t.substring(n.length() + 1).trim();
-                break;
+        String called = "";
+        // Fillers may stand before the address ("well, Hora, go on"): both come off the front, in turns.
+        boolean front = true;
+        while (front && !t.isEmpty()) {
+            front = false;
+            for (String f : fillers) {
+                if (t.startsWith(f + " ")) {
+                    t = t.substring(f.length() + 1).trim();
+                    front = true;
+                }
+            }
+            for (String n : names) {
+                if (t.startsWith(n + " ")) {
+                    t = t.substring(n.length() + 1).trim();
+                    front = true;
+                    break;
+                }
+            }
+        }
+        if (anywhere) {
+            String padded = " " + t + " ";
+            int first = -1;
+            for (String n : names) {
+                int at = padded.indexOf(" " + n + " ");
+                // The earliest name wins; at the same place, the longer one ("Tea Rose" over "Tea").
+                if (at >= 0 && (first < 0 || at < first || (at == first && n.length() > called.length()))) {
+                    first = at;
+                    called = n;
+                }
+            }
+            if (first >= 0) {
+                t = (padded.substring(0, first) + " " + padded.substring(first + called.length() + 2)).trim();
+                t = SPACES.matcher(t).replaceAll(" ");
             }
         }
         boolean changed = true;
@@ -172,7 +213,7 @@ final class Intents {
             changed = false;
             for (String f : fillers) {
                 if (t.equals(f)) {
-                    return "";
+                    return new String[] {"", called};
                 }
                 if (t.startsWith(f + " ")) {
                     t = t.substring(f.length() + 1).trim();
@@ -184,12 +225,37 @@ final class Intents {
                 }
             }
         }
-        return t;
+        return new String[] {t, called};
     }
 
-    /** The first intent whose template fits the whole sentence, or null. Number slots must read as numbers. */
+    /** The sentence with any voice's name taken out of it, for telling a command from talk. */
+    String bare(String text) {
+        return clean(text, true)[0];
+    }
+
+    /**
+     * The first intent whose template fits the whole sentence, or null. Number slots must read as
+     * numbers. The sentence is tried as said first, so "let Nix read" keeps its name in the slot;
+     * only then without a voice's name standing anywhere in it.
+     */
     Hit match(String text) {
-        String t = clean(text);
+        String[] plain = clean(text, false);
+        Hit hit = fit(plain[0]);
+        if (hit != null) {
+            return hit;
+        }
+        String[] loose = clean(text, true);
+        if (loose[0].equals(plain[0])) {
+            return null;
+        }
+        hit = fit(loose[0]);
+        if (hit != null) {
+            hit.called = loose[1];
+        }
+        return hit;
+    }
+
+    private Hit fit(String t) {
         if (t.isEmpty()) {
             return null;
         }

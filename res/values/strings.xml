@@ -399,16 +399,16 @@
     <string name="portraits_note">ChatGPT</string>
     <string name="fonts">Fonts</string>
     <string-array name="voice_titles">
-        <item>assistant</item>
-        <item>assistant</item>
-        <item>assistant</item>
-        <item>assistant</item>
-        <item>assistant</item>
-        <item>assistant</item>
-        <item>assistant</item>
+        <item>companion</item>
+        <item>companion</item>
+        <item>companion</item>
+        <item>companion</item>
+        <item>companion</item>
+        <item>companion</item>
+        <item>companion</item>
         <!-- The eighth voice left the troupe. -->
         <item></item>
-        <item>assistant</item>
+        <item>companion</item>
     </string-array>
     <string-array name="voice_kinds">
         <item>female · main</item>
@@ -679,6 +679,9 @@
     <string-array name="bot_intents"/>
     <string-array name="bot_fillers"/>
     <string-array name="bot_callnames"/>
+    <string-array name="bot_command_words"/>
+    <string-array name="bot_self_reader"/>
+    <string-array name="bot_reader_scraps"/>
     <string-array name="bot_numbers"/>
     <string-array name="bot_say_help"/>
     <string-array name="bot_say_hello"/>
@@ -778,7 +781,7 @@
     <string name="lab_air">Air</string>
     <string name="lab_none">none</string>
     <string name="lab_much">much</string>
-    <string name="brain_rules">%3$s You are %1$s, %2$s in a book app. You speak to the user informally. You answer in one or two short sentences, without lists or exclamations. You do not invent facts: if you do not know, you say so. You do not promise actions: the app handles the book, timers and weather, not you. Only when plainly asked to translate (“how do you say”, “translate”) you answer with the translation itself; a question in another language is not a request to translate.</string>
+    <string name="brain_rules">%3$s You are %1$s, a %2$s. People simply talk with you: you are someone to talk to, not an assistant. You speak to the user informally. You answer in one or two short sentences, without lists or exclamations. You do not invent facts: if you do not know, you say so. You do nothing and promise nothing: asked to do something, you say briefly that you cannot. You do not make up a past for yourself. Only when plainly asked to translate (“how do you say”, “translate”) you answer with the translation itself; a question in another language is not a request to translate.</string>
     <string-array name="brain_manner">
         <item>You are calm, warm and brief.</item>
         <item>You are lively, attentive, gently ironic.</item>

@@ -835,16 +835,16 @@
     <string name="portraits_note">ChatGPT</string>
     <string name="fonts">Шрифты</string>
     <string-array name="voice_titles">
-        <item>помощница</item>
-        <item>помощница</item>
-        <item>помощник</item>
-        <item>помощник</item>
-        <item>помощник</item>
-        <item>помощница</item>
-        <item>помощник</item>
+        <item>собеседница</item>
+        <item>собеседница</item>
+        <item>собеседник</item>
+        <item>собеседник</item>
+        <item>собеседник</item>
+        <item>собеседница</item>
+        <item>собеседник</item>
         <!-- The eighth voice left the troupe. -->
         <item></item>
-        <item>помощница</item>
+        <item>собеседница</item>
     </string-array>
     <string-array name="voice_kinds">
         <item>женский · главный</item>
@@ -1433,6 +1433,7 @@
         <item>date=([а] (какое|какой) [сегодня] (число|день|день недели)|[какая] [сегодня] дата|[скажи] (дату|число))</item>
         <item>weather=([а] [какая|как] [сегодня|сейчас|там] погода [сегодня|сейчас|на улице|там|на завтра|завтра]|[а] что [сейчас|там] с погодой|что (на улице|за окном)|[нужен|брать] зонт|[скажи|расскажи] [про] погоду|[а] (холодно|тепло|жарко) [ли] [сейчас] [на улице]|[будет] (дождь|снег) [будет|сегодня|завтра]|какая погода [будет] завтра|(what is|how is) the weather [like] [today|now|outside]|weather (today|now))</item>
         <item>pause=(стоп|пауза|хватит|стой|остановись|замолчи|помолчи|тише|подожди|погоди|останови [чтение]|поставь на паузу)</item>
+        <item>read_self=((почитай|читай|читать|почитаешь) [мне] [книгу] (ты сама|ты сам|сама|сам|ты) [мне] [книгу]|(ты сама|ты сам|сама|сам|ты) (почитай|читай|почитаешь) [мне] [книгу]|почитаешь [мне] [книгу])</item>
         <item>read=(читай|читать|почитай [мне]|продолжи|продолжай|читай дальше|продолжи (чтение|читать)|дальше читай|читай книгу|включи книгу|начни читать|давай читать|поехали)</item>
         <item>next_chapter=((следующая|следующую) глав(а|у)|[перейди к|на|открой|читай] (следующей|следующую) глав(е|у)|глава дальше)</item>
         <item>prev_chapter=((предыдущая|предыдущую|прошлая|прошлую) глав(а|у)|[вернись|перейди] (к|на) (предыдущей|предыдущую|прошлой|прошлую) глав(е|у))</item>
@@ -1451,7 +1452,8 @@
         <item>sleep=[почитай|читай] [еще] {n} (минут|минуты|минуту)</item>
         <item>faster=([читай|говори] (быстрее|побыстрее|живее|бодрее))</item>
         <item>slower=([читай|говори] (медленнее|помедленнее|не спеши|не торопись|спокойнее))</item>
-        <item>voice=((пусть|теперь) (читает|почитает|говорит) {q}|(дай|включи|позови) {q}|голос {q}|смени голос на {q})</item>
+        <item>reader=((пусть|теперь) (читает|почитает) [книгу] {q}|пусть {q} (читает|почитает) [книгу]|книгу (читает|почитает) {q})</item>
+        <item>voice=((пусть|теперь) говорит {q}|(дай|включи|позови) {q}|голос {q}|смени голос на {q})</item>
         <item>other_voice=((другой|смени|поменяй) голос|смени чтеца|другой чтец)</item>
     </string-array>
     <!-- Words dropped at the ends of a request: politeness and a voice called by name. -->
@@ -1463,7 +1465,7 @@
         <item>эй</item>
         <item>так</item>
     </string-array>
-    <!-- Names a request may open with, as when calling someone: dropped at the start only. -->
+    <!-- Names a voice is called by: dropped at the start, or anywhere when the request fits no template with it. -->
     <string-array name="bot_callnames">
         <item>hora</item>
         <item>хора</item>
@@ -1474,6 +1476,11 @@
         <item>садко</item>
         <item>орлов</item>
         <item>дима</item>
+        <item>тея</item>
+        <item>касс</item>
+        <item>никс</item>
+        <item>марк</item>
+        <item>клер</item>
     </string-array>
     <!-- Numbers said in words, by stem; ordinals too ("пятую главу"). -->
     <string-array name="bot_numbers">
@@ -1507,7 +1514,7 @@
         <item>100=сто|сотн</item>
     </string-array>
     <string-array name="bot_say_help">
-        <item>Могу читать книгу: «читай», «стоп», «дальше», «назад», «где мы», «глава пять», «найди сад». Могу почитать тебе перед сном: «почитай ещё двадцать минут». Скажу время, число и погоду. И можно попросить другой голос: «пусть читает Тея».</item>
+        <item>Могу читать книгу: «читай», «стоп», «дальше», «назад», «где мы», «глава пять», «найди сад». Могу почитать тебе перед сном: «почитай ещё двадцать минут». Скажу время, число и погоду. Книгу может читать другой голос: «пусть читает Тея» или «почитай ты». А поговорить с другим — «позови Никс».</item>
     </string-array>
     <string-array name="bot_say_hello">
         <item>Здравствуй.</item>
@@ -1570,10 +1577,78 @@
         <item>Дальше не пойду, это предел.</item>
     </string-array>
     <string-array name="bot_say_voice">
-        <item>Теперь читаю я, {voice}.</item>
+        <item>Теперь говорю я, {voice}.</item>
     </string-array>
     <string-array name="bot_say_no_voice">
         <item>Я не знаю такого голоса. Есть {names}.</item>
+    </string-array>
+    <!-- "Let ... read" said of the voice itself. -->
+    <string-array name="bot_self_reader">
+        <item>сама</item>
+        <item>сам</item>
+        <item>ты</item>
+        <item>ты сама</item>
+        <item>ты сам</item>
+    </string-array>
+    <!-- "Let ... read" with no name in it: the one reading now goes on. -->
+    <string-array name="bot_reader_scraps">
+        <item>книгу</item>
+        <item>книжку</item>
+        <item>ее</item>
+        <item>его</item>
+        <item>дальше</item>
+    </string-array>
+    <string-array name="bot_say_read_by">
+        <item>{voice} читает «{book}».</item>
+    </string-array>
+    <string-array name="bot_say_reader">
+        <item>Теперь книгу читает {voice}.</item>
+    </string-array>
+    <string-array name="bot_say_not_command">
+        <item>Так я не умею. Скажи проще: «читай», «стоп», «пусть читает Тея» — или спроси, что я умею.</item>
+    </string-array>
+    <!-- First words of a request for an action: one that fits no template gets an honest "cannot", not the model. -->
+    <string-array name="bot_command_words">
+        <item>включи</item>
+        <item>выключи</item>
+        <item>включить</item>
+        <item>выключить</item>
+        <item>вруби</item>
+        <item>выруби</item>
+        <item>поставь</item>
+        <item>запусти</item>
+        <item>открой</item>
+        <item>закрой</item>
+        <item>позвони</item>
+        <item>набери</item>
+        <item>отправь</item>
+        <item>напомни</item>
+        <item>разбуди</item>
+        <item>создай</item>
+        <item>удали</item>
+        <item>добавь</item>
+        <item>убавь</item>
+        <item>прибавь</item>
+        <item>увеличь</item>
+        <item>уменьши</item>
+        <item>читай</item>
+        <item>читать</item>
+        <item>почитай</item>
+        <item>прочитай</item>
+        <item>прочти</item>
+        <item>перейди</item>
+        <item>переключи</item>
+        <item>останови</item>
+        <item>продолжи</item>
+        <item>смени</item>
+        <item>поменяй</item>
+        <item>верни</item>
+        <item>перемотай</item>
+        <item>промотай</item>
+        <item>скачай</item>
+        <item>загрузи</item>
+        <item>установи</item>
+        <item>настрой</item>
     </string-array>
     <string-array name="bot_say_unknown">
         <item>Этого я пока не умею. Спроси «что ты умеешь».</item>
@@ -1699,7 +1774,7 @@
     <string name="lab_none">нет</string>
     <string name="lab_much">много</string>
     <!-- The small model's instruction: the rules every voice keeps, then each voice's own manner. -->
-    <string name="brain_rules">%3$s Ты — %1$s, %2$s в книжном приложении. Говоришь по-русски и обращаешься на «ты». Отвечаешь одним-двумя короткими предложениями, от себя, своими словами, не повторяя ни вопрос, ни свои прежние ответы. Без списков и восклицаний. Только если прямо просят перевести («как по-английски», «переведи»), отвечаешь самим переводом: «По-английски — …»; вопрос на другом языке — не просьба о переводе, на него отвечаешь по-русски по сути. Не называешь дат, чисел, времени, погоды и фактов о мире и не даёшь советов о здоровье: об этом говорит приложение, а не ты. Не обещаешь действий.</string>
+    <string name="brain_rules">%3$s Ты — %1$s, %2$s. С тобой просто разговаривают и ничего тебе не поручают. Говоришь по-русски и обращаешься на «ты». Отвечаешь одним-двумя короткими предложениями, от себя, своими словами, не повторяя ни вопрос, ни свои прежние ответы. Без списков и восклицаний. Только если прямо просят перевести («как по-английски», «переведи»), отвечаешь самим переводом: «По-английски — …»; вопрос на другом языке — не просьба о переводе, на него отвечаешь по-русски по сути. Не называешь дат, чисел, времени, погоды и фактов о мире и не даёшь советов о здоровье. Ничего не делаешь и не обещаешь сделать: если просят о деле, коротко скажи, что этого не умеешь. Не выдумываешь, что было с тобой раньше.</string>
     <string-array name="brain_manner">
         <item>Ты женщина (она): глаголы о себе в прошедшем времени у тебя кончаются на -ла. Ты спокойная, тёплая и немногословная.</item>
         <item>Ты женщина (она): глаголы о себе в прошедшем времени у тебя кончаются на -ла. Ты живая, внимательная, с мягкой иронией.</item>

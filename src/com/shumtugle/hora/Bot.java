@@ -159,6 +159,11 @@ final class Bot {
             Diag.log(c, "bot: a question for the reference");
             return new Answer(FACT, line(r, "fact"), voice);
         }
+        if (hit == null && isCommand(r, text)) {
+            // A request to do something no skill does: said so plainly; the small model would only pretend.
+            Diag.log(c, "bot: a command it cannot do");
+            return new Answer(SAY, line(r, "not_command"), voice);
+        }
         if (hit == null) {
             Diag.log(c, "bot: no intent");
             return looksLikeQuestion(r, text) ? new Answer(UNKNOWN, line(r, "unknown"), voice)
@@ -169,12 +174,12 @@ final class Bot {
         for (java.util.Map.Entry<String, String> e : hit.slots.entrySet()) {
             slotShape.append(' ').append(e.getKey()).append('=').append(e.getValue() == null ? 0 : e.getValue().length());
         }
-        Diag.log(c, "bot: " + hit.intent + slotShape);
+        Diag.log(c, "bot: " + hit.intent + slotShape + (hit.called.isEmpty() ? "" : " called"));
         chapterName(c, "");
         String uri = Reading.uri(c);
         Library.Entry book = uri.isEmpty() ? null : Library.get(c, uri);
         String title = book != null ? bookTitle(book) : Reading.title(c);
-        boolean bookNeeded = hit.intent.equals("read") || hit.intent.equals("pause") || hit.intent.equals("next")
+        boolean bookNeeded = hit.intent.equals("read") || hit.intent.equals("read_self") || hit.intent.equals("pause") || hit.intent.equals("next")
                 || hit.intent.equals("prev") || hit.intent.equals("where") || hit.intent.startsWith("chapter")
                 || hit.intent.endsWith("_chapter") || hit.intent.equals("search") || hit.intent.startsWith("sleep");
         if (bookNeeded && uri.isEmpty()) {
@@ -202,8 +207,41 @@ final class Bot {
             case "thanks":
                 return new Answer(SAY, line(r, hit.intent), voice);
             case "read":
+            case "read_self": {
+                // "Read, Nix" gives the book to Nix; "you read it yourself" to the voice that answers.
+                int called = hit.called.isEmpty() ? 0 : voiceByName(c, hit.called);
+                int reader = called > 0 ? called : hit.intent.equals("read_self") ? voice : 0;
+                if (reader > 0 && reader != Prefs.role(c, Cast.NARRATOR)) {
+                    Prefs.setRole(c, Cast.NARRATOR, reader);
+                }
                 player(c, BookPlayer.ACTION_PLAY, -1);
-                return new Answer(SAY, line(r, "read", "book", title), voice).done(title);
+                int now = Prefs.role(c, Cast.NARRATOR);
+                String said = now == voice ? line(r, "read", "book", title)
+                        : line(r, "read_by", "voice", Cast.spokenName(c, now), "book", title);
+                return new Answer(SAY, said, voice).done(title + (now == voice ? "" : DOT + Cast.name(c, now)));
+            }
+            case "reader": {
+                // A choice of reader stands with no book open too; the book plays only if there is one.
+                String q = Intents.fold(hit.slot("q")).trim();
+                // "Let her read" leaves a scrap of a word for a name: the one reading now goes on.
+                int v = isAny(r, R.array.bot_self_reader, q) ? voice
+                        : q.length() < 3 || isAny(r, R.array.bot_reader_scraps, q) ? Prefs.role(c, Cast.NARRATOR)
+                        : voiceByName(c, q);
+                if (v <= 0) {
+                    return new Answer(SAY, line(r, "no_voice", "names", troupe(c, r)), voice);
+                }
+                if (v != Prefs.role(c, Cast.NARRATOR)) {
+                    Prefs.setRole(c, Cast.NARRATOR, v);
+                }
+                if (uri.isEmpty()) {
+                    return new Answer(SAY, line(r, "reader", "voice", Cast.spokenName(c, v)), voice)
+                            .done(Cast.name(c, v));
+                }
+                player(c, BookPlayer.ACTION_PLAY, -1);
+                String said = v == voice ? line(r, "read", "book", title)
+                        : line(r, "reader", "voice", Cast.spokenName(c, v));
+                return new Answer(SAY, said, voice).done(title + DOT + Cast.name(c, v));
+            }
             case "pause":
                 player(c, BookPlayer.ACTION_PAUSE, -1);
                 return new Answer(SAY, line(r, "pause"), voice).done(title + DOT + r.getString(R.string.bot_trace_pause));
@@ -265,7 +303,9 @@ final class Bot {
                 int v = hit.intent.equals("other_voice") ? Cast.at((Cast.place(voice) + 1) % Cast.size(c))
                         : voiceByName(c, hit.slot("q"));
                 if (v <= 0) {
-                    return new Answer(SAY, line(r, "no_voice", "names", troupe(c, r)), voice);
+                    // "Turn on the light" fits "turn on {voice}"; with no such voice it was a request, not a name.
+                    return new Answer(SAY, isCommand(r, text) ? line(r, "not_command")
+                            : line(r, "no_voice", "names", troupe(c, r)), voice);
                 }
                 return new Answer(VOICE, line(r, "voice", "voice", Cast.spokenName(c, v)), v);
             }
@@ -369,12 +409,26 @@ final class Bot {
         if (s.length() < 3) {
             return 0;
         }
-        for (int at = 0; at < Cast.size(c); at++) {
-            int v = Cast.at(at);
-            String name = Intents.fold(Cast.name(c, v));
-            int k = Math.min(4, Math.min(name.length(), s.length()));
-            if (s.regionMatches(0, name, 0, k)) {
-                return v;
+        // The name on screen first (the person's own, if given), then the one the voice came with
+        // in the speech language: a screen in English still hears "Nix" said in Russian.
+        for (int pass = 0; pass < 2; pass++) {
+            for (int at = 0; at < Cast.size(c); at++) {
+                int v = Cast.at(at);
+                String name = Intents.fold(pass == 0 ? Cast.name(c, v) : Cast.say(c, R.array.voice_names, v));
+                if (name.isEmpty()) {
+                    continue;
+                }
+                int k = Math.min(4, Math.min(name.length(), s.length()));
+                if (s.regionMatches(0, name, 0, k)) {
+                    return v;
+                }
+                // The name in another case, its ending changed ("call Dima" said with Dima declined).
+                String w = s.split(" ")[0];
+                String stem = name.substring(0, name.length() - 1);
+                if (stem.length() >= 2 && !name.contains(" ") && w.startsWith(stem)
+                        && Math.abs(w.length() - name.length()) <= 1) {
+                    return v;
+                }
             }
         }
         return 0;
@@ -504,6 +558,37 @@ final class Bot {
         }
         for (String w : r.getStringArray(R.array.bot_fact_words)) {
             if (t.contains(w)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Opens with a word asking for an action ("turn on", "call", "read"), names and fillers aside. */
+    private static boolean isCommand(Resources r, String text) {
+        String t = intents(r).bare(text);
+        if (t.isEmpty() || text.trim().endsWith("?")) {
+            return false;
+        }
+        // About the voice itself ("remind me what your name is"): that is talk.
+        String padded = " " + t + " ";
+        for (String w : r.getStringArray(R.array.bot_self_words)) {
+            if (padded.contains(" " + Intents.fold(w) + " ")) {
+                return false;
+            }
+        }
+        String first = t.split(" ")[0];
+        for (String w : r.getStringArray(R.array.bot_command_words)) {
+            if (first.equals(Intents.fold(w))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isAny(Resources r, int array, String folded) {
+        for (String w : r.getStringArray(array)) {
+            if (folded.equals(Intents.fold(w))) {
                 return true;
             }
         }
