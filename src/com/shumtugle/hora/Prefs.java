@@ -353,6 +353,17 @@ final class Prefs {
     private static final String GRIM_AIR = "grim_air_";
     private static final String OWN_TEMPO = "own_tempo_";
     private static final String PHONE_VOICE = "phone_voice";
+    private static final String PHONE_ENGINE = "phone_engine";
+
+    /** The phone's speech engine chosen for the phone's voice, by package; empty lets Hora pick. */
+    @SuppressWarnings("deprecation")
+    static String phoneEngineShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getString(PHONE_ENGINE, "");
+    }
+
+    static void setPhoneEngine(Context c, String pkg) {
+        sp(c).edit().putString(PHONE_ENGINE, pkg == null ? "" : pkg).commit();
+    }
 
     /** Whether the bot's replies and the words in the headphones are said by the phone's own engine. */
     static boolean phoneVoice(Context c) {

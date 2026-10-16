@@ -26,6 +26,90 @@ public final class SettingsActivity extends Activity {
     private LinearLayout beta;
     private View allRow;
 
+    private View engineRow;
+    private View engineLine;
+    /** The open sheet of engines: opened once at a time, so engines are not started twice over. */
+    private android.app.Dialog engineDialog;
+
+    /** Shows the row of the phone's engine with the one that speaks now, or hides it. */
+    private void showEngineRow() {
+        java.util.List<String> all = SpareVoice.engines(this);
+        boolean show = Prefs.phoneVoice(this) && !all.isEmpty();
+        engineRow.setVisibility(show ? View.VISIBLE : View.GONE);
+        engineLine.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (show) {
+            String now = SpareVoice.engine(this);
+            ((TextView) engineRow.getTag()).setText(now == null ? "" : SpareVoice.label(this, now));
+        }
+    }
+
+    /** Every engine of the phone, each checked for a voice in the speech language; one is chosen. */
+    private void engineSheet() {
+        if (engineDialog != null && engineDialog.isShowing()) {
+            return;
+        }
+        final java.util.List<String> all = SpareVoice.engines(this);
+        String now = SpareVoice.engine(this);
+        LinearLayout list = Ui.column(this);
+        final android.app.Dialog[] sheet = new android.app.Dialog[1];
+        final java.util.Map<String, LinearLayout> rows = new java.util.HashMap<String, LinearLayout>();
+        for (int i = 0; i < all.size(); i++) {
+            final String pkg = all.get(i);
+            if (i > 0) {
+                list.addView(Kit.divider(this));
+            }
+            LinearLayout row = Ui.column(this);
+            row.setPadding(dp(16), dp(10), dp(16), dp(10));
+            row.setMinimumHeight(dp(56));
+            TextView name = Ui.text(this, SpareVoice.label(this, pkg), 17,
+                    pkg.equals(now) ? Palette.ACCENT_TEXT : Palette.INK);
+            row.addView(name);
+            TextView state = Ui.text(this, getString(R.string.phone_engine_checking), 13, Palette.MUTED);
+            row.addView(state);
+            row.setTag(state);
+            row.setBackground(Ui.pressable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)));
+            // Chosen only once it is known to speak the language: a voice that says nothing is no choice.
+            row.setEnabled(false);
+            row.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!v.isEnabled()) {
+                        return;
+                    }
+                    Prefs.setPhoneEngine(SettingsActivity.this, pkg);
+                    Diag.mark(SettingsActivity.this, "settings: phone engine " + pkg);
+                    showEngineRow();
+                    if (sheet[0] != null) {
+                        sheet[0].dismiss();
+                    }
+                }
+            });
+            rows.put(pkg, row);
+            list.addView(row, Ui.lp(Ui.MATCH, Ui.WRAP));
+        }
+        sheet[0] = Kit.liveSheet(this, getString(R.string.phone_engine), list);
+        engineDialog = sheet[0];
+        SpareVoice.check(this, all, new SpareVoice.Checked() {
+            @Override
+            public void checked(final String pkg, final int has) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        LinearLayout row = rows.get(pkg);
+                        if (row == null || isFinishing()) {
+                            return;
+                        }
+                        TextView state = (TextView) row.getTag();
+                        state.setText(getString(has > 0 ? R.string.phone_engine_has
+                                : has == 0 ? R.string.phone_engine_lacks : R.string.phone_engine_silent));
+                        state.setTextColor(has > 0 ? Palette.MUTED : Palette.HINT);
+                        row.setEnabled(has > 0);
+                    }
+                });
+            }
+        });
+    }
+
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -86,8 +170,21 @@ public final class SettingsActivity extends Activity {
                     public void flipped(boolean on) {
                         Prefs.setPhoneVoice(SettingsActivity.this, on);
                         Diag.mark(SettingsActivity.this, "settings: phone voice " + (on ? "on" : "off"));
+                        showEngineRow();
                     }
                 }));
+        // Which of the phone's engines speaks: only where there is a choice to make, and only while
+        // the phone's voice is on. Hora itself is never in the list.
+        engineRow = Kit.rowNav(this, getString(R.string.phone_engine), "", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                engineSheet();
+            }
+        });
+        engineLine = Kit.divider(this);
+        voices.addView(engineLine);
+        voices.addView(engineRow);
+        showEngineRow();
         voices.addView(Kit.divider(this));
         // What the microphone heard goes out by itself after a pause, unless asked to wait in the field.
         voices.addView(Kit.rowToggle(this, getString(R.string.heard_to_field), getString(R.string.heard_to_field_sub),
@@ -521,6 +618,10 @@ public final class SettingsActivity extends Activity {
         }
         showDeveloper();
         showEverything();
+        if (engineRow != null) {
+            // The phone's speech settings may have changed meanwhile.
+            showEngineRow();
+        }
     }
 
     /** Character and the fine reading settings: in sight only while the developer room is open. */

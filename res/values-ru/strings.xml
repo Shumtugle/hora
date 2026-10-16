@@ -1673,6 +1673,11 @@
     <string name="phone_voice">Голос телефона</string>
     <string name="phone_voice_sub">Для разговора и уведомлений: быстрее, но не голосом Hora. Книги читают голоса Hora.</string>
     <string name="phone_voice_none">В телефоне нет другого движка речи: говорят голоса Hora.</string>
+    <string name="phone_engine">Чей голос</string>
+    <string name="phone_engine_checking">проверяю…</string>
+    <string name="phone_engine_has">говорит по-русски</string>
+    <string name="phone_engine_lacks">нет русского голоса</string>
+    <string name="phone_engine_silent">не запускается</string>
     <string name="voices_demo_other">Другая книга: «%1$s»</string>
     <string name="voices_demo_note">читает «%1$s» с того места, где остановились</string>
     <string name="lab_character">Характер</string>

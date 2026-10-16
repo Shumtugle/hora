@@ -33,8 +33,6 @@ final class SpareVoice {
             return "";
         }
     };
-    /** Said once per process: the engine has no voice for the language. */
-    private static boolean langTold;
     /** The engine and language last found without a voice: later phrases skip straight past it. */
     private static volatile String voiceless = "";
     static final String CALLED_OFF = "called off";
@@ -45,9 +43,17 @@ final class SpareVoice {
     private SpareVoice() {
     }
 
-    /** The engine to use: the phone's default unless that is this app, then any other; null if none. */
+    /**
+     * The engine to use: the one the person chose, while it is on the phone; otherwise the phone's
+     * default unless that is this app, then any other; null if none.
+     */
     static String engine(Context c) {
         String own = c.getPackageName();
+        String picked = Prefs.phoneEngineShared(c);
+        if (!picked.isEmpty() && !picked.equals(own)
+                && !c.getPackageManager().queryIntentServices(new Intent(SERVICE).setPackage(picked), 0).isEmpty()) {
+            return picked;
+        }
         String chosen = Settings.Secure.getString(c.getContentResolver(), Settings.Secure.TTS_DEFAULT_SYNTH);
         if (chosen != null && !chosen.isEmpty() && !chosen.equals(own)) {
             return chosen;
@@ -59,6 +65,81 @@ final class SpareVoice {
             }
         }
         return null;
+    }
+
+    /** Every speech engine on the phone other than this app, by package, in the system's order. */
+    static List<String> engines(Context c) {
+        String own = c.getPackageName();
+        List<String> out = new java.util.ArrayList<String>();
+        for (ResolveInfo r : c.getPackageManager().queryIntentServices(new Intent(SERVICE), 0)) {
+            if (r.serviceInfo != null && !own.equals(r.serviceInfo.packageName)
+                    && !out.contains(r.serviceInfo.packageName)) {
+                out.add(r.serviceInfo.packageName);
+            }
+        }
+        return out;
+    }
+
+    /** An engine's name as the phone shows it. */
+    static String label(Context c, String pkg) {
+        try {
+            android.content.pm.PackageManager pm = c.getPackageManager();
+            return pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString();
+        } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+            return pkg;
+        }
+    }
+
+    /** Hears whether an engine has a voice for the speech language. */
+    interface Checked {
+        /** has: 1 a voice, 0 none, -1 the engine did not start. Called on a background thread. */
+        void checked(String pkg, int has);
+    }
+
+    /**
+     * Starts each engine in turn, off the main thread, asks it about the speech language and lets
+     * it go. Slow on purpose: one at a time, so the phone is not asked to start them all at once.
+     */
+    static void check(final Context c, final List<String> pkgs, final Checked to) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (String pkg : pkgs) {
+                    to.checked(pkg, hasLanguage(c.getApplicationContext(), pkg));
+                }
+            }
+        }, "spare-voice-check").start();
+    }
+
+    private static int hasLanguage(Context c, String pkg) {
+        final CountDownLatch ready = new CountDownLatch(1);
+        final int[] status = {TextToSpeech.ERROR};
+        TextToSpeech tts = null;
+        try {
+            tts = new TextToSpeech(c, new TextToSpeech.OnInitListener() {
+                @Override
+                public void onInit(int s) {
+                    status[0] = s;
+                    ready.countDown();
+                }
+            }, pkg);
+            if (!ready.await(8, TimeUnit.SECONDS) || status[0] != TextToSpeech.SUCCESS) {
+                return -1;
+            }
+            // Asked the way speaking asks: an engine may say a language is there and still refuse to
+            // speak it when it is set (its voice not on the phone).
+            int r = tts.setLanguage(SpeechLanguage.locale());
+            return r == TextToSpeech.LANG_MISSING_DATA || r == TextToSpeech.LANG_NOT_SUPPORTED ? 0 : 1;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return -1;
+        } catch (RuntimeException e) {
+            return -1;
+        } finally {
+            if (tts != null) {
+                tts.shutdown();
+            }
+        }
     }
 
     /**
@@ -283,8 +364,7 @@ final class SpareVoice {
             int lang = tts.setLanguage(SpeechLanguage.locale());
             if (lang == TextToSpeech.LANG_MISSING_DATA || lang == TextToSpeech.LANG_NOT_SUPPORTED) {
                 // The engine has no voice for the language on this phone: it would say nothing.
-                if (!langTold) {
-                    langTold = true;
+                if (!voiceless.startsWith(engine + "|")) {
                     Diag.mark(c, "spare voice: " + engine + " has no voice for the language, " + lang);
                 }
                 failure.set("no voice for the language");
