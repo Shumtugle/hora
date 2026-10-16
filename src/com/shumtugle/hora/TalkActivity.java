@@ -10,7 +10,6 @@ import android.os.Looper;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -25,8 +24,8 @@ import java.util.List;
 
 /**
  * The talk, as a room: the voice on duty at the top, what was said below it
- * (hers on the left, yours on the right, the newest at the bottom), ready
- * requests as a strip, and the line to write in. What she did is shown under
+ * (hers on the left, yours on the right, the newest at the bottom), and the
+ * line to write or speak in. What she did is shown under
  * her answer, so an answer is never mistaken for a promise.
  */
 public final class TalkActivity extends Activity {
@@ -123,13 +122,11 @@ public final class TalkActivity extends Activity {
         voice = Prefs.role(this, Cast.TALK);
         setContentView(build());
         takeShared(getIntent());
-        if (talk.isEmpty()) {
-            // The voice opens with what it can do here, in its own words.
-            add(new Line(false, Cast.say(this, R.array.voice_talk_open, voice), ""));
-        } else {
-            for (Line l : talk) {
-                lines.addView(bubble(l));
-            }
+        // A new talk opens empty: the person speaks first. Time, weather and the book live on the Day.
+        for (Line l : talk) {
+            lines.addView(bubble(l));
+        }
+        if (!talk.isEmpty()) {
             toBottom();
         }
     }
@@ -204,33 +201,6 @@ public final class TalkActivity extends Activity {
         LinearLayout.LayoutParams sp = new LinearLayout.LayoutParams(Ui.MATCH, 0, 1f);
         sp.topMargin = dp(10);
         root.addView(scroll, sp);
-
-        // Ready requests: a touch sends one as if it was written. They wrap onto a
-        // second line rather than run past the edge, so every one of them is in sight.
-        Kit.Flow chips = new Kit.Flow(this, 8);
-        int[] ready = {R.string.home_time, R.string.home_weather, R.string.book_play, R.string.talk_where,
-                R.string.bot_help_chip};
-        // A button means one thing whatever the screen's language: its label shows in the talk,
-        // and the same request in the language the voice understands goes to the bot.
-        android.content.res.Resources voiceWords = SpeechLanguage.resources(this);
-        for (int k = 0; k < ready.length; k++) {
-            final String said = getString(ready[k]);
-            final String meant = voiceWords.getString(ready[k]);
-            TextView chip = Ui.pill(this, said, Palette.SURFACE, Palette.LINE, Palette.INK, false);
-            chip.setPadding(dp(16), 0, dp(16), 0);
-            chip.setMinHeight(dp(40));
-            chip.setGravity(Gravity.CENTER);
-            chip.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    send(said, meant);
-                }
-            });
-            chips.addView(chip, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
-        }
-        LinearLayout.LayoutParams stp = Ui.lp(Ui.MATCH, Ui.WRAP);
-        stp.topMargin = dp(10);
-        root.addView(chips, stp);
 
         LinearLayout line = Ui.row(this);
         line.setGravity(Gravity.CENTER_VERTICAL);
@@ -595,12 +565,7 @@ public final class TalkActivity extends Activity {
 
     /** A request: your line, then hers, spoken in her voice, with what was done under it. */
     private void send(String text) {
-        send(text, text);
-    }
-
-    /** A request shown as one line and understood as another: a button's label and its meaning. */
-    private void send(String shown, String text) {
-        add(new Line(true, shown, ""));
+        add(new Line(true, text, ""));
         Bot.Answer a = Bot.handle(this, text, voice);
         switch (a.kind) {
             case Bot.TIME: {

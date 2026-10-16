@@ -746,8 +746,6 @@
     <string name="heard_to_field">Spoken words go to the field first</string>
     <string name="heard_to_field_sub">Otherwise they are sent by themselves after a pause.</string>
     <string name="home_on_duty">on duty · %1$s</string>
-    <string name="talk_where">Where are we</string>
-    <string name="bot_help_chip">What can you do</string>
     <string name="chapter_numbered">chapter %1$s</string>
     <string name="voices_title">Voices</string>
     <string name="voices_sub">meet them, choose who answers</string>
@@ -971,18 +969,6 @@
     <string name="intro_book_none">Put a book on the shelf</string>
     <string name="intro_talk_sub">Time, weather, the book, in plain words</string>
     <string name="intro_start">Start</string>
-    <string-array name="voice_talk_open">
-        <item>Time, weather and the book are below. Anything else, just say it or type.</item>
-        <item>Time, weather and the book are below. Or just say it.</item>
-        <item>Time, weather, the book: the buttons below. Or say it aloud.</item>
-        <item>Time, weather, the book: the buttons below. Or say it aloud.</item>
-        <item>Time, weather and the book are below. You can speak or type.</item>
-        <item>Time, weather and the book are below. Anything else, just say it or type.</item>
-        <item>Time, weather and the book are below. Or just say it.</item>
-        <!-- The eighth voice left the troupe. -->
-        <item></item>
-        <item>Time, weather and the book are below. You can speak or type.</item>
-    </string-array>
     <string-array name="voice_step_forward">
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m talking now.</item>

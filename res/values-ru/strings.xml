@@ -1738,8 +1738,6 @@
     <string name="heard_to_field">Сказанное — сначала в поле</string>
     <string name="heard_to_field_sub">Иначе оно уходит само после паузы.</string>
     <string name="home_on_duty">на дежурстве · %1$s</string>
-    <string name="talk_where">Где мы</string>
-    <string name="bot_help_chip">Что ты умеешь</string>
     <string name="chapter_numbered">глава %1$s</string>
     <string name="voices_title">Голоса</string>
     <string name="voices_sub">знакомство, кто отвечает</string>
@@ -2063,18 +2061,6 @@
     <string name="intro_book_none">Положи книгу на полку</string>
     <string name="intro_talk_sub">Время, погода, книга — простыми словами</string>
     <string name="intro_start">Начать</string>
-    <string-array name="voice_talk_open">
-        <item>Время, погода и книга — внизу. Остальное можно сказать или написать.</item>
-        <item>Внизу время, погода и книга. Или скажи.</item>
-        <item>Время, погода, книга — кнопки внизу. Можно и голосом.</item>
-        <item>Время, погода, книга — кнопки внизу. Можно и голосом.</item>
-        <item>Внизу время, погода и книга. Можно сказать или написать.</item>
-        <item>Время, погода и книга — внизу. Остальное можно сказать или написать.</item>
-        <item>Внизу время, погода и книга. Или скажи.</item>
-        <!-- The eighth voice left the troupe. -->
-        <item></item>
-        <item>Внизу время, погода и книга. Можно сказать или написать.</item>
-    </string-array>
     <string-array name="voice_step_forward">
         <item>%1$s. Теперь отвечаю я.</item>
         <item>%1$s. Теперь говорю я.</item>
