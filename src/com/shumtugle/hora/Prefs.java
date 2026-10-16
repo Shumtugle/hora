@@ -84,6 +84,9 @@ final class Prefs {
     }
 
     static void setDialogueVoice(Context c, boolean on) {
+        if (sp(c).contains(DIALOGUE) && sp(c).getBoolean(DIALOGUE, false) == on) {
+            return;
+        }
         sp(c).edit().putBoolean(DIALOGUE, on).commit();
         BookPlayer.revoice(c);
     }
@@ -219,6 +222,10 @@ final class Prefs {
     }
 
     static void setRole(Context c, int role, int voice) {
+        if (sp(c).contains(ROLE_PREFIX + role) && sp(c).getInt(ROLE_PREFIX + role, -1) == voice) {
+            // The same voice again: nothing to tell, and a resting book keeps its place to the second.
+            return;
+        }
         // Written at once: the reading process reads it right after being told.
         sp(c).edit().putInt(ROLE_PREFIX + role, voice).commit();
         if (role == Cast.NARRATOR || role == Cast.SPEAKER_A || role == Cast.SPEAKER_B) {

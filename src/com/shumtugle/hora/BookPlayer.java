@@ -326,9 +326,13 @@ public final class BookPlayer extends Service {
     /**
      * Tells a reading book that its voices changed. Up to some forty seconds of
      * sound is made ahead with the old voice; without this, the change would be
-     * heard only paragraphs later. Nothing happens when no book is playing.
+     * heard only paragraphs later. A resting book is not woken: the change is
+     * counted, and the player reads anew when it plays again.
      */
     static void revoice(Context c) {
+        // Counted even while the book rests: on its return the player sees that what it made ahead is stale.
+        android.content.SharedPreferences sp = voicesMark(c);
+        sp.edit().putInt(VOICES_MARK, sp.getInt(VOICES_MARK, 0) + 1).commit();
         if (!Reading.playing(c)) {
             return;
         }
@@ -338,6 +342,21 @@ public final class BookPlayer extends Service {
             Diag.log(c, "book: could not tell the player about the new voice", e);
         }
     }
+
+    private static final String VOICES_MARK = "voices_mark";
+
+    /** Read in both processes: voices change on the screens, the sound is made in the player's process. */
+    @SuppressWarnings("deprecation")
+    private static android.content.SharedPreferences voicesMark(Context c) {
+        return c.getSharedPreferences("book_voices", Context.MODE_MULTI_PROCESS);
+    }
+
+    private static int voicesNow(Context c) {
+        return voicesMark(c).getInt(VOICES_MARK, 0);
+    }
+
+    /** The count of voice changes the sound made ahead was made with. */
+    private volatile int madeWith;
 
     @Override
     public IBinder onBind(Intent i) {
@@ -349,6 +368,7 @@ public final class BookPlayer extends Service {
         super.onCreate();
         audio = (AudioManager) getSystemService(AUDIO_SERVICE);
         live = this;
+        madeWith = voicesNow(this);
         NotificationManager nm = getSystemService(NotificationManager.class);
         NotificationChannel ch = new NotificationChannel(CHANNEL, getString(R.string.book_channel),
                 NotificationManager.IMPORTANCE_LOW);
@@ -640,6 +660,8 @@ public final class BookPlayer extends Service {
                     generation++;
                     Reading.setBook(BookPlayer.this, u, name);
                 }
+                // A book just opened has nothing made ahead: it is made with the voices as they are now.
+                madeWith = voicesNow(BookPlayer.this);
                 // The demo is kept on the shelf like a book, unless it was taken off.
                 if (Demo.is(BookPlayer.this, u) && Library.get(BookPlayer.this, u) != null) {
                     // Already on the shelf: only its place moves, it does not jump before other books.
@@ -683,6 +705,11 @@ public final class BookPlayer extends Service {
                 }
             });
             return;
+        }
+        if (voicesNow(this) != madeWith) {
+            // The voices changed while the book rested: what was made ahead speaks with the old ones.
+            Diag.mark(this, "book: voices changed while paused, paragraph " + playIndex + " read anew");
+            seek(playIndex);
         }
         if (bedOnly) {
             // The background was already playing with focus and the phone awake; the voice joins it.
@@ -790,12 +817,14 @@ public final class BookPlayer extends Service {
             return;
         }
         int to = Math.max(0, Math.min(p.size() - 1, index));
+        int mark = voicesNow(this);
         synchronized (lock) {
             generation++;
             queue.clear();
             queuedSeconds = 0;
             nextIndex = to;
             playIndex = to;
+            madeWith = mark;
             lock.notifyAll();
         }
         publish();
@@ -1031,6 +1060,14 @@ public final class BookPlayer extends Service {
             }
             if (c.generation != generation) {
                 continue;
+            }
+            if (track != null && last != null && last.generation != c.generation) {
+                // A jump or new voices since the last piece: what is left of it in the track goes, unheard.
+                track.pause();
+                track.flush();
+                written = 0;
+                last = null;
+                prev = null;
             }
             if (track == null || trackRate != rate) {
                 if (track != null) {

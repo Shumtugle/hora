@@ -215,7 +215,12 @@ final class Demo {
 
     @SuppressWarnings("deprecation")
     static void setVoice(Context c, int voice) {
-        c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS).edit().putInt(VOICE, voice).commit();
+        android.content.SharedPreferences sp = c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS);
+        if (sp.getInt(VOICE, 0) == voice) {
+            // The same reader again: what was made ahead is still right, and the place after a pause stands.
+            return;
+        }
+        sp.edit().putInt(VOICE, voice).commit();
         BookPlayer.revoice(c);
     }
 
