@@ -203,6 +203,19 @@ public final class HeraldActivity extends Activity {
         LinearLayout.LayoutParams mp = Kit.wide();
         mp.topMargin = Ui.dp(this, 12);
         list.addView(missed, mp);
+        // What was read aloud, on the Day until midnight: a plate of its own; switching it off wipes what was kept.
+        LinearLayout heardPlate = Kit.plate(this);
+        heardPlate.addView(Kit.rowToggle(this, getString(R.string.heard_switch), getString(R.string.heard_switch_sub),
+                Heard.on(this), new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Heard.setOn(HeraldActivity.this, on);
+                        Diag.mark(HeraldActivity.this, "heard: " + (on ? "on" : "off"));
+                    }
+                }));
+        LinearLayout.LayoutParams hp = Kit.wide();
+        hp.topMargin = Ui.dp(this, 12);
+        list.addView(heardPlate, hp);
         showMissed();
 
         // A word into the headphones when the battery runs low: at 15 percent, and again at 5.

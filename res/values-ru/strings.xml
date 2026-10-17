@@ -864,6 +864,10 @@
     <string name="news_rubric_lead">Имя издания появится, когда лента ответит в первый раз.</string>
     <string name="news_not_yet">ещё не отвечала</string>
     <string name="about_news">Каталог лент новостей</string>
+    <string name="day_heard">Прочитано в наушники · %d</string>
+    <string name="day_heard_show">коснуться, чтобы показать</string>
+    <string name="heard_switch">Помнить до полуночи</string>
+    <string name="heard_switch_sub">Прочитанное в наушники остаётся на Дне до конца дня. Текст — по касанию.</string>
     <string name="day_talk_on">Продолжить разговор</string>
     <string-array name="day_sky">
         <item>ясно</item>

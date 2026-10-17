@@ -422,6 +422,10 @@
     <string name="news_rubric_lead">A paper\'s name appears when its feed first answers.</string>
     <string name="news_not_yet">has not answered yet</string>
     <string name="about_news">News feed catalogue</string>
+    <string name="day_heard">Read into your headphones \u00b7 %d</string>
+    <string name="day_heard_show">touch to show</string>
+    <string name="heard_switch">Keep until midnight</string>
+    <string name="heard_switch_sub">What was read into your headphones stays on the Day until the day ends. The words show when touched.</string>
     <string name="day_talk_on">Continue the talk</string>
     <string-array name="day_sky">
         <item>clear</item>

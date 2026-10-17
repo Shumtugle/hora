@@ -42,6 +42,10 @@ public final class DayActivity extends Activity {
     private LinearLayout weather;
     private LinearLayout book;
     private LinearLayout talk;
+    private LinearLayout heard;
+    private String drawnHeard = NONE;
+    /** The heard ones whose words are shown, by when they were heard; kept while the app runs. */
+    private static final java.util.Set<Long> shownHeard = new java.util.HashSet<Long>();
     private LinearLayout news;
     private String drawnNews = NONE;
     private boolean fetchingNews;
@@ -128,6 +132,7 @@ public final class DayActivity extends Activity {
         drawnWeather = NONE;
         drawnBook = NONE;
         drawnTalk = NONE;
+        drawnHeard = NONE;
         drawnNews = NONE;
         lastNewsTry = 0;
         bookUri = NONE;
@@ -214,6 +219,8 @@ public final class DayActivity extends Activity {
         list.addView(book, gap(14));
         news = Ui.column(this);
         list.addView(news, gap(14));
+        heard = Ui.column(this);
+        list.addView(heard, Ui.lp(Ui.MATCH, Ui.WRAP));
         talk = Ui.column(this);
         list.addView(talk, Ui.lp(Ui.MATCH, Ui.WRAP));
 
@@ -269,6 +276,7 @@ public final class DayActivity extends Activity {
         showBook();
         newsDue();
         showNews();
+        showHeard();
         showTalk();
     }
 
@@ -978,6 +986,86 @@ public final class DayActivity extends Activity {
             b.append("en".equals(it.lang) ? Foreign.whole(t) : t);
         }
         return b.toString();
+    }
+
+    // ---- What was heard ----
+
+    /**
+     * What was read into one's own headphones today: the app and the time; the words only when a row
+     * is touched, and hidden again by another touch. Gone at midnight; away when switched off.
+     */
+    private void showHeard() {
+        boolean on = Heard.on(this);
+        long day = Heard.startOfToday();
+        String key = on + "|" + (on ? Heard.changed(this) : "") + "|" + day;
+        if (key.equals(drawnHeard)) {
+            return;
+        }
+        drawnHeard = key;
+        heard.removeAllViews();
+        List<Heard.Entry> all = on ? Heard.today(this) : new java.util.ArrayList<Heard.Entry>();
+        // Yesterday's opened rows are forgotten with yesterday.
+        java.util.Iterator<Long> old = shownHeard.iterator();
+        while (old.hasNext()) {
+            if (old.next() < day) {
+                old.remove();
+            }
+        }
+        heard.setVisibility(all.isEmpty() ? View.GONE : View.VISIBLE);
+        if (all.isEmpty()) {
+            return;
+        }
+        heard.addView(Kit.section(this, getString(R.string.day_heard, all.size())));
+        LinearLayout plate = Kit.plate(this);
+        plate.setPadding(0, dp(4), 0, dp(4));
+        java.text.DateFormat clock = android.text.format.DateFormat.getTimeFormat(this);
+        for (int i = 0; i < all.size(); i++) {
+            final Heard.Entry e = all.get(i);
+            if (i > 0) {
+                plate.addView(Kit.divider(this));
+            }
+            boolean open = shownHeard.contains(e.at);
+            LinearLayout row = Ui.column(this);
+            row.setPadding(dp(20), dp(12), dp(20), dp(12));
+            row.setBackground(Ui.pressable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)));
+            LinearLayout top = Ui.row(this);
+            top.setGravity(Gravity.CENTER_VERTICAL);
+            TextView app = Ui.text(this, e.app, 16, Palette.INK);
+            app.setSingleLine(true);
+            app.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            top.addView(app, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            String at = clock.format(new java.util.Date(e.at));
+            TextView time = Ui.text(this, at, 13, Palette.HINT);
+            LinearLayout.LayoutParams tp = Ui.lp(Ui.WRAP, Ui.WRAP);
+            tp.leftMargin = dp(12);
+            top.addView(time, tp);
+            row.addView(top, Ui.lp(Ui.MATCH, Ui.WRAP));
+            final TextView words = Ui.text(this, open ? e.text : getString(R.string.day_heard_show), 13,
+                    open ? Palette.INK : Palette.HINT);
+            words.setLineSpacing(0, 1.2f);
+            LinearLayout.LayoutParams wp = Ui.lp(Ui.MATCH, Ui.WRAP);
+            wp.topMargin = dp(4);
+            row.addView(words, wp);
+            final String when = at;
+            row.setContentDescription(e.app + ", " + at + ", " + (open ? e.text : getString(R.string.day_heard_show)));
+            row.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Changed in place, not drawn anew, so the screen reader stays on the row.
+                    boolean nowOpen = !shownHeard.remove(e.at);
+                    if (nowOpen) {
+                        shownHeard.add(e.at);
+                    }
+                    words.setText(nowOpen ? e.text : getString(R.string.day_heard_show));
+                    words.setTextColor(nowOpen ? Palette.INK : Palette.HINT);
+                    v.setContentDescription(e.app + ", " + when + ", "
+                            + (nowOpen ? e.text : getString(R.string.day_heard_show)));
+                    v.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_CLICKED);
+                }
+            });
+            plate.addView(row, Ui.lp(Ui.MATCH, Ui.WRAP));
+        }
+        heard.addView(plate, Ui.lp(Ui.MATCH, Ui.WRAP));
     }
 
     // ---- The talk ----

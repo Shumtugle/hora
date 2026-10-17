@@ -1212,6 +1212,8 @@ public final class Herald extends NotificationListenerService {
      * is kept to be told later; before one it reads, it says in the same breath what was missed.
      */
     private int read(String app, String said, String key, String sender) throws Exception {
+        // The notification's own words, before anything missed is put in front of them.
+        final String own = said;
         // A route hint that came in meanwhile goes first.
         sayRouteSafely();
         if (key != null && gone.remove(key)) {
@@ -1283,6 +1285,16 @@ public final class Herald extends NotificationListenerService {
             int how = whole ? WHOLE
                     : "headphone button".equals(why) || "quiet tile".equals(why) ? CUT_BY_USER : CUT;
             told(first, how);
+            if (key != null && (how == WHOLE || how == CUT_BY_USER)) {
+                // Heard in one's own headphones: kept for the Day until midnight, when switched on.
+                // The app's name, said first for some, is already in the row's title.
+                String words = own.startsWith(app + ". ") ? own.substring(app.length() + 2) : own;
+                try {
+                    Heard.add(this, app, words);
+                } catch (RuntimeException e) {
+                    Diag.mark(this, "heard: not kept, " + e.getClass().getSimpleName());
+                }
+            }
             if (how == CUT && !"notification gone".equals(why)) {
                 // Cut by the world, not by the person: it was not heard, so it is still news, told at the
                 // next chance. Not at once: right now another sound or a turn has the floor, and the
