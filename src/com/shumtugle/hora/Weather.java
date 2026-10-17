@@ -167,6 +167,23 @@ final class Weather {
         return sp(c).getString(LAT, "") + "," + sp(c).getString(LON, "");
     }
 
+    /**
+     * The sky in a sentence or two from what is kept, without the network, as long as it is no older
+     * than the given age: the same words the morning line uses. Null when nothing that fresh is kept.
+     */
+    static String morningKept(Context c, long maxAgeMs) {
+        Kept k = kept(c);
+        long now = System.currentTimeMillis();
+        if (k == null || now < k.at || now - k.at > maxAgeMs) {
+            return null;
+        }
+        try {
+            return talk(c).morning(k.facts, new Random());
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
     /** One line from the talk file for a key, picked at random; empty if there is none. */
     static String line(Context c, String key) {
         try {

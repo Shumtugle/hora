@@ -214,6 +214,24 @@ public final class DayActivity extends Activity {
 
         weather = Kit.plate(this);
         weather.setPadding(dp(20), dp(16), dp(20), dp(16));
+        // A touch on the sky: the talking voice says the day in a few sentences.
+        weather.setForeground(Ui.pressable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)));
+        weather.setClickable(true);
+        // The screen reader still reads the sky itself; the touch is named as what it does.
+        weather.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(View host, android.view.accessibility.AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.addAction(new android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction(
+                        android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK, getString(R.string.day_say_action)));
+            }
+        });
+        weather.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sayDay();
+            }
+        });
         list.addView(weather, gap(14));
         book = Ui.column(this);
         list.addView(book, gap(14));
@@ -286,6 +304,45 @@ public final class DayActivity extends Activity {
         if (phrase != null && !phrase.isEmpty()) {
             VoiceService.answer(this, phrase, voice);
         }
+    }
+
+    /** Set while the day is being put into words, so a second touch does not say it twice. */
+    private boolean summing;
+
+    private void sayDay() {
+        if (summing) {
+            return;
+        }
+        summing = true;
+        final int teller = voice;
+        final android.content.Context app = getApplicationContext();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String said = null;
+                try {
+                    said = DaySummary.build(app);
+                } catch (RuntimeException e) {
+                    Diag.mark(app, "day: summary failed, " + e.getClass().getSimpleName());
+                } finally {
+                    final String told = said;
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            summing = false;
+                            if (told == null || told.isEmpty() || isFinishing() || isDestroyed()) {
+                                return;
+                            }
+                            try {
+                                VoiceService.answerMarked(app, told, teller);
+                            } catch (IllegalStateException e) {
+                                Diag.mark(app, "day: summary not said, " + e.getClass().getSimpleName());
+                            }
+                        }
+                    });
+                }
+            }
+        }, "day-summary").start();
     }
 
     private void askTime() {

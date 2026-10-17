@@ -868,6 +868,16 @@
     <string name="day_heard_show">коснуться, чтобы показать</string>
     <string name="heard_switch">Помнить до полуночи</string>
     <string name="heard_switch_sub">Прочитанное в наушники остаётся на Дне до конца дня. Текст — по касанию.</string>
+    <string name="day_say_action">услышать сводку дня</string>
+    <string name="day_say_book">Книга — «%1$s».</string>
+    <string name="day_say_book_at">Книга — «%1$s», %2$s.</string>
+    <plurals name="day_say_paper">
+        <item quantity="one">В газете %1$d заголовок. Первый: %2$s</item>
+        <item quantity="few">В газете %1$d заголовка. Первый: %2$s</item>
+        <item quantity="many">В газете %1$d заголовков. Первый: %2$s</item>
+        <item quantity="other">В газете %1$d заголовка. Первый: %2$s</item>
+    </plurals>
+    <string name="day_say_heard">Прочитано в наушники за сегодня: %d.</string>
     <string name="day_talk_on">Продолжить разговор</string>
     <string-array name="day_sky">
         <item>ясно</item>

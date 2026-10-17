@@ -426,6 +426,14 @@
     <string name="day_heard_show">touch to show</string>
     <string name="heard_switch">Keep until midnight</string>
     <string name="heard_switch_sub">What was read into your headphones stays on the Day until the day ends. The words show when touched.</string>
+    <string name="day_say_action">hear the day</string>
+    <string name="day_say_book">The book is “%1$s”.</string>
+    <string name="day_say_book_at">The book is “%1$s”, %2$s.</string>
+    <plurals name="day_say_paper">
+        <item quantity="one">%1$d headline in the paper. First: %2$s</item>
+        <item quantity="other">%1$d headlines in the paper. First: %2$s</item>
+    </plurals>
+    <string name="day_say_heard">Read into your headphones today: %d.</string>
     <string name="day_talk_on">Continue the talk</string>
     <string-array name="day_sky">
         <item>clear</item>
