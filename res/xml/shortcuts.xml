@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What a long press on the launcher icon offers, in this order. A launcher may show only the first four. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The day, said aloud; nothing opens. -->
+    <shortcut android:shortcutId="day" android:enabled="true"
+        android:icon="@drawable/sc_sun"
+        android:shortcutShortLabel="@string/shortcut_day"
+        android:shortcutLongLabel="@string/shortcut_day_long">
+        <intent android:action="android.intent.action.VIEW"
+            android:targetPackage="com.shumtugle.hora"
+            android:targetClass="com.shumtugle.hora.SummaryActivity"/>
+    </shortcut>
+    <!-- The other three open their screen over the Day, so Back leads home. -->
+    <shortcut android:shortcutId="book" android:enabled="true"
+        android:icon="@drawable/sc_book"
+        android:shortcutShortLabel="@string/shortcut_book"
+        android:shortcutLongLabel="@string/shortcut_book_long">
+        <intent android:action="android.intent.action.MAIN"
+            android:targetPackage="com.shumtugle.hora"
+            android:targetClass="com.shumtugle.hora.DayActivity"/>
+        <intent android:action="android.intent.action.VIEW"
+            android:targetPackage="com.shumtugle.hora"
+            android:targetClass="com.shumtugle.hora.BookActivity"/>
+    </shortcut>
+    <shortcut android:shortcutId="talk" android:enabled="true"
+        android:icon="@drawable/sc_talk"
+        android:shortcutShortLabel="@string/shortcut_talk"
+        android:shortcutLongLabel="@string/shortcut_talk_long">
+        <intent android:action="android.intent.action.MAIN"
+            android:targetPackage="com.shumtugle.hora"
+            android:targetClass="com.shumtugle.hora.DayActivity"/>
+        <intent android:action="android.intent.action.VIEW"
+            android:targetPackage="com.shumtugle.hora"
+            android:targetClass="com.shumtugle.hora.TalkActivity"/>
+    </shortcut>
+    <shortcut android:shortcutId="shelf" android:enabled="true"
+        android:icon="@drawable/sc_shelf"
+        android:shortcutShortLabel="@string/shortcut_shelf"
+        android:shortcutLongLabel="@string/shortcut_shelf_long">
+        <intent android:action="android.intent.action.MAIN"
+            android:targetPackage="com.shumtugle.hora"
+            android:targetClass="com.shumtugle.hora.DayActivity"/>
+        <intent android:action="android.intent.action.VIEW"
+            android:targetPackage="com.shumtugle.hora"
+            android:targetClass="com.shumtugle.hora.ShelfActivity"/>
+    </shortcut>
+</shortcuts>

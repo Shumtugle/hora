@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.shumtugle.hora"
-    android:versionCode="273"
-    android:versionName="1.5.1">
+    android:versionCode="274"
+    android:versionName="1.5.2">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34"/>
     <!-- Lets the app's own processes talk to each other's receivers, and nobody else. -->
     <permission android:name="com.shumtugle.hora.permission.SELF" android:protectionLevel="signature"/>
@@ -49,7 +49,15 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
         </activity>
+        <!-- The day said aloud from the icon's menu: no window of its own, no trace in recents. -->
+        <activity android:name=".SummaryActivity" android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|uiMode|keyboardHidden|density|locale|layoutDirection"/>
         <activity android:name=".NewsActivity" android:exported="false"
             android:label="@string/news_title"/>
         <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop"

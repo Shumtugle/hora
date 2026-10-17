@@ -2947,4 +2947,13 @@
         <item>spirituality|о духовном</item>
         <item>travel|путешествия</item>
     </string-array>
+    <!-- Long press on the launcher icon. -->
+    <string name="shortcut_day">Сводка дня</string>
+    <string name="shortcut_day_long">Сводка дня вслух</string>
+    <string name="shortcut_book">Книга</string>
+    <string name="shortcut_book_long">Открыть книгу</string>
+    <string name="shortcut_talk">Разговор</string>
+    <string name="shortcut_talk_long">Поговорить</string>
+    <string name="shortcut_shelf">Полка</string>
+    <string name="shortcut_shelf_long">Открыть полку</string>
 </resources>

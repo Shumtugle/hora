@@ -1990,4 +1990,13 @@
         <item>spirituality|spirituality</item>
         <item>travel|travel</item>
     </string-array>
+    <!-- Long press on the launcher icon. -->
+    <string name="shortcut_day">Today</string>
+    <string name="shortcut_day_long">Hear the day</string>
+    <string name="shortcut_book">Book</string>
+    <string name="shortcut_book_long">Open the book</string>
+    <string name="shortcut_talk">Talk</string>
+    <string name="shortcut_talk_long">Start a talk</string>
+    <string name="shortcut_shelf">Shelf</string>
+    <string name="shortcut_shelf_long">Open the shelf</string>
 </resources>

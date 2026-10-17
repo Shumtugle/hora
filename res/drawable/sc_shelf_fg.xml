@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A shortcut's mark: a cream glyph inside a thin ring that echoes the launcher medallion. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:pathData="M24,54 A30,30 0 1,1 84,54 A30,30 0 1,1 24,54 Z"
+        android:strokeColor="#FFF3E7CF" android:strokeWidth="1.4" android:strokeAlpha="0.55"/>
+    <group android:translateX="33" android:translateY="33" android:scaleX="1.75" android:scaleY="1.75">
+        <path android:pathData="M2.5,20.5 L21.5,20.5 M4.5,20.5 L4.5,6 L8,6 L8,20.5 M8,20.5 L8,8.5 L11.5,8.5 L11.5,20.5 M13.2,20.5 L16.4,7.6 L19.6,8.4 L16.6,20.5"
+            android:strokeColor="#FFF3E7CF" android:strokeWidth="1.429"
+            android:strokeLineCap="round" android:strokeLineJoin="round"/>
+    </group>
+</vector>
