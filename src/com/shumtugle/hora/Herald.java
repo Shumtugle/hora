@@ -128,8 +128,24 @@ public final class Herald extends NotificationListenerService {
             // Headphones on: the morning line, or what came meanwhile, once the sound has settled on them.
             // A connection after four in the morning may wait for the line; one in the night may not.
             java.util.Calendar now = java.util.Calendar.getInstance();
-            arrivalDay = now.get(java.util.Calendar.HOUR_OF_DAY) >= MORNING_FROM_HOUR ? today(now) : 0;
             morningGaveUp = false;
+            for (AudioDeviceInfo d : added) {
+                if (Earpiece.isPrivate(d)) {
+                    if (!earsIn) {
+                        earsIn = true;
+                        long t = android.os.SystemClock.elapsedRealtime();
+                        // A link that dropped for a moment and came back is the same wearing, not a new one.
+                        if (t - earsOutAt > BLIP_MS) {
+                            // The morning line's wait is counted from the moment headphones came, not from the first try.
+                            arrivalAt = t;
+                            arrivalDay = now.get(java.util.Calendar.HOUR_OF_DAY) >= MORNING_FROM_HOUR ? today(now) : 0;
+                            heldWhy = null;
+                            Diag.mark(Herald.this, "herald: headphones on");
+                        }
+                    }
+                    break;
+                }
+            }
             main.removeCallbacks(arrived);
             main.postDelayed(arrived, 1500);
         }
@@ -137,6 +153,10 @@ public final class Herald extends NotificationListenerService {
         @Override
         public void onAudioDevicesRemoved(AudioDeviceInfo[] removed) {
             if (!Earpiece.present(audio)) {
+                if (earsIn) {
+                    earsIn = false;
+                    earsOutAt = android.os.SystemClock.elapsedRealtime();
+                }
                 cutNow();
                 return;
             }
@@ -162,19 +182,43 @@ public final class Herald extends NotificationListenerService {
         public void run() {
             main.removeCallbacks(this);
             askIfNew();
+            if (!morningGaveUp && morningOwed() && arrivalDay == today(java.util.Calendar.getInstance())
+                    && morningStale()) {
+                // Held back too long, the line is no longer a morning: today it is not said at all, even
+                // if speaking is allowed again by now (a sleeping phone may miss every minute's look).
+                // What came meanwhile is still told the usual way.
+                dropMorning("held too long by " + (heldWhy != null ? heldWhy : heldBy()));
+                lookAgain.run();
+                return;
+            }
             if (!morningGaveUp && morningDue()) {
                 queueMorning(false);
                 return;
             }
             if (!morningGaveUp && morningOwed() && arrivalDay == today(java.util.Calendar.getInstance())) {
+                if (heldWhy == null) {
+                    heldWhy = heldBy();
+                    Diag.mark(Herald.this, "herald: morning line held, " + heldWhy);
+                }
                 main.postDelayed(this, 60_000);
             }
             lookAgain.run();
         }
     };
 
-    /** Main thread. The day of the last connection made after four in the morning, or zero. */
+    /** Main thread. The day of the last wearing begun after four in the morning, or zero. */
     private int arrivalDay;
+    /** When headphones last came, elapsed time; the morning line waits no longer than allowed after it. */
+    private volatile long arrivalAt = android.os.SystemClock.elapsedRealtime();
+    /** Main thread. Headphones are in, as last seen by the device callback, and since when they were out. */
+    private boolean earsIn;
+    private long earsOutAt = -BLIP_MS - 1;
+    /** Headphones gone and back within this are one wearing: a wireless link drops for a moment now and then. */
+    private static final long BLIP_MS = 60_000;
+    /** Main thread. Why the line waits, as written down for this connection; null before that. */
+    private String heldWhy;
+    /** A morning line that could not be said this long after the headphones came is not said that day. */
+    private static final long MORNING_STALE_MS = 30 * 60_000L;
     /** Main thread. The morning line failed to be heard too often; tried again at the next connection. */
     private boolean morningGaveUp;
     /** A morning line is on its way: fetched or waiting its turn. */
@@ -446,6 +490,12 @@ public final class Herald extends NotificationListenerService {
             unregisterReceiver(morningSample);
             unregisterReceiver(earsChanged);
             listening = false;
+            // Unseen while not listening: what is found on return counts as headphones put on again,
+            // unless the gap was only a moment.
+            if (earsIn) {
+                earsIn = false;
+                earsOutAt = android.os.SystemClock.elapsedRealtime();
+            }
         }
     }
 
@@ -708,6 +758,39 @@ public final class Herald extends NotificationListenerService {
         return getSharedPreferences("morning", MODE_PRIVATE).getInt("day", 0);
     }
 
+    /** Whether the headphones came longer ago than a morning line may wait. Any thread. */
+    private boolean morningStale() {
+        return android.os.SystemClock.elapsedRealtime() - arrivalAt > MORNING_STALE_MS;
+    }
+
+    /** The morning line is not said today; the reason goes to the journal. Any thread. */
+    private void dropMorning(String why) {
+        keepMorningDay(today(java.util.Calendar.getInstance()));
+        morningTries.set(0);
+        Diag.mark(this, "herald: morning line dropped, " + why);
+    }
+
+    private void keepMorningDay(int day) {
+        getSharedPreferences("morning", MODE_PRIVATE).edit().putInt("day", day).commit();
+    }
+
+    /** Main thread. What keeps Hora silent now, in a few words for the journal. */
+    private String heldBy() {
+        if (quietNow()) {
+            return "quiet hours";
+        }
+        if (!disturbAllowed()) {
+            return "do not disturb";
+        }
+        if (audio.getMode() != AudioManager.MODE_NORMAL) {
+            return "a call";
+        }
+        if (!Earpiece.present(audio)) {
+            return "no headphones";
+        }
+        return "nothing now";
+    }
+
     private static int today(java.util.Calendar now) {
         return now.get(java.util.Calendar.YEAR) * 1000 + now.get(java.util.Calendar.DAY_OF_YEAR);
     }
@@ -724,8 +807,9 @@ public final class Herald extends NotificationListenerService {
             return false;
         }
         java.util.Calendar now = java.util.Calendar.getInstance();
+        // Only for headphones put on this morning: a pair worn through the night waits for the next wearing.
         return now.get(java.util.Calendar.HOUR_OF_DAY) >= MORNING_FROM_HOUR && today(now) != morningDay()
-                && mayTell();
+                && arrivalDay == today(now) && mayTell();
     }
 
     /**
@@ -783,6 +867,12 @@ public final class Herald extends NotificationListenerService {
         if (!example && today(now) == morningDay()) {
             return;
         }
+        if (!example && morningStale()) {
+            // Too late to be a morning (the weather may have been slow, or the tries went on): not today.
+            dropMorning("too late to say");
+            main.post(lookAgain);
+            return;
+        }
         if (!example && !mayTell()) {
             // Something came up while the weather was fetched: look again later, as if just arrived.
             main.postDelayed(arrived, 5000);
@@ -819,7 +909,7 @@ public final class Herald extends NotificationListenerService {
         }
         if (how == WHOLE || how == CUT_BY_USER) {
             morningTries.set(0);
-            getSharedPreferences("morning", MODE_PRIVATE).edit().putInt("day", today(now)).commit();
+            keepMorningDay(today(now));
             Diag.mark(this, "herald: morning line, " + parts);
         } else if (morningTries.incrementAndGet() <= 3) {
             // Not heard (the sound was taken, or something cut it): again in a few seconds,
