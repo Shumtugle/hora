@@ -50,8 +50,14 @@ final class NavWhisper {
         final int kind;
         final long at;
         final boolean sample;
+        /** The time left on the way rather than a turn: one of TIME_START, TIME_LEFT, TIME_NEAR; else -1. */
+        final int time;
 
         Said(String text, String key, int generation, boolean early, int kind, boolean sample) {
+            this(text, key, generation, early, kind, sample, -1);
+        }
+
+        private Said(String text, String key, int generation, boolean early, int kind, boolean sample, int time) {
             this.text = text;
             this.key = key;
             this.generation = generation;
@@ -59,14 +65,35 @@ final class NavWhisper {
             this.kind = kind;
             this.at = SystemClock.elapsedRealtime();
             this.sample = sample;
+            this.time = time;
         }
     }
+
+    static final int TIME_START = 0;
+    static final int TIME_LEFT = 1;
+    static final int TIME_NEAR = 2;
+    static final String[] TIME_NAMES = {"start", "left", "near"};
+    /** How often the time left is said along the way. */
+    private static final long TIME_EVERY_MS = 15 * 60_000L;
+    /** An unheard start of the way is offered again no sooner than this. */
+    private static final long START_AGAIN_MS = 30_000L;
+    /** The time left counts as "near the end" from this many minutes. */
+    private static final int NEAR_MINUTES = 5;
 
     /** One route hint, by its notification's key. */
     private static final class Route {
         long firstAt;
         final NavPlan plan = new NavPlan();
         boolean toldNoDistance;
+        /** The shape of the time line has been written down once for this route. */
+        boolean timeLogged;
+        boolean startSaid;
+        boolean nearSaid;
+        /** The time left the route began with, in minutes, or -1. */
+        int startMinutes = -1;
+        /** When the time left was last said, elapsed time, and the moment before that, for a phrase taken back. */
+        long timeAt;
+        long timeAtBefore;
     }
 
     private static final Map<String, Route> routes = new HashMap<String, Route>();
@@ -91,6 +118,9 @@ final class NavWhisper {
     private static final Map<Integer, String> nowMade = lru();
     private static List<Object[]> units;
     private static final Pattern DISTANCE = Pattern.compile("(\\d+(?:[.,]\\d+)?)[\\s\\u00a0\\u202f]*(\\p{L}+)");
+    private static final Pattern AMOUNT = Pattern.compile("(?<![\\d.,:])(\\d+)[\\s\\u00a0\\u202f]*(\\p{L}+)");
+    private static final Pattern CLOCK = Pattern.compile("(?<![\\d:])(\\d{1,2}):(\\d{2})(?![\\d:])(?:[\\s\\u00a0\\u202f]*([AaPp])\\.?[Mm]\\.?)?");
+    private static List<Object[]> timeUnits;
 
     private NavWhisper() {
     }
@@ -101,9 +131,11 @@ final class NavWhisper {
 
     /**
      * Looks at a new state of a route hint. Returns what to say now, or null. Called on the
-     * listener's thread, one notification at a time.
+     * listener's thread, one notification at a time. Turns are looked for when asked; the time
+     * left only when asked and when nothing else waits to be said (free): a turn always comes first.
      */
-    static synchronized Said seen(Context c, StatusBarNotification sbn, String app) {
+    static synchronized Said seen(Context c, StatusBarNotification sbn, String app, boolean turns,
+            boolean eta, boolean free) {
         long now = SystemClock.elapsedRealtime();
         Notification n = sbn.getNotification();
         Bundle x = n.extras;
@@ -164,6 +196,16 @@ final class NavWhisper {
             Diag.mark(c, "nav: no distance in the hint");
         }
         Resources res = SpeechLanguage.resources(c);
+        Said turn = turns ? turn(c, sbn, r, res, kind, distance, words, say) : null;
+        if (turn != null || !eta || !free) {
+            return turn;
+        }
+        return time(c, sbn.getKey(), r, res, x, kind, distance);
+    }
+
+    /** What to say of the turn ahead, if anything; queues the phrases to make ahead. */
+    private static Said turn(Context c, StatusBarNotification sbn, Route r, Resources res, int kind,
+            float distance, String words, int say) {
         int id = r.plan.id;
         String nowText = NavArrow.spoken(kind) ? nowPhrase(c, res, kind, words) : null;
         if (nowText != null && say != NavPlan.NOW && !nowText.equals(nowMade.get(id))) {
@@ -196,6 +238,163 @@ final class NavWhisper {
             return new Said(earlyPhrase(res, kind, metres), sbn.getKey(), id, true, kind, false);
         }
         return null;
+    }
+
+    /**
+     * The time left on the way, from the navigator's small line ("33 min · 35 km · 9:49"): at the
+     * start, then every quarter of an hour, and once near the end. Never close to a turn, so the
+     * turn is not kept waiting behind it.
+     */
+    private static Said time(Context c, String key, Route r, Resources res, Bundle x, int kind, float distance) {
+        String line = x == null ? null : str(x.getCharSequence(Notification.EXTRA_SUB_TEXT));
+        if (!r.timeLogged) {
+            r.timeLogged = true;
+            Diag.mark(c, line == null ? "nav: no time line" : "nav: time line " + shape(line));
+        }
+        int minutes = minutesLeft(c, line);
+        if (minutes < 0) {
+            return null;
+        }
+        if (NavArrow.spoken(kind) && distance >= 0 && distance <= NavPlan.earlyAt() * 1.5f) {
+            return null;
+        }
+        long now = SystemClock.elapsedRealtime();
+        int step;
+        String text;
+        if (!r.startSaid) {
+            if (minutes <= 0 || (r.timeAt != 0 && now - r.timeAt < START_AGAIN_MS)) {
+                // An unheard start is offered again, but not at every change of the card.
+                return null;
+            }
+            step = TIME_START;
+            String clock = clock(res, line, minutes);
+            text = clock == null ? res.getString(R.string.nav_eta_start_no_clock, duration(res, minutes))
+                    : res.getString(R.string.nav_eta_start, duration(res, minutes), clock);
+            r.startSaid = true;
+            r.startMinutes = minutes;
+        } else if (!r.nearSaid && minutes > 0 && minutes <= NEAR_MINUTES && r.startMinutes > NEAR_MINUTES + 3) {
+            step = TIME_NEAR;
+            text = res.getString(R.string.nav_eta_near, capital(duration(res, minutes)));
+            r.nearSaid = true;
+        } else if (!r.nearSaid && minutes > NEAR_MINUTES + 2 && now - r.timeAt >= TIME_EVERY_MS) {
+            step = TIME_LEFT;
+            text = res.getString(R.string.nav_eta_left, duration(res, minutes));
+        } else {
+            return null;
+        }
+        r.timeAtBefore = r.timeAt;
+        r.timeAt = now;
+        return new Said(text, key, 0, false, NavArrow.NONE, false, step);
+    }
+
+    /** Minutes left in a time line ("1 h 5 min", "33 min."), or -1 when it shows none. */
+    static int minutesLeft(Context c, String line) {
+        if (line == null) {
+            return -1;
+        }
+        Matcher m = AMOUNT.matcher(line);
+        int total = 0;
+        boolean found = false;
+        while (m.find()) {
+            Integer per = timePer(c, m.group(2));
+            if (per != null) {
+                try {
+                    total += Integer.parseInt(m.group(1)) * per;
+                    found = true;
+                } catch (NumberFormatException e) {
+                    return -1;
+                }
+            }
+        }
+        return found ? total : -1;
+    }
+
+    /** The arrival in words ("nine forty"), from the line's clock or, when it has none, from now. */
+    private static String clock(Resources res, String line, int minutes) {
+        int h;
+        int m;
+        Matcher k = line == null ? null : CLOCK.matcher(line);
+        if (k != null && k.find()) {
+            h = Integer.parseInt(k.group(1));
+            m = Integer.parseInt(k.group(2));
+            String half = k.group(3);
+            if (half != null && (half.equals("p") || half.equals("P")) && h < 12) {
+                h += 12;
+            } else if (half != null && h == 12 && (half.equals("a") || half.equals("A"))) {
+                h = 0;
+            }
+            if (h > 23 || m > 59) {
+                return null;
+            }
+        } else {
+            java.util.Calendar at = java.util.Calendar.getInstance();
+            at.add(java.util.Calendar.MINUTE, minutes);
+            h = at.get(java.util.Calendar.HOUR_OF_DAY);
+            m = at.get(java.util.Calendar.MINUTE);
+        }
+        String[] masculine = res.getStringArray(R.array.numbers_masculine);
+        String[] feminine = res.getStringArray(R.array.numbers_feminine);
+        String mm = m == 0 ? res.getString(R.string.minutes_zero)
+                : m < 10 ? res.getString(R.string.nav_clock_zero) + " " + feminine[m] : feminine[m];
+        return masculine[h] + " " + mm;
+    }
+
+    /** "Twenty-five minutes", "one hour ten minutes", in words. */
+    private static String duration(Resources res, int minutes) {
+        String[] masculine = res.getStringArray(R.array.numbers_masculine);
+        String[] feminine = res.getStringArray(R.array.numbers_feminine);
+        int h = Math.min(minutes / 60, masculine.length - 1);
+        int m = minutes % 60;
+        String hours = h == 0 ? "" : res.getQuantityString(R.plurals.hours, h, masculine[h]);
+        String mins = m == 0 ? "" : res.getQuantityString(R.plurals.minutes, m, feminine[m]);
+        return (hours + " " + mins).trim();
+    }
+
+    private static String capital(String s) {
+        return s.isEmpty() ? s : Character.toUpperCase(s.charAt(0)) + s.substring(1);
+    }
+
+    /** A line's shape for the journal: words as w, numbers as n, the rest as it is. */
+    private static String shape(String line) {
+        return line.replaceAll("\\p{L}+", "w").replaceAll("\\d+", "n");
+    }
+
+    /** Minutes in one of a time word, by how the word begins; null when it is not one. */
+    private static Integer timePer(Context c, String word) {
+        String w = word.toLowerCase(Locale.ROOT);
+        for (Object[] known : timeUnits(c)) {
+            String k = (String) known[0];
+            // A one-letter word ("h") must be the whole word; longer ones may begin it ("min" in "minutes").
+            if (k.length() == 1 ? w.equals(k) : w.startsWith(k)) {
+                return (Integer) known[1];
+            }
+        }
+        return null;
+    }
+
+    private static synchronized List<Object[]> timeUnits(Context c) {
+        if (timeUnits != null) {
+            return timeUnits;
+        }
+        List<Object[]> out = new ArrayList<Object[]>();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(
+                c.getAssets().open("talk/nav-time.txt"), "UTF-8"))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue;
+                }
+                String[] p = line.split("\t");
+                if (p.length == 2) {
+                    out.add(new Object[] {p[0].trim().toLowerCase(Locale.ROOT), Integer.parseInt(p[1].trim())});
+                }
+            }
+        } catch (Exception e) {
+            Diag.log(c, "nav: time words not read", e);
+        }
+        timeUnits = out;
+        return timeUnits;
     }
 
     /** Whether a phrase queued for making ahead is still the one a turn on the way will need. */
@@ -233,13 +432,22 @@ final class NavWhisper {
             return true;
         }
         Route r = routes.get(s.key);
-        return r != null && r.plan.current(s.generation);
+        return r != null && (s.time >= 0 || r.plan.current(s.generation));
     }
 
     /** A phrase dropped as late may be said when its arrow comes back. */
     static synchronized void unsay(Said s) {
         Route r = s.sample ? null : routes.get(s.key);
-        if (r != null) {
+        if (r == null) {
+            return;
+        }
+        if (s.time == TIME_START) {
+            r.startSaid = false;
+        } else if (s.time == TIME_NEAR) {
+            r.nearSaid = false;
+        } else if (s.time == TIME_LEFT) {
+            r.timeAt = r.timeAtBefore;
+        } else {
             r.plan.unsay(s.generation, s.early);
         }
     }

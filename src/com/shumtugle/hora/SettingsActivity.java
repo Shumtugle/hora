@@ -160,6 +160,14 @@ public final class SettingsActivity extends Activity {
         voices.addView(Kit.divider(this));
         voices.addView(Kit.rowNav(this, getString(R.string.intro_herald), null, open(HeraldActivity.class)));
         voices.addView(Kit.divider(this));
+        // The route stands apart from the notifications: either may speak while the other is silent.
+        routeRow = Kit.rowNav(this, getString(R.string.route_title), routeValue(), open(RouteActivity.class));
+        voices.addView(routeRow);
+        voices.addView(Kit.divider(this));
+        // One set of quiet hours for all that speaks by itself.
+        quietRow = Kit.rowNav(this, getString(R.string.quiet_title), QuietActivity.value(this), open(QuietActivity.class));
+        voices.addView(quietRow);
+        voices.addView(Kit.divider(this));
         // The phone's own voice for the bot's words and the headphones: quicker, not Hora's voice.
         // Books keep Hora's voices. With no other engine on the phone the switch changes nothing.
         boolean other = SpareVoice.engine(this) != null;
@@ -618,10 +626,26 @@ public final class SettingsActivity extends Activity {
         }
         showDeveloper();
         showEverything();
+        if (routeRow != null) {
+            // Changed on their own screens meanwhile.
+            Kit.setValue(routeRow, routeValue());
+            Kit.setValue(quietRow, QuietActivity.value(this));
+        }
         if (engineRow != null) {
             // The phone's speech settings may have changed meanwhile.
             showEngineRow();
         }
+    }
+
+    private View routeRow;
+    private View quietRow;
+
+    /** What the route row shows: which of the route is said, or that none is. */
+    private String routeValue() {
+        boolean turns = Prefs.navWhisperShared(this);
+        boolean eta = Prefs.navEtaShared(this);
+        return getString(turns && eta ? R.string.route_value_both : turns ? R.string.route_value_turns
+                : eta ? R.string.route_value_eta : R.string.route_value_off);
     }
 
     /** Character and the fine reading settings: in sight only while the developer room is open. */

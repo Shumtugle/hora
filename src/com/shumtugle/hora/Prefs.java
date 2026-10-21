@@ -543,6 +543,32 @@ final class Prefs {
         sp(c).edit().putBoolean(NAV_STREET, on).commit();
     }
 
+    private static final String NAV_ETA = "nav_eta";
+    private static final String NAV_SPEAKER = "nav_speaker";
+
+    /** Whether the time left on the way is said now and then; read from the voice process. */
+    static boolean navEtaShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(NAV_ETA, false);
+    }
+
+    static void setNavEta(Context c, boolean on) {
+        sp(c).edit().putBoolean(NAV_ETA, on).commit();
+    }
+
+    /** Whether route hints may go to the phone's speaker when no headphones are in; read from the voice process. */
+    static boolean navSpeakerShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(NAV_SPEAKER, false);
+    }
+
+    static void setNavSpeaker(Context c, boolean on) {
+        sp(c).edit().putBoolean(NAV_SPEAKER, on).commit();
+    }
+
+    /** Whether anything of the route is wanted at all. */
+    static boolean routeShared(Context c) {
+        return navWhisperShared(c) || navEtaShared(c);
+    }
+
     private static final String MORNING = "morning";
     private static final String MORNING_WEATHER = "morning_weather";
     private static final String MORNING_BATTERY = "morning_battery";

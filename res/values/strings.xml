@@ -1999,4 +1999,30 @@
     <string name="shortcut_talk_long">Start a talk</string>
     <string name="shortcut_shelf">Shelf</string>
     <string name="shortcut_shelf_long">Open the shelf</string>
+    <!-- The route: its own screen. -->
+    <string name="route_title">Route</string>
+    <string name="route_lead">Hints from a navigator in Hora\'s own voice: into the headphones, and into the speaker if you like.</string>
+    <string name="route_sound_ears">The sound goes to the headphones</string>
+    <string name="route_sound_speaker">The sound goes to the phone\'s speaker</string>
+    <string name="route_sound_none">No headphones — silent</string>
+    <string name="route_what">What to say</string>
+    <string name="nav_turns">Turns</string>
+    <string name="nav_turns_sub">ahead and at the turn itself</string>
+    <string name="nav_eta">Time left</string>
+    <string name="nav_eta_sub">at the start, every 15 minutes and near the end</string>
+    <string name="nav_speaker">Speaker too</string>
+    <string name="nav_speaker_sub">when no headphones are in</string>
+    <string name="route_note">Silent only in Hora\'s quiet hours. The phone\'s Do not disturb does not stop the route: driving mode often turns it on by itself. Better turn off the navigator\'s own voice — Hora says it. The book does not stop; it goes quieter for the hint. Street names are only spoken, never written to the journal.</string>
+    <string name="route_value_both">turns, time</string>
+    <string name="route_value_turns">turns</string>
+    <string name="route_value_eta">time</string>
+    <string name="route_value_off">off</string>
+    <string name="quiet_title">Quiet hours</string>
+    <string name="quiet_lead">One set for everything: notifications, the morning line and the route.</string>
+    <string name="quiet_value_off">off</string>
+    <string name="nav_eta_start">%1$s on the way, arriving at %2$s.</string>
+    <string name="nav_eta_start_no_clock">%1$s on the way.</string>
+    <string name="nav_eta_left">%1$s more on the way.</string>
+    <string name="nav_eta_near">%1$s and you are there.</string>
+    <string name="nav_clock_zero">oh</string>
 </resources>

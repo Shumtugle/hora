@@ -157,7 +157,9 @@ public final class Herald extends NotificationListenerService {
                     earsIn = false;
                     earsOutAt = android.os.SystemClock.elapsedRealtime();
                 }
-                cutNow();
+                if (!openAir) {
+                    cutNow();
+                }
                 return;
             }
             int on = readingOn;
@@ -507,10 +509,14 @@ public final class Herald extends NotificationListenerService {
         }
         // A navigator's hint: its turns are whispered when asked to. A one-off alert of the same
         // kind ("arriving") is still read as before; the ongoing turn-by-turn one is skipped below.
+        boolean turns = Prefs.navWhisperShared(this);
+        boolean eta = Prefs.navEtaShared(this);
         if (NavWhisper.isRouteHint(sbn) && (sbn.getNotification().flags & Notification.FLAG_ONGOING_EVENT) != 0
-                && Prefs.navWhisperShared(this)) {
+                && (turns || eta)) {
             try {
-                NavWhisper.Said s = NavWhisper.seen(this, sbn, label(pkg));
+                // The time left is offered only when nothing waits and no notification is being read.
+                NavWhisper.Said s = NavWhisper.seen(this, sbn, label(pkg), turns, eta,
+                        route.get() == null && !newsSpeaking);
                 if (s != null) {
                     routeSoon(s);
                 }
@@ -1077,9 +1083,11 @@ public final class Herald extends NotificationListenerService {
         NavWhisper.Said before = route.getAndSet(s);
         if (before != null && !before.sample) {
             NavWhisper.unsay(before);
-            Diag.mark(this, "nav: replaced by a newer hint, " + NavArrow.NAMES[before.kind]);
+            Diag.mark(this, "nav: replaced by a newer hint, " + (before.time >= 0
+                    ? "time, " + NavWhisper.TIME_NAMES[before.time] : NavArrow.NAMES[before.kind]));
         }
-        if (newsSpeaking) {
+        if (newsSpeaking && s.time < 0) {
+            // Only a turn cuts a notification short; the time left can wait for it.
             cutNow("route hint");
         }
         worker.execute(new Runnable() {
@@ -1099,21 +1107,52 @@ public final class Herald extends NotificationListenerService {
         if (s == null) {
             return;
         }
-        String what = (s.early ? "early, " : "now, ") + NavArrow.NAMES[s.kind] + (s.sample ? ", example" : "");
+        String what = s.time >= 0 ? "time, " + NavWhisper.TIME_NAMES[s.time]
+                : (s.early ? "early, " : "now, ") + NavArrow.NAMES[s.kind] + (s.sample ? ", example" : "");
         if (!s.sample && (android.os.SystemClock.elapsedRealtime() - s.at > ROUTE_STALE_MS
                 || !NavWhisper.current(s))) {
             NavWhisper.unsay(s);
             Diag.mark(this, "nav: dropped stale, " + what);
             return;
         }
-        if (!s.sample && quietNow()) {
-            Diag.mark(this, "nav: quiet hours, " + what);
+        String silent = !s.sample && quietNow() ? "nav: quiet hours, "
+                : audio.getMode() != AudioManager.MODE_NORMAL ? "nav: quiet, a call, " : null;
+        boolean ears = Earpiece.present(audio);
+        if (silent == null && !ears && !Prefs.navSpeakerShared(this)) {
+            silent = "nav: quiet, no headphones, ";
+        }
+        if (silent != null) {
+            if (s.time < 0) {
+                Diag.mark(this, silent + what);
+                return;
+            }
+            // The start of the way is said once per route: kept for when it can be heard. The time
+            // is offered again at every change of the card, so it is written down only once.
+            if (s.time == NavWhisper.TIME_START) {
+                NavWhisper.unsay(s);
+            }
+            Diag.markOnce(this, "nav-time-silent", silent + what);
             return;
         }
-        if (!mayStart()) {
-            Diag.mark(this, "nav: quiet, no headphones, " + what);
-            return;
+        // Without headphones, and only when asked: the route, never a notification, goes to the speaker.
+        openAir = !ears;
+        try {
+            sayRouteNow(s, what);
+        } finally {
+            openAir = false;
         }
+    }
+
+    /** A turn, not the time left, waits to be said. */
+    private boolean turnWaiting() {
+        NavWhisper.Said w = route.get();
+        return w != null && w.time < 0;
+    }
+
+    /** Set while a route hint is said aloud without headphones: the speaker is then allowed. */
+    private volatile boolean openAir;
+
+    private void sayRouteNow(NavWhisper.Said s, String what) throws Exception {
         // Made ahead, the hint is heard at once; made now, the book steps aside for it. With the
         // phone's voice nothing is made here: the phone's engine says it at once.
         boolean phone = SpareVoice.wanted(this);
@@ -1131,7 +1170,8 @@ public final class Herald extends NotificationListenerService {
             } finally {
                 Voice.urgent(false);
             }
-            if (pcm != null) {
+            if (pcm != null && s.time < 0) {
+                // The time left is never the same twice: it does not push turns made ahead out of the store.
                 made.put(key, pcm);
             }
         }
@@ -1253,11 +1293,13 @@ public final class Herald extends NotificationListenerService {
     /** Plays a made phrase into the headphones; false when cut short. */
     private boolean playMade(float[] pcm, int rate) throws InterruptedException {
         AudioDeviceInfo ear = Earpiece.find(audio);
-        if (ear == null || rate <= 0) {
+        if ((ear == null && !openAir) || rate <= 0) {
             return false;
         }
         AudioTrack out = openTrack(rate);
-        out.setPreferredDevice(ear);
+        if (ear != null) {
+            out.setPreferredDevice(ear);
+        }
         cut = false;
         current = out;
         try {
@@ -1620,7 +1662,7 @@ public final class Herald extends NotificationListenerService {
 
     /** The phone's own engine says it, only while the headphones are on. */
     private boolean speakByPhone(String said) {
-        if (Earpiece.find(audio) == null) {
+        if (Earpiece.find(audio) == null && !openAir) {
             why = "headphones gone";
             return false;
         }
@@ -1630,7 +1672,7 @@ public final class Herald extends NotificationListenerService {
             return SpareVoice.say(this, TextPrep.clean(said), new Voice.Cancel() {
                 @Override
                 public boolean cancelled() {
-                    if (newsSpeaking && route.get() != null) {
+                    if (newsSpeaking && turnWaiting()) {
                         why = "route hint";
                         return true;
                     }
@@ -1638,7 +1680,7 @@ public final class Herald extends NotificationListenerService {
                         why = "device changed";
                         return true;
                     }
-                    return cut || !Earpiece.present(audio);
+                    return cut || (!openAir && !Earpiece.present(audio));
                 }
             });
         } finally {
@@ -1660,11 +1702,13 @@ public final class Herald extends NotificationListenerService {
         int pauseMs = Prefs.pauseMsShared(this);
         int reader = Prefs.roleShared(this, Cast.HERALD);
         AudioDeviceInfo ear = Earpiece.find(audio);
-        if (ear == null) {
+        if (ear == null && !openAir) {
             return false;
         }
         AudioTrack out = openTrack(rate);
-        out.setPreferredDevice(ear);
+        if (ear != null) {
+            out.setPreferredDevice(ear);
+        }
         if (resetCut) {
             cut = false;
         } else if (cut) {
@@ -1735,14 +1779,21 @@ public final class Herald extends NotificationListenerService {
      * notification also stops for a route hint waiting behind it: a turn will not wait.
      */
     private boolean stopped(AudioTrack out) {
-        if (cut || !Earpiece.present(audio)) {
+        if (cut) {
+            return true;
+        }
+        if (openAir) {
+            // A route hint said aloud on purpose: wherever the sound goes is fine.
+            return false;
+        }
+        if (!Earpiece.present(audio)) {
             return true;
         }
         if (deviceMoved()) {
             why = "device changed";
             return true;
         }
-        if (newsSpeaking && route.get() != null) {
+        if (newsSpeaking && turnWaiting()) {
             why = "route hint";
             return true;
         }

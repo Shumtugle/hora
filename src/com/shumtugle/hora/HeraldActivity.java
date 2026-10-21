@@ -43,10 +43,7 @@ public final class HeraldActivity extends Activity {
     private final Handler main = new Handler(Looper.getMainLooper());
     private LinearLayout state;
     private View voiceRow;
-    private View fromRow;
-    private View toRow;
     private TextView appsTitle;
-    private View streetRow;
     private View missedFullRow;
     private LinearLayout earsPlate;
     /** The wireless devices met, rebuilt as answers come; the wire switch below them stays put. */
@@ -71,7 +68,6 @@ public final class HeraldActivity extends Activity {
     private View morningBatteryRow;
     private View morningSampleRow;
     private static final int REQUEST_NEARBY = 7;
-    private View sampleRow;
     private LinearLayout apps;
     private EditText search;
     /** One app: package, name, and the name made unique when two apps share it. */
@@ -118,46 +114,6 @@ public final class HeraldActivity extends Activity {
         voice.addView(voiceRow);
         list.addView(voice, Kit.wide());
 
-        list.addView(Kit.section(this, getString(R.string.herald_quiet_section)));
-        LinearLayout quiet = Kit.plate(this);
-        quiet.addView(Kit.rowToggle(this, getString(R.string.herald_quiet_switch), null, Prefs.quiet(this),
-                new Kit.Flip() {
-                    @Override
-                    public void flipped(boolean on) {
-                        Prefs.setQuiet(HeraldActivity.this, on);
-                        showQuiet();
-                    }
-                }));
-        fromRow = Kit.rowNav(this, getString(R.string.herald_quiet_from), "", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Kit.timeSheet(HeraldActivity.this, getString(R.string.herald_quiet_from_title),
-                        Prefs.quietFrom(HeraldActivity.this), new Kit.TimeSet() {
-                            @Override
-                            public void set(int minutes) {
-                                Prefs.setQuietFrom(HeraldActivity.this, minutes);
-                                showQuiet();
-                            }
-                        });
-            }
-        });
-        toRow = Kit.rowNav(this, getString(R.string.herald_quiet_to), "", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Kit.timeSheet(HeraldActivity.this, getString(R.string.herald_quiet_to_title),
-                        Prefs.quietTo(HeraldActivity.this), new Kit.TimeSet() {
-                            @Override
-                            public void set(int minutes) {
-                                Prefs.setQuietTo(HeraldActivity.this, minutes);
-                                showQuiet();
-                            }
-                        });
-            }
-        });
-        quiet.addView(fromRow);
-        quiet.addView(toRow);
-        list.addView(quiet, Kit.wide());
-        showQuiet();
 
         // Whose ears each wireless device is: asked once per device, every answer here to see and change.
         list.addView(Kit.section(this, getString(R.string.ears_section)));
@@ -278,40 +234,6 @@ public final class HeraldActivity extends Activity {
         list.addView(morningNote, Kit.below(this, 12));
         showMorning();
 
-        // Turn hints from a navigator, whispered into the headphones.
-        list.addView(Kit.section(this, getString(R.string.nav_section)));
-        LinearLayout route = Kit.plate(this);
-        route.addView(Kit.rowToggle(this, getString(R.string.nav_switch), getString(R.string.nav_switch_sub),
-                Prefs.navWhisperShared(this), new Kit.Flip() {
-                    @Override
-                    public void flipped(boolean on) {
-                        Prefs.setNavWhisper(HeraldActivity.this, on);
-                        Diag.mark(HeraldActivity.this, "nav: turn hints " + (on ? "on" : "off"));
-                        showRoute();
-                    }
-                }));
-        route.addView(Kit.divider(this));
-        streetRow = Kit.rowToggle(this, getString(R.string.nav_street), getString(R.string.nav_street_sub),
-                Prefs.navStreetShared(this), new Kit.Flip() {
-                    @Override
-                    public void flipped(boolean on) {
-                        Prefs.setNavStreet(HeraldActivity.this, on);
-                    }
-                });
-        route.addView(streetRow);
-        route.addView(Kit.divider(this));
-        sampleRow = Kit.rowNav(this, getString(R.string.nav_sample), "", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sample();
-            }
-        });
-        route.addView(sampleRow);
-        list.addView(route, Kit.wide());
-        TextView note = Ui.text(this, getString(R.string.nav_note), 13, Palette.MUTED);
-        note.setLineSpacing(0, 1.25f);
-        list.addView(note, Kit.below(this, 12));
-        showRoute();
 
         appsTitle = Kit.section(this, "");
         list.addView(appsTitle);
@@ -420,16 +342,6 @@ public final class HeraldActivity extends Activity {
                         Uri.fromParts("package", getPackageName(), null)));
             }
         }));
-    }
-
-    private void showQuiet() {
-        Kit.setValue(fromRow, clock(Prefs.quietFrom(this)));
-        Kit.setValue(toRow, clock(Prefs.quietTo(this)));
-        boolean on = Prefs.quiet(this);
-        for (View v : new View[] {fromRow, toRow}) {
-            v.setAlpha(on ? 1f : 0.4f);
-            v.setEnabled(on);
-        }
     }
 
     private String wiredSub(boolean mine) {
@@ -644,33 +556,6 @@ public final class HeraldActivity extends Activity {
         missedFullRow.setEnabled(on);
     }
 
-    /** The street row only matters while the hints are on; it dims rather than hides, so nothing jumps. */
-    private void showRoute() {
-        boolean on = Prefs.navWhisperShared(this);
-        streetRow.setAlpha(on ? 1f : 0.4f);
-        streetRow.setEnabled(on);
-    }
-
-    /**
-     * An early hint for a right turn, said by the notification reader into the headphones. When
-     * it cannot be heard, the row says why instead of staying silent.
-     */
-    private void sample() {
-        if (!granted()) {
-            Kit.setValue(sampleRow, getString(R.string.nav_sample_no_access));
-            return;
-        }
-        if (Earpiece.find(audio) == null) {
-            Kit.setValue(sampleRow, getString(R.string.nav_sample_no_ears));
-            return;
-        }
-        Kit.setValue(sampleRow, "");
-        sendBroadcast(new Intent(Herald.ACTION_ROUTE_SAMPLE).setPackage(getPackageName()));
-    }
-
-    private static String clock(int minutes) {
-        return String.format(Locale.ROOT, "%02d:%02d", minutes / 60, minutes % 60);
-    }
 
     private boolean granted() {
         return Herald.granted(this);

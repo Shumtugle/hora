@@ -2956,4 +2956,30 @@
     <string name="shortcut_talk_long">Поговорить</string>
     <string name="shortcut_shelf">Полка</string>
     <string name="shortcut_shelf_long">Открыть полку</string>
+    <!-- The route: its own screen. -->
+    <string name="route_title">Маршрут</string>
+    <string name="route_lead">Подсказки из навигатора — голосом Hora: в наушники, а если хочешь — и в динамик.</string>
+    <string name="route_sound_ears">Звук пойдёт в наушники</string>
+    <string name="route_sound_speaker">Звук пойдёт в динамик телефона</string>
+    <string name="route_sound_none">Наушников нет — Hora промолчит</string>
+    <string name="route_what">Что говорить</string>
+    <string name="nav_turns">Повороты</string>
+    <string name="nav_turns_sub">заранее и у самого поворота</string>
+    <string name="nav_eta">Сколько осталось</string>
+    <string name="nav_eta_sub">в начале пути, раз в 15 минут и под конец</string>
+    <string name="nav_speaker">И через динамик</string>
+    <string name="nav_speaker_sub">когда наушников нет</string>
+    <string name="route_note">Hora молчит только в свои тихие часы. «Не беспокоить» телефона дороге не мешает: режим вождения часто включает его сам. Голос самого навигатора лучше выключить в нём — Hora скажет сама. Книга не останавливается, а притихает. Названия улиц — только вслух, в журнал не попадают.</string>
+    <string name="route_value_both">повороты, время</string>
+    <string name="route_value_turns">повороты</string>
+    <string name="route_value_eta">время</string>
+    <string name="route_value_off">выкл</string>
+    <string name="quiet_title">Тихие часы</string>
+    <string name="quiet_lead">Одни на всё: уведомления, утреннюю строку и дорогу.</string>
+    <string name="quiet_value_off">выкл</string>
+    <string name="nav_eta_start">В пути %1$s, прибытие в %2$s.</string>
+    <string name="nav_eta_start_no_clock">В пути %1$s.</string>
+    <string name="nav_eta_left">Ещё %1$s в пути.</string>
+    <string name="nav_eta_near">%1$s — и на месте.</string>
+    <string name="nav_clock_zero">ноль</string>
 </resources>

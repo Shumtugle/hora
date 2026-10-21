@@ -1,0 +1,11 @@
+# Words for hours and minutes in a navigator's time line, by how they begin, and minutes in one.
+# The first that a word begins with is taken; longer beginnings first.
+мин	1
+min	1
+час	60
+ч	60
+hour	60
+hr	60
+h	60
+tunti	60
+t	60

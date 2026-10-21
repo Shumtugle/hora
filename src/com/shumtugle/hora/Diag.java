@@ -63,8 +63,15 @@ final class Diag {
      * under the shared lock, so one of them writes and the other stays silent.
      */
     static void markOnce(Context c, String key, String msg) {
+        // Once per process for certain, whether or not the key shows in the line itself.
+        if (!ONCE.add(key)) {
+            return;
+        }
         write(c, msg, true, key);
     }
+
+    private static final java.util.Set<String> ONCE =
+            java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
 
     /** A failure is always an event, with the start of its trace. */
     static void log(Context c, String msg, Throwable t) {
