@@ -2985,4 +2985,6 @@
     <string name="role_route">Маршрут</string>
     <string name="route_voice">Голос</string>
     <string name="route_voice_row">Говорит</string>
+    <string name="route_held_title">Hora ведёт маршрут</string>
+    <string name="route_held_text">Голос держится наготове, пока идёт маршрут.</string>
 </resources>

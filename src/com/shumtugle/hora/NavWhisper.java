@@ -418,6 +418,16 @@ final class NavWhisper {
         };
     }
 
+    /** Forgets every route: its cards may have gone unseen. */
+    static synchronized void forgetAll() {
+        routes.clear();
+    }
+
+    /** Whether a navigator's card is still on show. */
+    static synchronized boolean anyRoute() {
+        return !routes.isEmpty();
+    }
+
     static synchronized void gone(Context c, StatusBarNotification sbn) {
         Route r = routes.remove(sbn.getKey());
         if (r != null) {

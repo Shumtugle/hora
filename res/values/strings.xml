@@ -2028,4 +2028,6 @@
     <string name="role_route">Route</string>
     <string name="route_voice">Voice</string>
     <string name="route_voice_row">Speaks</string>
+    <string name="route_held_title">Hora is on the route</string>
+    <string name="route_held_text">The voice stays ready while the route lasts.</string>
 </resources>

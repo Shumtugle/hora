@@ -466,6 +466,10 @@ public final class Herald extends NotificationListenerService {
         main.removeCallbacks(arrived);
         cutNow();
         stopListening();
+        // Cards taken away while not listening would never say goodbye: the route starts afresh.
+        NavWhisper.forgetAll();
+        main.removeCallbacks(letRoute);
+        RouteHold.let(this);
         Diag.mark(this, "herald: disconnected");
     }
 
@@ -477,6 +481,8 @@ public final class Herald extends NotificationListenerService {
         main.removeCallbacks(arrived);
         cutNow();
         stopListening();
+        main.removeCallbacks(letRoute);
+        RouteHold.let(this);
         worker.shutdownNow();
         maker.shutdownNow();
         super.onDestroy();
@@ -517,6 +523,9 @@ public final class Herald extends NotificationListenerService {
                 // The time left is offered only when nothing waits and no notification is being read.
                 NavWhisper.Said s = NavWhisper.seen(this, sbn, label(pkg), turns, eta,
                         route.get() == null && !newsSpeaking);
+                // While a navigator leads the way, the voice is kept from being ended for memory.
+                main.removeCallbacks(letRoute);
+                RouteHold.hold(this);
                 if (s != null) {
                     routeSoon(s);
                 }
@@ -597,6 +606,11 @@ public final class Herald extends NotificationListenerService {
     public void onNotificationRemoved(StatusBarNotification sbn, RankingMap rankings, int reason) {
         if (NavWhisper.isRouteHint(sbn)) {
             NavWhisper.gone(this, sbn);
+            if (!NavWhisper.anyRoute()) {
+                // A navigator that redraws its card takes it away for a moment: let go only if none comes back.
+                main.removeCallbacks(letRoute);
+                main.postDelayed(letRoute, LET_ROUTE_MS);
+            }
         }
         String key = sbn.getKey();
         gone.add(key);
@@ -1144,6 +1158,17 @@ public final class Herald extends NotificationListenerService {
             talkingAs = Cast.HERALD;
         }
     }
+
+    /** Lets the voice go when no navigator's card has come back meanwhile. */
+    private final Runnable letRoute = new Runnable() {
+        @Override
+        public void run() {
+            if (!NavWhisper.anyRoute()) {
+                RouteHold.let(Herald.this);
+            }
+        }
+    };
+    private static final long LET_ROUTE_MS = 30_000L;
 
     /** A turn, not the time left, waits to be said. */
     private boolean turnWaiting() {
