@@ -2025,4 +2025,7 @@
     <string name="nav_eta_left">%1$s more on the way.</string>
     <string name="nav_eta_near">%1$s and you are there.</string>
     <string name="nav_clock_zero">oh</string>
+    <string name="role_route">Route</string>
+    <string name="route_voice">Voice</string>
+    <string name="route_voice_row">Speaks</string>
 </resources>

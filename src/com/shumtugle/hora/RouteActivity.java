@@ -26,6 +26,7 @@ public final class RouteActivity extends Activity {
     private View streetRow;
     private View speakerRow;
     private View sampleRow;
+    private View voiceRow;
 
     private final AudioDeviceCallback devices = new AudioDeviceCallback() {
         @Override
@@ -49,6 +50,19 @@ public final class RouteActivity extends Activity {
 
         state = Ui.column(this);
         list.addView(state, Kit.wide());
+
+        // The route's own voice, apart from the notifications'; chosen among the roles.
+        list.addView(Kit.section(this, getString(R.string.route_voice)));
+        LinearLayout who = Kit.plate(this);
+        voiceRow = Kit.rowNav(this, getString(R.string.route_voice_row), "", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(RouteActivity.this, RolesActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+            }
+        });
+        who.addView(voiceRow);
+        list.addView(who, Kit.wide());
 
         list.addView(Kit.section(this, getString(R.string.route_what)));
         LinearLayout what = Kit.plate(this);
@@ -117,6 +131,7 @@ public final class RouteActivity extends Activity {
             return;
         }
         showState();
+        Kit.setValue(voiceRow, Cast.name(this, Prefs.role(this, Cast.ROUTE)));
     }
 
     @Override

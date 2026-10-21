@@ -1136,10 +1136,12 @@ public final class Herald extends NotificationListenerService {
         }
         // Without headphones, and only when asked: the route, never a notification, goes to the speaker.
         openAir = !ears;
+        talkingAs = Cast.ROUTE;
         try {
             sayRouteNow(s, what);
         } finally {
             openAir = false;
+            talkingAs = Cast.HERALD;
         }
     }
 
@@ -1148,6 +1150,9 @@ public final class Herald extends NotificationListenerService {
         NavWhisper.Said w = route.get();
         return w != null && w.time < 0;
     }
+
+    /** Whose voice speaks now: the notifications', or the route's while a route hint is said. */
+    private volatile int talkingAs = Cast.HERALD;
 
     /** Set while a route hint is said aloud without headphones: the speaker is then allowed. */
     private volatile boolean openAir;
@@ -1160,13 +1165,14 @@ public final class Herald extends NotificationListenerService {
             // A route hint comes first: a reply of the bot being said in the phone's voice gives way.
             SpareVoice.stopNow();
         }
-        String key = madeKey(s.text);
+        int reader = Prefs.roleShared(this, Cast.ROUTE);
+        String key = madeKey(s.text, reader);
         Made pcm = phone ? null : made.get(key);
         boolean ahead = pcm != null;
         if (pcm == null && !phone) {
             Voice.urgent(true);
             try {
-                pcm = make(s.text);
+                pcm = make(s.text, reader);
             } finally {
                 Voice.urgent(false);
             }
@@ -1215,11 +1221,10 @@ public final class Herald extends NotificationListenerService {
     }
 
     /** The key a made phrase is kept under: the same words with another voice or pace are another sound. */
-    private String madeKey(String text) {
-        int herald = Prefs.roleShared(this, Cast.HERALD);
-        return herald + "|" + Prefs.speedShared(this) + "|" + Prefs.ownTempoFactorShared(this, herald) + "|"
-                + Prefs.grimPitchShared(this, herald) + "|" + Prefs.grimTimbreShared(this, herald) + "|"
-                + Prefs.grimAirShared(this, herald) + "|"
+    private String madeKey(String text, int reader) {
+        return reader + "|" + Prefs.speedShared(this) + "|" + Prefs.ownTempoFactorShared(this, reader) + "|"
+                + Prefs.grimPitchShared(this, reader) + "|" + Prefs.grimTimbreShared(this, reader) + "|"
+                + Prefs.grimAirShared(this, reader) + "|"
                 + Prefs.pauseMsShared(this) + "|" + Prefs.fullDecoderShared(this) + "|" + text;
     }
 
@@ -1229,7 +1234,8 @@ public final class Herald extends NotificationListenerService {
             @Override
             public void run() {
                 try {
-                    String key = madeKey(text);
+                    int reader = Prefs.roleShared(Herald.this, Cast.ROUTE);
+                    String key = madeKey(text, reader);
                     if (made.containsKey(key) || !NavWhisper.wanted(text) || SpareVoice.wanted(Herald.this)) {
                         return;
                     }
@@ -1241,7 +1247,7 @@ public final class Herald extends NotificationListenerService {
                     if (made.containsKey(key) || !NavWhisper.wanted(text)) {
                         return;
                     }
-                    Made m = make(text);
+                    Made m = make(text, reader);
                     if (m != null) {
                         made.put(key, m);
                     }
@@ -1253,7 +1259,7 @@ public final class Herald extends NotificationListenerService {
     }
 
     /** A short phrase in the reader's voice, whole; null when there is no voice yet or no sound came. */
-    private Made make(String said) throws Exception {
+    private Made make(String said, int reader) throws Exception {
         Voice voice = Voice.get(this);
         try {
             voice.prepare();
@@ -1264,7 +1270,6 @@ public final class Herald extends NotificationListenerService {
         int rate = voice.sampleRate();
         float speed = Prefs.speedShared(this);
         int pauseMs = Prefs.pauseMsShared(this);
-        int reader = Prefs.roleShared(this, Cast.HERALD);
         java.util.List<float[]> pieces = new java.util.ArrayList<float[]>();
         int total = 0;
         boolean[] inside = {false};
@@ -1700,7 +1705,7 @@ public final class Herald extends NotificationListenerService {
         int rate = voice.sampleRate();
         float speed = Prefs.speedShared(this);
         int pauseMs = Prefs.pauseMsShared(this);
-        int reader = Prefs.roleShared(this, Cast.HERALD);
+        int reader = Prefs.roleShared(this, talkingAs);
         AudioDeviceInfo ear = Earpiece.find(audio);
         if (ear == null && !openAir) {
             return false;

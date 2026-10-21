@@ -22,9 +22,10 @@ import android.widget.TextView;
 public final class RolesActivity extends Activity {
     /** The look this screen was built with. */
     private int built;
-    private static final int[] ROLES = {Cast.NARRATOR, Cast.SPEAKER_A, Cast.SPEAKER_B, Cast.HERALD, Cast.TALK};
+    private static final int[] ROLES = {Cast.NARRATOR, Cast.SPEAKER_A, Cast.SPEAKER_B, Cast.HERALD, Cast.ROUTE,
+        Cast.TALK};
     private static final int[] TITLES = {R.string.role_narrator, R.string.role_speaker_a, R.string.role_speaker_b,
-        R.string.role_herald, R.string.role_talk};
+        R.string.role_herald, R.string.role_route, R.string.role_talk};
     private static final float DIMMED = 0.55f;
 
     private TextView sample;
@@ -183,7 +184,8 @@ public final class RolesActivity extends Activity {
             chosen[i].setText(Cast.name(this, v));
             chosen[i].setTextColor(Palette.voice(v));
             // The dialogue switch governs only the two speakers.
-            boolean active = ROLES[i] == Cast.NARRATOR || ROLES[i] == Cast.HERALD || ROLES[i] == Cast.TALK || dialogue;
+            boolean active = ROLES[i] == Cast.NARRATOR || ROLES[i] == Cast.HERALD || ROLES[i] == Cast.ROUTE
+                    || ROLES[i] == Cast.TALK || dialogue;
             chosen[i].setAlpha(active ? 1f : 0.4f);
             for (int w = 1; w < faces[i].length; w++) {
                 ImageView f = faces[i][w];

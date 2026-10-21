@@ -28,6 +28,8 @@ final class Cast {
     static final int HERALD = 3;
     /** Hosts the talk and the Voice screen: the one who answers. */
     static final int TALK = 4;
+    /** Says the route's turns and time; until chosen, the notifications' voice. */
+    static final int ROUTE = 5;
 
     private Cast() {
     }

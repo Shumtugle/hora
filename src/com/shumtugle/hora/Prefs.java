@@ -201,7 +201,7 @@ final class Prefs {
     /** Book, dialogue A (male), dialogue B (female), notifications, talk: all to the main voice. */
     private static final int[] ROLE_DEFAULT = {1, 5, 2, 1, 1};
 
-    /** Voice number for a role: the book, the two sides of a dialogue, notifications, the talk. */
+    /** Voice number for a role: the book, the two sides of a dialogue, notifications, the talk, the route. */
     static int role(Context c, int role) {
         return readRole(c, sp(c), role);
     }
@@ -212,6 +212,11 @@ final class Prefs {
     }
 
     private static int readRole(Context c, SharedPreferences p, int role) {
+        if (role == Cast.ROUTE) {
+            // The route speaks as the notifications do until a voice of its own is chosen.
+            int v = p.getInt(ROLE_PREFIX + role, -1);
+            return v > 0 && Cast.available(c, v) ? v : readRole(c, p, Cast.HERALD);
+        }
         int def = ROLE_DEFAULT[role];
         if (role == Cast.NARRATOR && p.getBoolean(MAIN_SECOND, false)) {
             def = 5;
@@ -224,6 +229,11 @@ final class Prefs {
     static void setRole(Context c, int role, int voice) {
         if (sp(c).contains(ROLE_PREFIX + role) && sp(c).getInt(ROLE_PREFIX + role, -1) == voice) {
             // The same voice again: nothing to tell, and a resting book keeps its place to the second.
+            return;
+        }
+        if (role == Cast.ROUTE && voice == role(c, Cast.HERALD)) {
+            // The notifications' voice chosen for the route: the route follows it again from now on.
+            sp(c).edit().remove(ROLE_PREFIX + role).commit();
             return;
         }
         // Written at once: the reading process reads it right after being told.
