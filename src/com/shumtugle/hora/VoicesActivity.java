@@ -366,7 +366,7 @@ public final class VoicesActivity extends Activity {
                 }
             });
             LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(0, dp(48), 1f);
-            tp.leftMargin = dp(10);
+            tp.leftMargin = dp(GRID_GAP);
             pair.addView(tune, tp);
         }
         LinearLayout.LayoutParams pp = Ui.lp(Ui.MATCH, Ui.WRAP);
@@ -702,17 +702,20 @@ public final class VoicesActivity extends Activity {
     private static final int[] DUTY_NAMES = {R.string.role_talk, R.string.voices_duty_books, R.string.role_herald,
         R.string.role_route};
 
+    /** The gap between the duties, across and down: the same as between the two buttons below. */
+    private static final int GRID_GAP = 10;
+
     /** The duties of a voice as chips, two to a row, lit where the duty is this voice's. */
     private void fillDuties(final int v) {
         duties.removeAllViews();
         LinearLayout line = null;
         for (int i = 0; i < DUTIES.length; i++) {
             if (i % 2 == 0) {
+                // An even grid on the same two columns as the buttons below, whether one of them shows or two.
                 line = Ui.row(this);
-                line.setGravity(Gravity.CENTER);
-                LinearLayout.LayoutParams lp = Ui.lp(Ui.WRAP, Ui.WRAP);
+                LinearLayout.LayoutParams lp = Ui.lp(Ui.MATCH, Ui.WRAP);
                 if (i > 0) {
-                    lp.topMargin = dp(8);
+                    lp.topMargin = dp(GRID_GAP);
                 }
                 duties.addView(line, lp);
             }
@@ -721,10 +724,11 @@ public final class VoicesActivity extends Activity {
             TextView chip = Ui.pill(this, (mine ? "\u2713 " : "") + getString(DUTY_NAMES[i]),
                     mine ? Palette.RAISED : Palette.SURFACE, mine ? Palette.voice(v) : Palette.LINE,
                     mine ? Palette.INK : Palette.MUTED, mine);
-            // Two must fit side by side on a narrow phone in either language: smaller type, tighter sides.
+            // Half the width each on a narrow phone, in either language: smaller type, tighter sides.
             chip.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14);
             chip.setPadding(dp(11), 0, dp(11), 0);
             chip.setSingleLine(true);
+            chip.setEllipsize(android.text.TextUtils.TruncateAt.END);
             if (!mine) {
                 chip.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -733,9 +737,10 @@ public final class VoicesActivity extends Activity {
                     }
                 });
             }
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(40));
+            chip.setGravity(Gravity.CENTER);
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, dp(40), 1f);
             if (i % 2 > 0) {
-                p.leftMargin = dp(6);
+                p.leftMargin = dp(GRID_GAP);
             }
             line.addView(chip, p);
         }
