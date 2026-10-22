@@ -1113,8 +1113,8 @@ public final class Herald extends NotificationListenerService {
     }
 
     /**
-     * On the worker thread: says the waiting route hint, if any. The book is not paused but
-     * made quieter for the length of the phrase, and keeps its place.
+     * On the worker thread: says the waiting route hint, if any. The book and other apps' sound
+     * stop for the length of the phrase, and the book goes on from its place after it.
      */
     private void sayRoute() throws Exception {
         NavWhisper.Said s = route.getAndSet(null);
@@ -1213,13 +1213,17 @@ public final class Herald extends NotificationListenerService {
             Diag.mark(this, String.format(java.util.Locale.ROOT, "nav: dropped late, %s, %.1f s", what, age / 1000f));
             return;
         }
-        AudioFocusRequest focus = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+        // The route comes first: the book stops and other apps' sound pauses, rather than both going
+        // on quieter under a voice that may be the same.
+        AudioFocusRequest focus = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
                 .setAudioAttributes(attributes())
                 .setOnAudioFocusChangeListener(yield, main)
                 .build();
         Awake.hold(this);
-        BookPlayer.duck(true);
+        boolean held = false;
         try {
+            // The book stops for the hint, on the place it was, and goes on after it.
+            held = onMain(true, "route hint");
             if (audio.requestAudioFocus(focus) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 NavWhisper.unsay(s);
                 Diag.mark(this, "nav: quiet, no focus, " + what);
@@ -1240,8 +1244,10 @@ public final class Herald extends NotificationListenerService {
                     age / 1000f));
         } finally {
             audio.abandonAudioFocusRequest(focus);
-            BookPlayer.duck(false);
             Awake.let(this);
+            if (held) {
+                onMain(false, null);
+            }
         }
     }
 
@@ -1406,22 +1412,25 @@ public final class Herald extends NotificationListenerService {
         if (first != null) {
             said = first.text + ' ' + said;
         }
-        // From here on a route hint coming in cuts this reading short, at whatever stage it is.
-        newsSpeaking = true;
-        if (route.get() != null) {
-            // A hint came in just now: it goes first, over the playing book, and the reading follows.
-            newsSpeaking = false;
-            sayRouteSafely();
-            newsSpeaking = true;
-        }
         boolean held = false;
-        AudioFocusRequest focus = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+        // A notification comes after the route but before everything else: other apps' sound pauses
+        // for it, as the book does, rather than going on quieter underneath.
+        AudioFocusRequest focus = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
                 .setAudioAttributes(attributes())
                 .setOnAudioFocusChangeListener(yield, main)
                 .build();
         Awake.hold(this);
         try {
-            held = onMain(true);
+            // The book stops once for all that follows: a hint waiting now, then the reading.
+            held = onMain(true, "notification");
+            // From here on a route hint coming in cuts this reading short, at whatever stage it is.
+            newsSpeaking = true;
+            if (route.get() != null) {
+                // A hint came in just now: it goes first, and the reading follows.
+                newsSpeaking = false;
+                sayRouteSafely();
+                newsSpeaking = true;
+            }
             if (audio.requestAudioFocus(focus) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 Diag.mark(this, "herald: quiet, no focus, " + app);
                 missOnMain(key, app, sender);
@@ -1468,13 +1477,13 @@ public final class Herald extends NotificationListenerService {
             newsSpeaking = false;
             readingKey = null;
             Hush.end(this);
+            // A hint that cut this reading is said while the book is still held and other sound still
+            // paused, so neither bursts back only to step aside again a moment later.
+            sayRouteSafely();
             audio.abandonAudioFocusRequest(focus);
             Awake.let(this);
-            // A hint that cut this reading is said while the book is still held, so the book
-            // does not burst back at full loudness only to be ducked a moment later.
-            sayRouteSafely();
             if (held) {
-                onMain(false);
+                onMain(false, null);
             }
         }
     }
@@ -1625,14 +1634,14 @@ public final class Herald extends NotificationListenerService {
     }
 
     /** Holds or releases the book on the main thread and waits for it. */
-    private boolean onMain(final boolean hold) throws InterruptedException {
+    private boolean onMain(final boolean hold, final String why) throws InterruptedException {
         final boolean[] result = new boolean[1];
         final CountDownLatch done = new CountDownLatch(1);
         main.post(new Runnable() {
             @Override
             public void run() {
                 if (hold) {
-                    result[0] = BookPlayer.holdForNews();
+                    result[0] = BookPlayer.holdForNews(why);
                 } else {
                     BookPlayer.releaseAfterNews();
                 }

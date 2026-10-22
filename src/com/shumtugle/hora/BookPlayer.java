@@ -76,6 +76,10 @@ public final class BookPlayer extends Service {
     private static volatile BookPlayer live;
     /** Paused to let a notification through; resumes when it is over. */
     private boolean heldForNews;
+    /** What the book was held for, for the journal. */
+    private String heldFor = "";
+    /** The book asked to play while the sound was taken (a call): it plays when the sound is given back. */
+    private volatile boolean waitingForSound;
     /** The voice is silent on purpose while the background plays on. */
     private boolean bedOnly;
     /** A paragraph is being made; the end of the book is not reached while it is. */
@@ -230,6 +234,12 @@ public final class BookPlayer extends Service {
                 }
             } else if (change == AudioManager.AUDIOFOCUS_GAIN) {
                 unduckFocus();
+                if (waitingForSound) {
+                    waitingForSound = false;
+                    if (paragraphs != null) {
+                        play("the sound is free again");
+                    }
+                }
             }
         }
     };
@@ -245,18 +255,19 @@ public final class BookPlayer extends Service {
         }
     }
 
-    /** Main thread only. Pauses a playing book; true if it did. */
-    static boolean holdForNews() {
+    /** Main thread only. Pauses a playing book for Hora's own words (a notification, a route hint); true if it did. */
+    static boolean holdForNews(String why) {
         BookPlayer p = live;
         if (p == null || !p.playing) {
             return false;
         }
-        p.pause("notification");
+        p.pause(why);
         p.heldForNews = true;
+        p.heldFor = why;
         return true;
     }
 
-    /** How loud the book stays under a route hint: low enough to hear the hint, never silent. */
+    /** How loud the book stays under a short sound over it (the purr): low enough to hear it, never silent. */
     private static final float DUCKED = 0.3f;
     /** The way down or up takes this long, in this many steps, so the book never clicks. */
     private static final int DUCK_STEPS = 10;
@@ -315,7 +326,7 @@ public final class BookPlayer extends Service {
         BookPlayer p = live;
         if (p != null && p.heldForNews) {
             p.heldForNews = false;
-            p.play("notification over");
+            p.play("after " + p.heldFor);
         }
     }
 
@@ -553,6 +564,11 @@ public final class BookPlayer extends Service {
         }
         Bed.stop();
         main.removeCallbacks(ramp);
+        // Gone, the book neither holds the sound nor waits for it.
+        waitingForSound = false;
+        if (focus != null) {
+            audio.abandonAudioFocusRequest(focus);
+        }
         if (live == this) {
             live = null;
         }
@@ -595,6 +611,8 @@ public final class BookPlayer extends Service {
     }
 
     private void open(final String u, final String name, final boolean play) {
+        // Another book: one that waited for the sound to be free does not start by itself.
+        waitingForSound = false;
         if (u == null || u.isEmpty()) {
             return;
         }
@@ -723,14 +741,24 @@ public final class BookPlayer extends Service {
             publish();
             return;
         }
-        Diag.mark(this, "book: playing, " + why + ", " + Diag.state(this));
         if (focus == null) {
             focus = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                     .setAudioAttributes(attributes())
+                    .setAcceptsDelayedFocusGain(true)
                     .setOnAudioFocusChangeListener(focusChange)
                     .build();
         }
-        audio.requestAudioFocus(focus);
+        int granted = audio.requestAudioFocus(focus);
+        if (granted != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            // A call, or another app that will not share: the book waits rather than reading over it,
+            // and plays when the sound is given back, if it was promised.
+            waitingForSound = granted == AudioManager.AUDIOFOCUS_REQUEST_DELAYED;
+            Diag.mark(this, "book: waits, the sound is taken, " + why);
+            publish();
+            return;
+        }
+        waitingForSound = false;
+        Diag.mark(this, "book: playing, " + why + ", " + Diag.state(this));
         if (!receiverOn) {
             registerReceiver(noisy, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
             receiverOn = true;
@@ -745,6 +773,13 @@ public final class BookPlayer extends Service {
     }
 
     private void pause(String why) {
+        if (waitingForSound) {
+            // Paused while waiting for the sound: it no longer starts by itself when the sound is free.
+            waitingForSound = false;
+            if (focus != null) {
+                audio.abandonAudioFocusRequest(focus);
+            }
+        }
         if (!playing && !bedOnly) {
             return;
         }
@@ -784,7 +819,13 @@ public final class BookPlayer extends Service {
                         .setOnAudioFocusChangeListener(focusChange)
                         .build();
             }
-            audio.requestAudioFocus(focus);
+            if (audio.requestAudioFocus(focus) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                // The sound is taken (a call): no background over it, and no request left waiting.
+                audio.abandonAudioFocusRequest(focus);
+                Diag.mark(this, "book: background not started, the sound is taken");
+                publish();
+                return;
+            }
             if (!receiverOn) {
                 registerReceiver(noisy, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
                 receiverOn = true;
