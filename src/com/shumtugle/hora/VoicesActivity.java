@@ -328,16 +328,17 @@ public final class VoicesActivity extends Activity {
         name.setGravity(Gravity.CENTER);
         below.addView(name, Ui.lp(Ui.MATCH, Ui.WRAP));
 
-        // What the voice does: three duties as chips. A lit one is this voice's; a touch on a dark
-        // one gives the duty to this voice, taking it from whoever had it.
+        // What the voice does: four duties as chips, two by two (what one talks and reads; what comes
+        // into the ears on the way). A lit one is this voice's; a touch on a dark one gives the duty
+        // to this voice, taking it from whoever had it.
         TextView ask = Ui.text(this, getString(Cast.female(v) ? R.string.voices_assign_f : R.string.voices_assign_m),
                 13, Palette.HINT);
         ask.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams ap = Ui.lp(Ui.WRAP, Ui.WRAP);
         ap.topMargin = dp(10);
         below.addView(ask, ap);
-        duties = Ui.row(this);
-        duties.setGravity(Gravity.CENTER);
+        duties = Ui.column(this);
+        duties.setGravity(Gravity.CENTER_HORIZONTAL);
         LinearLayout.LayoutParams dp0 = Ui.lp(Ui.MATCH, Ui.WRAP);
         dp0.topMargin = dp(8);
         below.addView(duties, dp0);
@@ -697,19 +698,30 @@ public final class VoicesActivity extends Activity {
         return n > 0 ? "+" + n : String.valueOf(n);
     }
 
-    private static final int[] DUTIES = {Cast.TALK, Cast.NARRATOR, Cast.HERALD};
-    private static final int[] DUTY_NAMES = {R.string.role_talk, R.string.voices_duty_books, R.string.role_herald};
+    private static final int[] DUTIES = {Cast.TALK, Cast.NARRATOR, Cast.HERALD, Cast.ROUTE};
+    private static final int[] DUTY_NAMES = {R.string.role_talk, R.string.voices_duty_books, R.string.role_herald,
+        R.string.role_route};
 
-    /** The three duties of a voice as chips, lit where the duty is this voice's. */
+    /** The duties of a voice as chips, two to a row, lit where the duty is this voice's. */
     private void fillDuties(final int v) {
         duties.removeAllViews();
+        LinearLayout line = null;
         for (int i = 0; i < DUTIES.length; i++) {
+            if (i % 2 == 0) {
+                line = Ui.row(this);
+                line.setGravity(Gravity.CENTER);
+                LinearLayout.LayoutParams lp = Ui.lp(Ui.WRAP, Ui.WRAP);
+                if (i > 0) {
+                    lp.topMargin = dp(8);
+                }
+                duties.addView(line, lp);
+            }
             final int role = DUTIES[i];
             boolean mine = Prefs.role(this, role) == v;
             TextView chip = Ui.pill(this, (mine ? "\u2713 " : "") + getString(DUTY_NAMES[i]),
                     mine ? Palette.RAISED : Palette.SURFACE, mine ? Palette.voice(v) : Palette.LINE,
                     mine ? Palette.INK : Palette.MUTED, mine);
-            // Three must fit on a narrow phone in either language: smaller type, tighter sides.
+            // Two must fit side by side on a narrow phone in either language: smaller type, tighter sides.
             chip.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14);
             chip.setPadding(dp(11), 0, dp(11), 0);
             chip.setSingleLine(true);
@@ -722,10 +734,10 @@ public final class VoicesActivity extends Activity {
                 });
             }
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(40));
-            if (i > 0) {
+            if (i % 2 > 0) {
                 p.leftMargin = dp(6);
             }
-            duties.addView(chip, p);
+            line.addView(chip, p);
         }
     }
 
