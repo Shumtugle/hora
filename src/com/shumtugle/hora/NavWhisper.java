@@ -120,6 +120,8 @@ final class NavWhisper {
     private static final Pattern DISTANCE = Pattern.compile("(\\d+(?:[.,]\\d+)?)[\\s\\u00a0\\u202f]*(\\p{L}+)");
     private static final Pattern AMOUNT = Pattern.compile("(?<![\\d.,:])(\\d+)[\\s\\u00a0\\u202f]*(\\p{L}+)");
     private static final Pattern CLOCK = Pattern.compile("(?<![\\d:])(\\d{1,2}):(\\d{2})(?![\\d:])(?:[\\s\\u00a0\\u202f]*([AaPp])\\.?[Mm]\\.?)?");
+    /** A clock written with a dot ("18.32"), as some languages do; not when a unit follows ("12.50 km"). */
+    private static final Pattern DOT_CLOCK = Pattern.compile("(?<![\\d.,])([01]?\\d|2[0-3])\\.([0-5]\\d)(?![\\d.,])(?![\\s\\u00a0\\u202f]*\\p{L})");
     private static List<Object[]> timeUnits;
 
     private NavWhisper() {
@@ -158,11 +160,25 @@ final class NavWhisper {
             if (mask == null) {
                 Diag.markOnce(c, "nav-colourful", "nav: a colourful picture, silent");
             }
+            boolean byShape = false;
+            if (mask != null && cells(mask) < 20) {
+                // Next to nothing light in it: perhaps an arrow drawn dark. Its shape alone is read, and
+                // known by that shape, so two dark arrows are never taken for one.
+                boolean[] shape = NavArrow.maskByShape(px, w, h);
+                if (shape != null) {
+                    mask = shape;
+                    byShape = true;
+                }
+            }
             java.util.zip.CRC32 crc = new java.util.zip.CRC32();
             if (mask == null) {
                 // A colourful picture is not an arrow (it may be a piece of map): silence.
                 crc.update(px.length);
             } else {
+                if (byShape) {
+                    // Read by shape, a picture is told apart from a light one of the same outline.
+                    crc.update(2);
+                }
                 for (boolean m : mask) {
                     crc.update(m ? 1 : 0);
                 }
@@ -171,9 +187,13 @@ final class NavWhisper {
             Integer known = mask == null ? Integer.valueOf(NavArrow.NONE) : kinds.get(picture);
             if (known == null) {
                 kind = NavArrow.read(mask);
+                if (byShape && kind == NavArrow.ARRIVE) {
+                    // A dark shape with a hole may be anything (a logo, a mark): never "you are there" by guess.
+                    kind = NavArrow.UNKNOWN;
+                }
                 kinds.put(picture, kind);
-                Diag.mark(c, "nav: arrow " + picture + " read as " + NavArrow.NAMES[kind]);
-                if (kind == NavArrow.UNKNOWN) {
+                Diag.mark(c, "nav: arrow " + picture + " read as " + NavArrow.NAMES[kind] + (byShape ? " by its shape" : ""));
+                if (kind == NavArrow.UNKNOWN || kind == NavArrow.NONE) {
                     keep(c, picture, b, px);
                 }
             } else {
@@ -253,6 +273,10 @@ final class NavWhisper {
         }
         int minutes = minutesLeft(c, line);
         if (minutes < 0) {
+            // Some lines give only the arrival ("at 18.32"): the time left is counted from it.
+            minutes = untilClock(line);
+        }
+        if (minutes < 0) {
             return null;
         }
         if (NavArrow.spoken(kind) && distance >= 0 && distance <= NavPlan.earlyAt() * 1.5f) {
@@ -309,28 +333,56 @@ final class NavWhisper {
         return found ? total : -1;
     }
 
-    /** The arrival in words ("nine forty"), from the line's clock or, when it has none, from now. */
-    private static String clock(Resources res, String line, int minutes) {
-        int h;
-        int m;
-        Matcher k = line == null ? null : CLOCK.matcher(line);
-        if (k != null && k.find()) {
-            h = Integer.parseInt(k.group(1));
-            m = Integer.parseInt(k.group(2));
+    /** The arrival written in a line, as hour and minute, or null. */
+    private static int[] arrival(String line) {
+        if (line == null) {
+            return null;
+        }
+        Matcher k = CLOCK.matcher(line);
+        if (k.find()) {
+            int h = Integer.parseInt(k.group(1));
+            int m = Integer.parseInt(k.group(2));
             String half = k.group(3);
             if (half != null && (half.equals("p") || half.equals("P")) && h < 12) {
                 h += 12;
             } else if (half != null && h == 12 && (half.equals("a") || half.equals("A"))) {
                 h = 0;
             }
-            if (h > 23 || m > 59) {
-                return null;
-            }
+            return h > 23 || m > 59 ? null : new int[] {h, m};
+        }
+        Matcher d = DOT_CLOCK.matcher(line);
+        if (d.find()) {
+            return new int[] {Integer.parseInt(d.group(1)), Integer.parseInt(d.group(2))};
+        }
+        return null;
+    }
+
+    /** Minutes from now until the arrival written in a line, or -1 when it shows none or it is far off. */
+    private static int untilClock(String line) {
+        int[] at = arrival(line);
+        if (at == null) {
+            return -1;
+        }
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        int nowMin = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE);
+        int left = ((at[0] * 60 + at[1]) - nowMin + 1440) % 1440;
+        // A way longer than half a day is not a way; it is a clock misread.
+        return left <= 12 * 60 ? left : -1;
+    }
+
+    /** The arrival in words ("nine forty"), from the line's clock or, when it has none, from now. */
+    private static String clock(Resources res, String line, int minutes) {
+        int h;
+        int m;
+        int[] at = arrival(line);
+        if (at != null) {
+            h = at[0];
+            m = at[1];
         } else {
-            java.util.Calendar at = java.util.Calendar.getInstance();
-            at.add(java.util.Calendar.MINUTE, minutes);
-            h = at.get(java.util.Calendar.HOUR_OF_DAY);
-            m = at.get(java.util.Calendar.MINUTE);
+            java.util.Calendar then = java.util.Calendar.getInstance();
+            then.add(java.util.Calendar.MINUTE, minutes);
+            h = then.get(java.util.Calendar.HOUR_OF_DAY);
+            m = then.get(java.util.Calendar.MINUTE);
         }
         String[] masculine = res.getStringArray(R.array.numbers_masculine);
         String[] feminine = res.getStringArray(R.array.numbers_feminine);
@@ -395,6 +447,16 @@ final class NavWhisper {
         }
         timeUnits = out;
         return timeUnits;
+    }
+
+    private static int cells(boolean[] mask) {
+        int n = 0;
+        for (boolean m : mask) {
+            if (m) {
+                n++;
+            }
+        }
+        return n;
     }
 
     /** Whether a phrase queued for making ahead is still the one a turn on the way will need. */

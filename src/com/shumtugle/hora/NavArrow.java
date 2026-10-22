@@ -61,6 +61,27 @@ final class NavArrow {
     }
 
     /**
+     * A mask as below, for a glyph drawn dark rather than white (some phones draw the card in the theme's
+     * own colours): every visible pixel is taken as white, so the shape alone is read. Only for a
+     * glyph on a see-through ground; a picture that fills its square is no arrow, and null comes back.
+     */
+    static boolean[] maskByShape(int[] argb, int w, int h) {
+        int seen = 0;
+        int[] white = new int[argb.length];
+        for (int i = 0; i < argb.length; i++) {
+            int a = argb[i] >>> 24;
+            if (a > 96) {
+                seen++;
+            }
+            white[i] = a == 0 ? 0 : (a << 24) | 0xFFFFFF;
+        }
+        if (seen * 2 > argb.length) {
+            return null;
+        }
+        return mask(white, w, h);
+    }
+
+    /**
      * The mask of a picture given as ARGB pixels of any size: brought to G by G cells by
      * area (each cell averages the pixels it covers, weighted by how much of each it covers),
      * then a cell is the stroke when it is opaque enough and light enough. The scaling is
