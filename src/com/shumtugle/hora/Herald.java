@@ -140,7 +140,7 @@ public final class Herald extends NotificationListenerService {
                             arrivalAt = t;
                             arrivalDay = now.get(java.util.Calendar.HOUR_OF_DAY) >= MORNING_FROM_HOUR ? today(now) : 0;
                             heldWhy = null;
-                            Diag.mark(Herald.this, "herald: headphones on");
+                            Diag.mark(Herald.this, "herald: headphones on, " + Earpiece.kind(Earpiece.find(audio)));
                         }
                     }
                     break;
@@ -1239,9 +1239,9 @@ public final class Herald extends NotificationListenerService {
                             && NavWhisper.current(hint));
                 }
             });
-            Diag.mark(this, String.format(java.util.Locale.ROOT, "%s%s, %s, %.1f s after",
+            Diag.mark(this, String.format(java.util.Locale.ROOT, "%s%s, %s, %.1f s after, to %s",
                     whole ? "nav: said " : "nav: cut, " + why + ", ", what, ahead ? "made ahead" : phone ? "phone voice" : "made now",
-                    age / 1000f));
+                    age / 1000f, openAir ? "speaker" : Earpiece.kind(Earpiece.find(audio))));
         } finally {
             audio.abandonAudioFocusRequest(focus);
             Awake.let(this);

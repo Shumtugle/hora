@@ -31,14 +31,64 @@ final class Earpiece {
         }
     }
 
-    /** The first private output connected now, or null. */
+    /**
+     * The private output the sound would go to now, or null. A pair of headphones can show as more
+     * than one output (an older and a newer wireless kind, say) while only one of them plays; sound
+     * sent to the silent one is lost without a word. Where the phone can tell where Hora's speech
+     * would be routed, that output is taken, and only if it is private; elsewhere the first private
+     * output connected.
+     */
     static AudioDeviceInfo find(AudioManager audio) {
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            try {
+                java.util.List<AudioDeviceInfo> routed = audio.getAudioDevicesForAttributes(SPEECH);
+                if (routed != null && !routed.isEmpty()) {
+                    for (AudioDeviceInfo d : routed) {
+                        if (isPrivate(d)) {
+                            return d;
+                        }
+                    }
+                    return null;
+                }
+            } catch (RuntimeException e) {
+                // Not told: the plain way below.
+            }
+        }
         for (AudioDeviceInfo d : audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
             if (isPrivate(d)) {
                 return d;
             }
         }
         return null;
+    }
+
+    /** How Hora's own speech is marked, as the reader of notifications plays it (16: the assistant's usage). */
+    private static final android.media.AudioAttributes SPEECH = new android.media.AudioAttributes.Builder()
+            .setUsage(16)
+            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
+            .build();
+
+    /** A short word for the journal: what kind of output it is, never its name. */
+    static String kind(AudioDeviceInfo d) {
+        if (d == null) {
+            return "none";
+        }
+        switch (d.getType()) {
+            case AudioDeviceInfo.TYPE_WIRED_HEADSET:
+            case AudioDeviceInfo.TYPE_WIRED_HEADPHONES:
+                return "wired";
+            case AudioDeviceInfo.TYPE_USB_HEADSET:
+            case AudioDeviceInfo.TYPE_USB_DEVICE:
+                return "usb";
+            case AudioDeviceInfo.TYPE_BLUETOOTH_A2DP:
+                return "bluetooth";
+            case TYPE_HEARING_AID:
+                return "hearing aid";
+            case TYPE_BLE_HEADSET:
+                return "bluetooth le";
+            default:
+                return "type " + d.getType();
+        }
     }
 
     static boolean present(AudioManager audio) {
