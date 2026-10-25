@@ -1333,9 +1333,7 @@ public final class Herald extends NotificationListenerService {
             return false;
         }
         AudioTrack out = openTrack(rate);
-        if (ear != null) {
-            out.setPreferredDevice(ear);
-        }
+        pin(out, ear);
         cut = false;
         current = out;
         try {
@@ -1745,9 +1743,7 @@ public final class Herald extends NotificationListenerService {
             return false;
         }
         AudioTrack out = openTrack(rate);
-        if (ear != null) {
-            out.setPreferredDevice(ear);
-        }
+        pin(out, ear);
         if (resetCut) {
             cut = false;
         } else if (cut) {
@@ -1871,6 +1867,19 @@ public final class Herald extends NotificationListenerService {
             b.setAllowedCapturePolicy(AudioAttributes.ALLOW_CAPTURE_BY_NONE);
         }
         return b.build();
+    }
+
+    /**
+     * Where the phone can tell where speech would go, it is only checked before (the output must be
+     * one's own) and watched while it plays (stopped()); the track itself is left to the phone's
+     * route. Tied to a wireless output by hand, the sound was lost without a word on some phones,
+     * while the same sound left to the route was heard. Elsewhere the track is tied to the
+     * headphones found, as before.
+     */
+    private static void pin(AudioTrack out, AudioDeviceInfo ear) {
+        if (ear != null && android.os.Build.VERSION.SDK_INT < 33) {
+            out.setPreferredDevice(ear);
+        }
     }
 
     private static AudioTrack openTrack(int rate) {

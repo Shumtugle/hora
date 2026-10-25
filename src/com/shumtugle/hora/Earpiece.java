@@ -43,12 +43,18 @@ final class Earpiece {
             try {
                 java.util.List<AudioDeviceInfo> routed = audio.getAudioDevicesForAttributes(SPEECH);
                 if (routed != null && !routed.isEmpty()) {
+                    // Every output the speech would reach must be one's own: sound sent to the
+                    // headphones and the speaker at once is not private.
+                    AudioDeviceInfo ear = null;
                     for (AudioDeviceInfo d : routed) {
-                        if (isPrivate(d)) {
-                            return d;
+                        if (!isPrivate(d)) {
+                            return null;
+                        }
+                        if (ear == null) {
+                            ear = d;
                         }
                     }
-                    return null;
+                    return ear;
                 }
             } catch (RuntimeException e) {
                 // Not told: the plain way below.
