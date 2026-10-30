@@ -147,7 +147,7 @@ final class Prefs {
     }
 
     static void setBedOnly(Context c, boolean on) {
-        sp(c).edit().putBoolean(BED_ONLY, on).commit();
+        c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).edit().putBoolean(BED_ONLY, on).commit();
     }
 
     /**
@@ -551,6 +551,31 @@ final class Prefs {
 
     static void setNavStreet(Context c, boolean on) {
         sp(c).edit().putBoolean(NAV_STREET, on).commit();
+    }
+
+    private static final String SILENCE = "silence";
+
+    /**
+     * Silence: Hora says nothing by herself (notifications, the route, the morning line) until it is
+     * lifted; what the person asks for still answers. Read from the voice process.
+     */
+    static boolean silenceShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(SILENCE, false);
+    }
+
+    static void setSilence(Context c, boolean on) {
+        c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).edit().putBoolean(SILENCE, on).commit();
+    }
+
+    private static final String PLAY_ON_CONNECT = "play_on_connect";
+
+    /** Whether a "play" the headphones send as they connect starts the book; read from the voice process. */
+    static boolean playOnConnectShared(Context c) {
+        return c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).getBoolean(PLAY_ON_CONNECT, false);
+    }
+
+    static void setPlayOnConnect(Context c, boolean on) {
+        c.getSharedPreferences(FILE, Context.MODE_MULTI_PROCESS).edit().putBoolean(PLAY_ON_CONNECT, on).commit();
     }
 
     private static final String NAV_ETA = "nav_eta";

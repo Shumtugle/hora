@@ -156,6 +156,26 @@ public final class SettingsActivity extends Activity {
         // Voices.
         list.addView(Kit.section(this, getString(R.string.voices_section)));
         LinearLayout voices = Kit.plate(this);
+        // Silence: nothing said by herself until lifted; the same switch as the tile in the shade.
+        silenceRow = Kit.rowToggle(this, getString(R.string.silence_switch), getString(R.string.silence_switch_sub),
+                Prefs.silenceShared(this), new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Prefs.setSilence(SettingsActivity.this, on);
+                        if (on) {
+                            Hush.all(SettingsActivity.this);
+                        }
+                        Diag.mark(SettingsActivity.this, "settings: silence " + (on ? "on" : "off"));
+                        try {
+                            android.service.quicksettings.TileService.requestListeningState(SettingsActivity.this,
+                                    new android.content.ComponentName(SettingsActivity.this, HushTile.class));
+                        } catch (RuntimeException ignored) {
+                            // The tile is not placed; nothing to repaint.
+                        }
+                    }
+                });
+        voices.addView(silenceRow);
+        voices.addView(Kit.divider(this));
         voices.addView(Kit.rowNav(this, getString(R.string.settings_voices_roles), null, open(RolesActivity.class)));
         voices.addView(Kit.divider(this));
         voices.addView(Kit.rowNav(this, getString(R.string.intro_herald), null, open(HeraldActivity.class)));
@@ -221,6 +241,16 @@ public final class SettingsActivity extends Activity {
                     @Override
                     public void set(int p) {
                         Prefs.setSpeed(SettingsActivity.this, Math.round((spMin + p / 20f) * 100f) / 100f);
+                    }
+                }));
+        reading.addView(Kit.divider(this));
+        // Some headphones press "play" on their own as they connect: the book waits for the person.
+        reading.addView(Kit.rowToggle(this, getString(R.string.play_on_connect), getString(R.string.play_on_connect_sub),
+                Prefs.playOnConnectShared(this), new Kit.Flip() {
+                    @Override
+                    public void flipped(boolean on) {
+                        Prefs.setPlayOnConnect(SettingsActivity.this, on);
+                        Diag.mark(SettingsActivity.this, "settings: book on connecting headphones " + (on ? "on" : "off"));
                     }
                 }));
         readingMore = Ui.column(this);
@@ -626,6 +656,13 @@ public final class SettingsActivity extends Activity {
         }
         showDeveloper();
         showEverything();
+        if (silenceRow != null) {
+            // The tile in the shade may have changed it meanwhile.
+            Kit.Toggle t = toggleIn(silenceRow);
+            if (t != null) {
+                t.set(Prefs.silenceShared(this));
+            }
+        }
         if (routeRow != null) {
             // Changed on their own screens meanwhile.
             Kit.setValue(routeRow, routeValue());
@@ -637,6 +674,7 @@ public final class SettingsActivity extends Activity {
         }
     }
 
+    private View silenceRow;
     private View routeRow;
     private View quietRow;
 
@@ -707,5 +745,21 @@ public final class SettingsActivity extends Activity {
 
     private int dp(float v) {
         return Kit.dp(this, v);
+    }
+
+    private static Kit.Toggle toggleIn(View v) {
+        if (v instanceof Kit.Toggle) {
+            return (Kit.Toggle) v;
+        }
+        if (v instanceof android.view.ViewGroup) {
+            android.view.ViewGroup g = (android.view.ViewGroup) v;
+            for (int i = 0; i < g.getChildCount(); i++) {
+                Kit.Toggle t = toggleIn(g.getChildAt(i));
+                if (t != null) {
+                    return t;
+                }
+            }
+        }
+        return null;
     }
 }

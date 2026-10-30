@@ -2030,4 +2030,10 @@
     <string name="route_voice_row">Speaks</string>
     <string name="route_held_title">Hora is on the route</string>
     <string name="route_held_text">The voice stays ready while the route lasts.</string>
+    <string name="play_on_connect">Start the book when headphones connect</string>
+    <string name="play_on_connect_sub">Some headphones press play by themselves as they connect. Off — the book waits for your touch.</string>
+    <string name="silence_switch">Silence</string>
+    <string name="silence_switch_sub">Hora says nothing by herself: no notifications, no route, no morning line. The book and answers only when you ask. The same as the "Hora: quiet" tile in the shade.</string>
+    <string name="tile_silence_on">silence · touch to speak again</string>
+    <string name="tile_silence_off">touch for silence</string>
 </resources>

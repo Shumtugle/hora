@@ -13,13 +13,14 @@ public final class HushTile extends TileService {
 
     @Override
     public void onClick() {
-        Hush.all(this);
-        Diag.mark(this, "hush: tile");
-        Tile t = getQsTile();
-        if (t != null) {
-            t.setState(Tile.STATE_INACTIVE);
-            t.updateTile();
+        // One touch: silence, and whatever speaks now stops. Another: Hora speaks again.
+        boolean on = !Prefs.silenceShared(this);
+        Prefs.setSilence(this, on);
+        if (on) {
+            Hush.all(this);
         }
+        Diag.mark(this, "hush: tile, silence " + (on ? "on" : "off"));
+        paint();
     }
 
     private void paint() {
@@ -27,10 +28,11 @@ public final class HushTile extends TileService {
         if (t == null) {
             return;
         }
-        boolean on = Hush.speaking(this);
-        t.setState(on ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
+        boolean silence = Prefs.silenceShared(this);
+        t.setState(silence ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
         if (Build.VERSION.SDK_INT >= 29) {
-            t.setSubtitle(getString(on ? R.string.tile_hush_speaking : R.string.tile_hush_silent));
+            t.setSubtitle(getString(silence ? R.string.tile_silence_on
+                    : Hush.speaking(this) ? R.string.tile_hush_speaking : R.string.tile_silence_off));
         }
         t.updateTile();
     }

@@ -105,6 +105,39 @@ public final class BookPlayer extends Service {
      * book takes the button for itself only while it speaks.
      */
     private volatile MediaSession session;
+    /** When headphones last came, elapsed time; zero before any came while the player lived. */
+    private volatile long earsCameAt;
+    /** Outputs already there when the player started: their first report is no coming. */
+    private final java.util.Set<Integer> earsAtStart = new java.util.HashSet<Integer>();
+    /** When the headphones' button last started the book, elapsed time. */
+    private volatile long buttonPlayAt;
+    /** A "play" this soon after headphones connect is taken for theirs, not the person's. */
+    private static final long JUST_CONNECTED_MS = 10_000L;
+
+    private final android.media.AudioDeviceCallback earsCame = new android.media.AudioDeviceCallback() {
+        @Override
+        public void onAudioDevicesAdded(android.media.AudioDeviceInfo[] added) {
+            for (android.media.AudioDeviceInfo d : added) {
+                if (Earpiece.isPrivate(d) && !earsAtStart.remove(d.getId())) {
+                    long now = SystemClock.elapsedRealtime();
+                    earsCameAt = now;
+                    if (playing && !Prefs.playOnConnectShared(BookPlayer.this) && now - buttonPlayAt < 3000) {
+                        // The headphones' own "play" came a moment before they showed as an output.
+                        Diag.mark(BookPlayer.this, "book: play taken back, the headphones have just connected");
+                        pause("headphones connected");
+                    }
+                    return;
+                }
+            }
+        }
+    };
+
+    /** Whether a "play" now may be the headphones' own, and the person asked not to take it. */
+    private boolean justConnected() {
+        return !Prefs.playOnConnectShared(this) && earsCameAt != 0
+                && SystemClock.elapsedRealtime() - earsCameAt < JUST_CONNECTED_MS;
+    }
+
     /** A book left paused this long gives the headphones' button back to other players. */
     private static final long BUTTON_KEPT_MS = 10 * 60 * 1000L;
     private final android.os.Handler main = new android.os.Handler(android.os.Looper.getMainLooper());
@@ -378,6 +411,11 @@ public final class BookPlayer extends Service {
     public void onCreate() {
         super.onCreate();
         audio = (AudioManager) getSystemService(AUDIO_SERVICE);
+        // Headphones coming: some press "play" on their own as they connect; that press is not the person's.
+        for (android.media.AudioDeviceInfo d : audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
+            earsAtStart.add(d.getId());
+        }
+        audio.registerAudioDeviceCallback(earsCame, main);
         live = this;
         madeWith = voicesNow(this);
         NotificationManager nm = getSystemService(NotificationManager.class);
@@ -406,7 +444,12 @@ public final class BookPlayer extends Service {
             session.setCallback(new MediaSession.Callback() {
                 @Override
                 public void onPlay() {
+                    if (justConnected()) {
+                        Diag.mark(BookPlayer.this, "book: play ignored, the headphones have just connected");
+                        return;
+                    }
                     heldForNews = false;
+                    buttonPlayAt = SystemClock.elapsedRealtime();
                     if (paragraphs == null) {
                         ensureLoaded(true);
                     } else {
@@ -583,6 +626,7 @@ public final class BookPlayer extends Service {
         if (receiverOn) {
             unregisterReceiver(noisy);
         }
+        audio.unregisterAudioDeviceCallback(earsCame);
         super.onDestroy();
     }
 

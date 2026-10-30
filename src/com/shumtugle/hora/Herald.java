@@ -513,6 +513,10 @@ public final class Herald extends NotificationListenerService {
         if (pkg.equals(getPackageName())) {
             return;
         }
+        if (Prefs.silenceShared(this)) {
+            // Silence asked for: as if the reader were not there at all. Nothing is kept for later.
+            return;
+        }
         // A navigator's hint: its turns are whispered when asked to. A one-off alert of the same
         // kind ("arriving") is still read as before; the ongoing turn-by-turn one is skipped below.
         boolean turns = Prefs.navWhisperShared(this);
@@ -693,7 +697,7 @@ public final class Herald extends NotificationListenerService {
 
     /** Whether Hora may speak now: no quiet hours, no call, headphones in, nothing set not to disturb. */
     private boolean mayTell() {
-        return !quietNow() && mayStart() && disturbAllowed();
+        return !Prefs.silenceShared(this) && !quietNow() && mayStart() && disturbAllowed();
     }
 
     /** The phone is not set not to disturb; read only while the listener is bound. */
@@ -796,6 +800,9 @@ public final class Herald extends NotificationListenerService {
 
     /** Main thread. What keeps Hora silent now, in a few words for the journal. */
     private String heldBy() {
+        if (Prefs.silenceShared(this)) {
+            return "silence";
+        }
         if (quietNow()) {
             return "quiet hours";
         }
@@ -1129,7 +1136,8 @@ public final class Herald extends NotificationListenerService {
             Diag.mark(this, "nav: dropped stale, " + what);
             return;
         }
-        String silent = !s.sample && quietNow() ? "nav: quiet hours, "
+        String silent = !s.sample && Prefs.silenceShared(this) ? "nav: silence, "
+                : !s.sample && quietNow() ? "nav: quiet hours, "
                 : audio.getMode() != AudioManager.MODE_NORMAL ? "nav: quiet, a call, " : null;
         boolean ears = Earpiece.present(audio);
         if (silent == null && !ears && !Prefs.navSpeakerShared(this)) {
@@ -1378,6 +1386,11 @@ public final class Herald extends NotificationListenerService {
      * is kept to be told later; before one it reads, it says in the same breath what was missed.
      */
     private int read(String app, String said, String key, String sender) throws Exception {
+        if (Prefs.silenceShared(this)) {
+            // Silence came while this waited its turn: it is not said, and not kept for later.
+            Diag.mark(this, "herald: silence, " + app);
+            return SILENT;
+        }
         // The notification's own words, before anything missed is put in front of them.
         final String own = said;
         // A route hint that came in meanwhile goes first.

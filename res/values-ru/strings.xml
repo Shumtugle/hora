@@ -2650,7 +2650,7 @@
     <string name="first_model_text">Чтобы в разговоре отвечали своими словами и понимали фото, нужна модель ИИ, около 3 ГБ. Лучше скачивать по Wi-Fi.</string>
     <string name="first_model_action">Открыть</string>
     <string name="tile_hush">Hora: тихо</string>
-    <string name="tile_hush_speaking">говорит · коснись, чтобы замолчала</string>
+    <string name="tile_hush_speaking">говорит · коснись — замолчит</string>
     <string name="tile_hush_silent">молчит</string>
     <!-- New notifications, said once Hora may speak again -->
     <string name="missed_short">У тебя есть новые уведомления.</string>
@@ -2987,4 +2987,10 @@
     <string name="route_voice_row">Говорит</string>
     <string name="route_held_title">Hora ведёт маршрут</string>
     <string name="route_held_text">Голос держится наготове, пока идёт маршрут.</string>
+    <string name="play_on_connect">Включать книгу при подключении наушников</string>
+    <string name="play_on_connect_sub">Некоторые наушники сами нажимают «пуск», когда подключаются. Выключено — книга ждёт твоего касания.</string>
+    <string name="silence_switch">Тишина</string>
+    <string name="silence_switch_sub">Hora ничего не говорит сама: ни уведомлений, ни подсказок в пути, ни утра. Книга и ответы — только когда попросишь. То же — плитка «Hora: тихо» в шторке.</string>
+    <string name="tile_silence_on">тишина · коснись — снова заговорит</string>
+    <string name="tile_silence_off">коснись — тишина</string>
 </resources>
