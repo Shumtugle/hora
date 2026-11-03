@@ -75,13 +75,13 @@ public final class BookPlayer extends Service {
     /** The instance living in this process, for the notification reader next door. */
     private static volatile BookPlayer live;
     /** Paused to let a notification through; resumes when it is over. */
-    private boolean heldForNews;
+    private volatile boolean heldForNews;
     /** What the book was held for, for the journal. */
     private String heldFor = "";
     /** The book asked to play while the sound was taken (a call): it plays when the sound is given back. */
     private volatile boolean waitingForSound;
     /** The voice is silent on purpose while the background plays on. */
-    private boolean bedOnly;
+    private volatile boolean bedOnly;
     /** A paragraph is being made; the end of the book is not reached while it is. */
     private volatile boolean busy;
     private volatile int generation;
@@ -113,6 +113,22 @@ public final class BookPlayer extends Service {
     private volatile long buttonPlayAt;
     /** A "play" this soon after headphones connect is taken for theirs, not the person's. */
     private static final long JUST_CONNECTED_MS = 10_000L;
+    /**
+     * A car's audio, turned away, asks again every few seconds until something plays: each
+     * "play" turned away keeps the door shut this much longer, within the cap below.
+     */
+    private static final long ASKS_AGAIN_MS = 15_000L;
+    /** However often it asks, a "play" this long after connecting is the person's again. */
+    private static final long CONNECTED_CAP_MS = 60_000L;
+    /** When a "play" was last turned away as the headphones' own, elapsed time. */
+    private volatile long playTurnedAt;
+    /**
+     * When the book last came back by itself after Hora's own words, elapsed time. A car's
+     * audio may send its own pause or play-pause right then, a moment too late to help.
+     */
+    private volatile long backAfterNewsAt;
+    /** A pause from the headphones this soon after the book came back by itself is not the person's. */
+    private static final long BACK_GUARD_MS = 1_500L;
 
     private final android.media.AudioDeviceCallback earsCame = new android.media.AudioDeviceCallback() {
         @Override
@@ -133,9 +149,18 @@ public final class BookPlayer extends Service {
     };
 
     /** Whether a "play" now may be the headphones' own, and the person asked not to take it. */
-    private boolean justConnected() {
-        return !Prefs.playOnConnectShared(this) && earsCameAt != 0
-                && SystemClock.elapsedRealtime() - earsCameAt < JUST_CONNECTED_MS;
+    private boolean justConnected(boolean byScreen) {
+        if (Prefs.playOnConnectShared(this) || earsCameAt == 0) {
+            return false;
+        }
+        long now = SystemClock.elapsedRealtime();
+        long since = now - earsCameAt;
+        if (since < JUST_CONNECTED_MS) {
+            return true;
+        }
+        // Asked again soon after a "play" turned away: the same device insisting.
+        // A press on the phone's own screen is the person's and is not held back for it.
+        return !byScreen && since < CONNECTED_CAP_MS && playTurnedAt >= earsCameAt && now - playTurnedAt < ASKS_AGAIN_MS;
     }
 
     /** A book left paused this long gives the headphones' button back to other players. */
@@ -145,7 +170,7 @@ public final class BookPlayer extends Service {
         @Override
         public void run() {
             MediaSession s = session;
-            if (s != null && !playing && !bedOnly) {
+            if (s != null && !playing && !bedOnly && !heldForNews) {
                 try {
                     s.setActive(false);
                     Diag.log(BookPlayer.this, "book: the headphone button is given back");
@@ -248,7 +273,7 @@ public final class BookPlayer extends Service {
     private final BroadcastReceiver noisy = new BroadcastReceiver() {
         @Override
         public void onReceive(Context c, Intent i) {
-            pause("headphones gone");
+            endHold("headphones gone");
         }
     };
 
@@ -294,9 +319,10 @@ public final class BookPlayer extends Service {
         if (p == null || !p.playing) {
             return false;
         }
-        p.pause(why);
+        // Set first: the session is told while pausing, and a held book still shows as playing.
         p.heldForNews = true;
         p.heldFor = why;
+        p.pause(why);
         return true;
     }
 
@@ -359,7 +385,12 @@ public final class BookPlayer extends Service {
         BookPlayer p = live;
         if (p != null && p.heldForNews) {
             p.heldForNews = false;
+            p.backAfterNewsAt = SystemClock.elapsedRealtime();
             p.play("after " + p.heldFor);
+            if (!p.playing) {
+                // It could not come back (the sound is taken): the session must stop showing it as playing.
+                p.publish();
+            }
         }
     }
 
@@ -444,29 +475,64 @@ public final class BookPlayer extends Service {
             session.setCallback(new MediaSession.Callback() {
                 @Override
                 public void onPlay() {
-                    if (justConnected()) {
-                        Diag.mark(BookPlayer.this, "book: play ignored, the headphones have just connected");
+                    if (justConnected(byScreen())) {
+                        playTurnedAt = SystemClock.elapsedRealtime();
+                        Diag.mark(BookPlayer.this, "book: play ignored, the headphones have just connected, "
+                                + from());
                         return;
                     }
+                    boolean wasHeld = heldForNews;
                     heldForNews = false;
                     buttonPlayAt = SystemClock.elapsedRealtime();
                     if (paragraphs == null) {
                         ensureLoaded(true);
+                    } else if (playing) {
+                        // Already playing: nothing to start.
                     } else {
-                        play("headphone button");
+                        play("headphone button, " + from());
+                    }
+                    if (wasHeld && !playing) {
+                        publish();
                     }
                 }
 
                 @Override
                 public void onPause() {
-                    heldForNews = false;
-                    pause("headphone button");
+                    stopFromKey("headphone button");
                 }
 
                 @Override
                 public void onStop() {
-                    heldForNews = false;
-                    pause("headphone button");
+                    stopFromKey("headphone stop");
+                }
+
+                /** A pause or stop from the headphones or the system's controls. */
+                private void stopFromKey(String why) {
+                    if (playing && !byScreen() && SystemClock.elapsedRealtime() - backAfterNewsAt < BACK_GUARD_MS) {
+                        Diag.mark(BookPlayer.this, "book: pause ignored, the book has just come back after a hint, "
+                                + from());
+                        return;
+                    }
+                    boolean wasPlaying = playing;
+                    endHold(why + ", " + from());
+                    if (!wasPlaying) {
+                        // Nothing was playing: a session that still showed playing is put right.
+                        tellSession();
+                    }
+                }
+
+                /**
+                 * Pressed on the phone's own screen (the lock screen, the system's media panel):
+                 * surely the person, never a device. Only from Android 9, where the caller is known;
+                 * on older phones such a press right after connecting waits like any other.
+                 */
+                private boolean byScreen() {
+                    return keyNow == 0 && Keys.caller(session).contains("systemui");
+                }
+
+                /** Which key, and who sent it, for the journal. */
+                private String from() {
+                    return Keys.source(keyNow) + Keys.caller(session);
                 }
 
                 /** The key being handled right now, for the log of the step it leads to; 0 when none. */
@@ -523,9 +589,15 @@ public final class BookPlayer extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Every start through the foreground path must show itself at once.
         startForeground(NOTE, note());
-        // Whatever the user asks for now outranks a pause made for a notification.
-        heldForNews = false;
         String action = intent == null ? ACTION_TOGGLE : intent.getAction();
+        // Whatever the user asks for now outranks a pause made for a notification. Opening the
+        // book screen, a voice change or the sleep timer is not such a choice: the book comes back.
+        if (heldForNews && !ACTION_WARM.equals(action) && !ACTION_REVOICE.equals(action)
+                && !ACTION_BED.equals(action) && !ACTION_SLEEP.equals(action)) {
+            heldForNews = false;
+            // The held book showed as playing: from now on it shows as it is.
+            tellSession();
+        }
         if (ACTION_OPEN.equals(action)) {
             open(intent.getStringExtra(EXTRA_URI), intent.getStringExtra(EXTRA_NAME),
                     intent.getBooleanExtra(EXTRA_PLAY, false));
@@ -816,6 +888,20 @@ public final class BookPlayer extends Service {
         publish();
     }
 
+    /**
+     * Main thread only. A pause that also ends a hold for Hora's words: a book held for a hint
+     * must not come back by itself after the headphones went or the sleep timer ran out.
+     */
+    private void endHold(String why) {
+        boolean wasHeld = heldForNews;
+        heldForNews = false;
+        pause(why);
+        if (wasHeld && !playing) {
+            // Paused already, for the hint: pause() had nothing to do, so the session is told here.
+            publish();
+        }
+    }
+
     private void pause(String why) {
         if (waitingForSound) {
             // Paused while waiting for the sound: it no longer starts by itself when the sound is free.
@@ -919,7 +1005,7 @@ public final class BookPlayer extends Service {
     private final Runnable sleep = new Runnable() {
         @Override
         public void run() {
-            pause("sleep timer");
+            endHold("sleep timer");
         }
     };
 
@@ -1385,7 +1471,10 @@ public final class BookPlayer extends Service {
         }
         // Reading: the button is the book's. Paused: it stays so for a while, then goes back.
         main.removeCallbacks(letButtonGo);
-        if (playing || bedOnly) {
+        // Paused for Hora's own words, the book still shows as playing: a car's audio that sees
+        // a pause sends its own play-pause to help, and it lands just after the book came back.
+        boolean shown = playing || bedOnly || heldForNews;
+        if (shown) {
             try {
                 s.setActive(true);
             } catch (RuntimeException ignored) {
@@ -1399,7 +1488,7 @@ public final class BookPlayer extends Service {
                     .setActions(PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE
                             | PlaybackState.ACTION_PLAY_PAUSE | PlaybackState.ACTION_STOP
                             | PlaybackState.ACTION_SKIP_TO_NEXT | PlaybackState.ACTION_SKIP_TO_PREVIOUS)
-                    .setState(playing || bedOnly ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED,
+                    .setState(shown ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED,
                             PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1f)
                     .build());
             s.setMetadata(new MediaMetadata.Builder()

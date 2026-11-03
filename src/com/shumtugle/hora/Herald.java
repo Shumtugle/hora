@@ -1648,18 +1648,43 @@ public final class Herald extends NotificationListenerService {
     private boolean onMain(final boolean hold, final String why) throws InterruptedException {
         final boolean[] result = new boolean[1];
         final CountDownLatch done = new CountDownLatch(1);
+        // 0 waiting, 1 taken by the main thread, 2 given up by this one: a hold that comes
+        // too late must not happen at all, or the book would stay held with no one to release it.
+        final java.util.concurrent.atomic.AtomicInteger turn = new java.util.concurrent.atomic.AtomicInteger();
         main.post(new Runnable() {
             @Override
             public void run() {
-                if (hold) {
-                    result[0] = BookPlayer.holdForNews(why);
-                } else {
-                    BookPlayer.releaseAfterNews();
+                // A late release still runs: only a late hold is skipped.
+                if (!hold || turn.compareAndSet(0, 1)) {
+                    if (hold) {
+                        result[0] = BookPlayer.holdForNews(why);
+                    } else {
+                        BookPlayer.releaseAfterNews();
+                    }
                 }
                 done.countDown();
             }
         });
-        done.await(2, TimeUnit.SECONDS);
+        try {
+            if (!done.await(2, TimeUnit.SECONDS) && hold && !turn.compareAndSet(0, 2)) {
+                // Already being done on the main thread: a moment more, and its answer counts.
+                done.await();
+            }
+        } catch (InterruptedException e) {
+            if (hold && !turn.compareAndSet(0, 2)) {
+                // The hold is done or being done, and the caller will not get to release it:
+                // a check queued behind it on the main thread releases it, if it did hold.
+                main.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (result[0]) {
+                            BookPlayer.releaseAfterNews();
+                        }
+                    }
+                });
+            }
+            throw e;
+        }
         return result[0];
     }
 
