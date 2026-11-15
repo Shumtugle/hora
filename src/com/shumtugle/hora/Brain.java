@@ -551,6 +551,13 @@ final class Brain {
         return c.getSharedPreferences("hora", Context.MODE_PRIVATE);
     }
 
+    /** Takes away a manner the person wrote for a voice; the built-in one speaks again. */
+    static void forgetManner(Context c, int voice) {
+        if (prefs(c).contains("brain_manner_" + voice)) {
+            prefs(c).edit().remove("brain_manner_" + voice).commit();
+        }
+    }
+
     /** Whether the accelerator, when its file is there, is used; off lets the two be compared. */
     static boolean draftOn(Context c) {
         return prefs(c).getBoolean("brain_draft_on", false);

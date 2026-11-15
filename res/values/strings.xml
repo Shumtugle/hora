@@ -151,6 +151,8 @@
     <string name="about_samples_123">Voices 1–3</string>
     <string name="about_samples_45">Voices 4–5</string>
     <string name="about_samples_trial">Voices 6, 7 and 9</string>
+    <string name="about_samples_eighth">Voice 8</string>
+    <string name="about_lic_eighth">synthetic sample</string>
     <string name="about_lic_trial">model: Apache 2.0</string>
     <string name="about_english">English module</string>
     <string name="about_speech_engine">Speech engine</string>
@@ -318,8 +320,7 @@
         <item>Kass</item>
         <item>Nyx</item>
         <item>Mark</item>
-        <!-- The eighth voice left the troupe. -->
-        <item></item>
+        <item>Porfiry</item>
         <item>Claire</item>
     </string-array>
     <string name="slow_by_pauses">Slow down with pauses, not stretching</string>
@@ -466,8 +467,7 @@
         <item>companion</item>
         <item>companion</item>
         <item>companion</item>
-        <!-- The eighth voice left the troupe. -->
-        <item></item>
+        <item>companion</item>
         <item>companion</item>
     </string-array>
     <string-array name="voice_kinds">
@@ -478,8 +478,7 @@
         <item>male · main</item>
         <item>female</item>
         <item>male</item>
-        <!-- The eighth voice left the troupe. -->
-        <item></item>
+        <item>male · low</item>
         <item>female</item>
     </string-array>
     <string name="fonts_license">Cormorant, Manrope · OFL 1.1</string>
@@ -847,8 +846,7 @@
         <item>You are young, light and cheerful.</item>
         <item>You are focused, precise and direct.</item>
         <item>You are calm, attentive and kind.</item>
-        <!-- The eighth voice left the troupe. -->
-        <item></item>
+        <item>You have seen much; you speak in images, slowly.</item>
         <item>You are even, clear and unhurried.</item>
     </string-array>
     <string name="brain_trial_question">I am tired today.</string>
@@ -1023,8 +1021,7 @@
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m answering now.</item>
-        <!-- The eighth voice left the troupe. -->
-        <item></item>
+        <item>%1$s. I\'m answering now.</item>
         <item>%1$s. I\'m answering now.</item>
     </string-array>
     <string name="lang_title">Languages</string>
@@ -1109,8 +1106,7 @@
         <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>
-        <!-- The eighth voice left the troupe. -->
-        <item></item>
+        <item>Are you ready to work?</item>
         <item>Are you ready to work?</item>
     </string-array>
     <string name="brain_look_rules">You have just been shown a picture, and for the answer about it the rules above change. Talk about what is visible in it now, in the present tense, starting with “In the photo” or “In the picture”, not about yourself. Name the main thing and the setting; if the picture has large lettering, read it as it is. Name a place or thing only if you recognise it for sure; otherwise do not guess. Two or three sentences.</string>

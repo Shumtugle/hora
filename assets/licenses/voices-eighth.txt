@@ -1,0 +1,16 @@
+Voice sample 8
+
+One short sample, 7.6 seconds, used as a voice reference sample for the
+eighth voice. It stands with the other voices.
+
+Origin. The sample is synthetic speech, made by the author of this app from
+a short text of his own; the recording matches its text letter for letter.
+Which speech synthesizer made it was not recorded, so no licence of that
+synthesizer is claimed here. No claim is made beyond this account.
+
+Changes: the sample was cut at a pause after its third line, trimmed with
+short fades, and its peak set to a common level. Nothing else was altered.
+
+The app has no voice cloning, and this sample must not be used to
+impersonate people, to mislead, or for any harmful or unlawful purpose.
+Chapters of audiobooks carry a note that their speech is synthetic.

@@ -40,6 +40,12 @@ public final class HoraApp extends Application {
         if (Build.VERSION.SDK_INT >= 30) {
             reportExits();
         }
+        // The eighth number's new voice starts clean, before any screen or engine reads a choice.
+        try {
+            Prefs.forgetFormerEighth(this);
+        } catch (RuntimeException e) {
+            Diag.log(this, "voices: the eighth number not cleared", e);
+        }
         // A demo that no longer ships leaves before any book is opened, in whichever process wakes
         // first: a player opening it as the current book would put it back on the shelf as a book.
         try {

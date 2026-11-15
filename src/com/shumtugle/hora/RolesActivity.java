@@ -190,7 +190,7 @@ public final class RolesActivity extends Activity {
             for (int w = 1; w < faces[i].length; w++) {
                 ImageView f = faces[i][w];
                 if (f == null) {
-                    // A number with no voice (the eighth) has no face here.
+                    // A number with no voice has no face here.
                     continue;
                 }
                 boolean on = w == v;

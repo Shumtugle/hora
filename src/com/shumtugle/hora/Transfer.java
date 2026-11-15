@@ -259,6 +259,10 @@ final class Transfer {
                     putStore(c.getSharedPreferences(name, Context.MODE_MULTI_PROCESS), o);
                 }
             }
+            // An archive from before the eighth number's new voice brings the old voice's choices back.
+            if (!Prefs.clearedOfFormerEighth(stores.optJSONObject("settings"))) {
+                Prefs.forgetFormerEighthAgain(c);
+            }
             for (Map.Entry<String, byte[]> f : s.files.entrySet()) {
                 if (!f.getKey().equals("lexicon.txt")) {
                     continue;

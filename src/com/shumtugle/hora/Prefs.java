@@ -38,6 +38,50 @@ final class Prefs {
         return c.getSharedPreferences(FILE, Context.MODE_PRIVATE);
     }
 
+    /** Set once the choices left by the eighth number's former voice are cleared. */
+    private static final String EIGHTH_CLEARED = "eighth_cleared";
+
+    /**
+     * Once, in every process, before anything else reads the settings: the eighth number has a
+     * new voice, and nothing the person chose for the one that held it before (its name, its
+     * sound, its manner, a role) passes to the new one. Run in each process, so none of them keeps
+     * an older copy of the settings that could write the old choices back.
+     */
+    static void forgetFormerEighth(Context c) {
+        final int v = Cast.LOW_M;
+        SharedPreferences p = sp(c);
+        if (p.getBoolean(EIGHTH_CLEARED, false)) {
+            return;
+        }
+        // The manner first: were the process to stop between the two, the mark below is not set yet.
+        Brain.forgetManner(c, v);
+        SharedPreferences.Editor e = p.edit();
+        for (String key : new String[] {NAME_PREFIX, NAME_ASKED_PREFIX, GRIM_TIMBRE, GRIM_PITCH, GRIM_AIR,
+            OWN_TEMPO, BREATH}) {
+            e.remove(key + v);
+        }
+        for (int role = 0; role <= Cast.ROUTE; role++) {
+            if (p.getInt(ROLE_PREFIX + role, -1) == v) {
+                e.remove(ROLE_PREFIX + role);
+            }
+        }
+        if (p.getInt(HOME_VOICE, 1) == v) {
+            e.remove(HOME_VOICE);
+        }
+        e.putBoolean(EIGHTH_CLEARED, true).commit();
+    }
+
+    /** After restoring an archive made before the eighth number's new voice: its old choices go again. */
+    static void forgetFormerEighthAgain(Context c) {
+        sp(c).edit().remove(EIGHTH_CLEARED).commit();
+        forgetFormerEighth(c);
+    }
+
+    /** Whether a store saved in an archive was saved after the eighth number's old choices were cleared. */
+    static boolean clearedOfFormerEighth(org.json.JSONObject store) {
+        return store != null && store.has(EIGHTH_CLEARED);
+    }
+
     static float speed(Context c) {
         return sp(c).getFloat(SPEED, SPEED_DEFAULT);
     }
@@ -349,7 +393,7 @@ final class Prefs {
     // and top band): the smooth, dark samples get a little brightness and air; the voices whose
     // samples are already breathy or rough are left as they are. The first voice's sample was
     // made anew and is bright by itself, so it needs none; so was the second voice's. By voice
-    // number from 1; the eighth number has no voice.
+    // number from 1.
     private static final int[] TIMBRE_DEFAULT = {0, 0, 0, 0, 5, 0, 0, 0, 0, 0};
     private static final int[] AIR_DEFAULT = {0, 0, 0, 0, 3, 0, 1, 0, 0, 0};
     /** Pitch makeup by voice: the later voices were set by ear on the phone. */

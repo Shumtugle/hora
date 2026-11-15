@@ -12,11 +12,11 @@ final class Cast {
     static final int COUNT = 5;
     /**
      * Voices made after the first five: faces, scenes and names like the cast's, and the same
-     * roles. The eighth number is empty: its voice left the troupe, and the numbers after it keep
-     * their places, so samples, portraits and saved choices stay where they were.
+     * roles. Numbers keep their places, so samples, portraits and saved choices stay put.
      */
     static final int BETA_F = COUNT + 1;
     static final int BETA_M = COUNT + 2;
+    static final int LOW_M = COUNT + 3;
     static final int BETA_F2 = COUNT + 4;
     /** The highest voice number. */
     static final int LAST = BETA_F2;
@@ -84,7 +84,7 @@ final class Cast {
      * female voice, the main male one, then the rest. Numbers stay what they
      * were, so samples, portraits and saved choices keep their places.
      */
-    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_F2, BETA_M};
+    private static final int[] ORDER = {1, 5, 2, 4, 3, BETA_F, BETA_F2, BETA_M, LOW_M};
 
     /** The voice standing at a place in the row, counted from 0. */
     static int at(int place) {
@@ -137,8 +137,7 @@ final class Cast {
     private static final int[] PORTRAITS = {
         R.drawable.portrait_1, R.drawable.portrait_2, R.drawable.portrait_3,
         R.drawable.portrait_4, R.drawable.portrait_5, R.drawable.portrait_6, R.drawable.portrait_7,
-        // The eighth voice left the troupe: its place stays empty.
-        0, R.drawable.portrait_9,
+        R.drawable.portrait_8, R.drawable.portrait_9,
     };
 
     /** A voice's portrait; a number with no voice shows the first voice's face rather than none. */

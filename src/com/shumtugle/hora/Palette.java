@@ -55,8 +55,7 @@ final class Palette {
     /** One color per voice, in voice order. */
     // Ring colours, by voice number. Warm and distinct. A colour belongs to the face it rings.
     private static final int[] VOICE = {0xFFE0A84B, 0xFFD98A6E, 0xFF7FB0C4, 0xFF9DB37E, 0xFFB3A5E0,
-        // The eighth voice left the troupe: its colour stays only to keep the numbers in place.
-        0xFFE58FA0, 0xFFE2C46B, 0xFF8FC1B5, 0xFFC9B48F};
+        0xFFE58FA0, 0xFFE2C46B, 0xFFC983B8, 0xFFC9B48F};
 
     private static Typeface display;
     private static Typeface body;
