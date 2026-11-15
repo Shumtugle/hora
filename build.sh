@@ -11,7 +11,7 @@ if [ -d assets/voice ]; then
   ( cd assets/voice && ls | grep -v '^stamp.txt$' | sort | xargs cat | md5sum | cut -c1-32 ) > assets/voice/stamp.txt
 fi
 # Voice samples are not in git either; a voice without its sample would speak with the first voice's.
-for n in 1 2 3 4 5 6 7 8 9; do
+for n in 1 2 3 4 5 6 7 8 9 10; do
   [ -f assets/voice/voice$n.wav ] || { echo "assets/voice/voice$n.wav is missing"; exit 1; }
 done
 # The microphone's model is not in git; a build without it would have a button that cannot hear.

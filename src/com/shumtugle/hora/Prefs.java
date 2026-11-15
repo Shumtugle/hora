@@ -38,23 +38,38 @@ final class Prefs {
         return c.getSharedPreferences(FILE, Context.MODE_PRIVATE);
     }
 
-    /** Set once the choices left by the eighth number's former voice are cleared. */
-    private static final String EIGHTH_CLEARED = "eighth_cleared";
+    /**
+     * Numbers that held a voice once, lost it, and have a new one now, with the mark set once each
+     * is cleared of the choices made for its former voice.
+     */
+    private static final int[] RETURNED = {Cast.LOW_M, Cast.HUSKY_M};
+
+    private static String clearedMark(int voice) {
+        // The mark for the eighth voice keeps the name it was first saved under.
+        return voice == Cast.LOW_M ? "eighth_cleared" : "voice_cleared_" + voice;
+    }
 
     /**
-     * Once, in every process, before anything else reads the settings: the eighth number has a
-     * new voice, and nothing the person chose for the one that held it before (its name, its
-     * sound, its manner, a role) passes to the new one. Run in each process, so none of them keeps
-     * an older copy of the settings that could write the old choices back.
+     * Once, in every process, before anything else reads the settings: nothing the person chose
+     * for a number's former voice (its name, its sound, its manner, a role) passes to the new one.
+     * Run in each process, so none of them keeps an older copy of the settings that could write
+     * the old choices back.
      */
-    static void forgetFormerEighth(Context c) {
-        final int v = Cast.LOW_M;
+    static void forgetFormerVoices(Context c) {
+        for (int v : RETURNED) {
+            forgetFormer(c, v);
+        }
+    }
+
+    private static void forgetFormer(Context c, int v) {
         SharedPreferences p = sp(c);
-        if (p.getBoolean(EIGHTH_CLEARED, false)) {
+        if (p.getBoolean(clearedMark(v), false)) {
             return;
         }
-        // The manner first: were the process to stop between the two, the mark below is not set yet.
+        // The manner and the demo's reader first: were the process to stop before the mark below
+        // is set, they are cleared again next time.
         Brain.forgetManner(c, v);
+        Demo.forgetVoice(c, v);
         SharedPreferences.Editor e = p.edit();
         for (String key : new String[] {NAME_PREFIX, NAME_ASKED_PREFIX, GRIM_TIMBRE, GRIM_PITCH, GRIM_AIR,
             OWN_TEMPO, BREATH}) {
@@ -68,18 +83,20 @@ final class Prefs {
         if (p.getInt(HOME_VOICE, 1) == v) {
             e.remove(HOME_VOICE);
         }
-        e.putBoolean(EIGHTH_CLEARED, true).commit();
+        e.putBoolean(clearedMark(v), true).commit();
     }
 
-    /** After restoring an archive made before the eighth number's new voice: its old choices go again. */
-    static void forgetFormerEighthAgain(Context c) {
-        sp(c).edit().remove(EIGHTH_CLEARED).commit();
-        forgetFormerEighth(c);
-    }
-
-    /** Whether a store saved in an archive was saved after the eighth number's old choices were cleared. */
-    static boolean clearedOfFormerEighth(org.json.JSONObject store) {
-        return store != null && store.has(EIGHTH_CLEARED);
+    /**
+     * After restoring an archive: a number whose mark the archive's settings lack was saved before
+     * its new voice came, and the old voice's choices it brought back go again.
+     */
+    static void forgetFormerVoicesIn(Context c, org.json.JSONObject store) {
+        for (int v : RETURNED) {
+            if (store == null || !store.has(clearedMark(v))) {
+                sp(c).edit().remove(clearedMark(v)).commit();
+                forgetFormer(c, v);
+            }
+        }
     }
 
     static float speed(Context c) {
@@ -394,10 +411,10 @@ final class Prefs {
     // samples are already breathy or rough are left as they are. The first voice's sample was
     // made anew and is bright by itself, so it needs none; so was the second voice's. By voice
     // number from 1.
-    private static final int[] TIMBRE_DEFAULT = {0, 0, 0, 0, 5, 0, 0, 0, 0, 0};
-    private static final int[] AIR_DEFAULT = {0, 0, 0, 0, 3, 0, 1, 0, 0, 0};
+    private static final int[] TIMBRE_DEFAULT = {0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0};
+    private static final int[] AIR_DEFAULT = {0, 0, 0, 0, 3, 0, 1, 0, 0, 0, 0};
     /** Pitch makeup by voice: the later voices were set by ear on the phone. */
-    private static final int[] PITCH_DEFAULT = {0, 0, 0, 0, 0, 0, 4, -1, 0, 1};
+    private static final int[] PITCH_DEFAULT = {0, 0, 0, 0, 0, 0, 4, -1, 0, 1, 0};
 
     static int defaultTimbre(int voice) {
         return voice >= 1 && voice < TIMBRE_DEFAULT.length ? TIMBRE_DEFAULT[voice] : 0;
@@ -444,7 +461,7 @@ final class Prefs {
     static final int OWN_TEMPO_MAX = 6;
     private static final float OWN_TEMPO_STEP = 0.05f;
     /** By voice: every voice reads at the common tempo until the person sets its own. */
-    private static final int[] OWN_TEMPO_DEFAULT = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private static final int[] OWN_TEMPO_DEFAULT = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     static int defaultOwnTempo(int voice) {
         return voice >= 1 && voice < OWN_TEMPO_DEFAULT.length ? OWN_TEMPO_DEFAULT[voice] : 0;
@@ -798,7 +815,7 @@ final class Prefs {
     // Every voice reads whole sentences by default, as it does for other apps: cut into breath
     // groups, each piece lost the sentence's melody and ended as if the sentence had.
     private static final int[] BREATH_DEFAULT = {Breath.NONE, Breath.NONE, Breath.NONE,
-        Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE};
+        Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE};
 
     static int breathShared(Context c, int voice) {
         int v = Math.max(1, Math.min(Cast.LAST, voice));

@@ -3,7 +3,7 @@
 # Marks: {time} {weekday} {day} {month} {book} {place} {pct} {weather} {degrees}; {name} in the flat line.
 # No feelings, no closeness, no talk about the voice's own manner: the variety is in the facts.
 # Taps in a row cool it down: the fourth drops the short word, from the fifth on only the flat line, a little slower.
-# Voices by their numbers: 1..9.
+# Voices by their numbers: 1..10.
 
 ru.time|Сейчас {time}.
 ru.date|Сегодня {weekday}, {day} {month}.
@@ -39,6 +39,7 @@ ru.flat.6|{name}. Помощница.
 ru.flat.7|{name}. Помощник.
 ru.flat.8|{name}. Помощник.
 ru.flat.9|{name}. Помощница.
+ru.flat.10|{name}. Помощник.
 
 en.time|It's {time}.
 en.date|Today is {weekday}, {month} {day}.
@@ -74,3 +75,4 @@ en.flat.6|{name}. Assistant.
 en.flat.7|{name}. Assistant.
 en.flat.8|{name}. Assistant.
 en.flat.9|{name}. Assistant.
+en.flat.10|{name}. Assistant.

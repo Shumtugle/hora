@@ -1,7 +1,7 @@
-Voice samples 6, 7 and 9
+Voice samples 6, 7, 9 and 10
 
-Three short samples, one per voice (6 female, 7 male, 9 female), used as
-voice reference samples. They stand with the other voices.
+Four short samples, one per voice (6 female, 7 male, 9 female, 10 male), used
+as voice reference samples. They stand with the other voices.
 
 Origin. Every sample is cut from speech made in the official public demo
 of the Qwen3-TTS models (Qwen team, Alibaba Cloud),
@@ -30,6 +30,10 @@ separate written confirmation for generated voices used inside an app; a
 public question about it to the team has no answer yet. These samples are
 offered here as made, with this account of where they come from, and with
 no claim beyond it.
+
+Sample 10 (15 November 2026) was made with the same models by the author of
+this app; which of the demo's ways of making a voice was used was not
+recorded. It reads two sentences of a short Russian text written by him.
 
 Changes: each sample was cut to whole sentences, trimmed at the edges with
 short fades, and its level set to a common peak. Nothing else was altered.

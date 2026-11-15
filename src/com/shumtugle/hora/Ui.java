@@ -173,7 +173,7 @@ final class Ui {
         return per;
     }
 
-    /** Faces to a line so that the lines come out even: eight as four and four, nine as five and four. */
+    /** Faces to a line so that the lines come out even: eight as four and four, nine as five and four, ten as five and five. */
     static int perRow(int count) {
         int rows = Math.max(1, (count + Cast.COUNT - 1) / Cast.COUNT);
         return Math.max(1, (count + rows - 1) / rows);

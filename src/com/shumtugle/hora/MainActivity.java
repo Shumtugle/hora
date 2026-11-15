@@ -262,7 +262,7 @@ public final class MainActivity extends Activity {
         stage.addView(epithet, ep);
 
         // The whole troupe as rows of small faces of equal length: eight stand four and four,
-        // nine five and four. The chosen one is marked by its ring, not by its size.
+        // nine five and four, ten five and five. The chosen one is marked by its ring, not by its size.
         LinearLayout troupe = Ui.column(this);
         troupe.setGravity(Gravity.CENTER_HORIZONTAL);
         LinearLayout line = null;

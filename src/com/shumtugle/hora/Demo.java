@@ -213,6 +213,15 @@ final class Demo {
         return v > 0 && Cast.available(c, v) ? v : 0;
     }
 
+    /** Main thread or startup only. A demo reader chosen for a number's former voice is let go. */
+    @SuppressWarnings("deprecation")
+    static void forgetVoice(Context c, int voice) {
+        android.content.SharedPreferences sp = c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS);
+        if (sp.getInt(VOICE, 0) == voice) {
+            sp.edit().remove(VOICE).commit();
+        }
+    }
+
     @SuppressWarnings("deprecation")
     static void setVoice(Context c, int voice) {
         android.content.SharedPreferences sp = c.getSharedPreferences(PREFS, Context.MODE_MULTI_PROCESS);
