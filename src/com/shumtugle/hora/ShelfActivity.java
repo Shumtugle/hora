@@ -702,7 +702,8 @@ public final class ShelfActivity extends Activity {
                 startActivity(new Intent(ShelfActivity.this, ExportActivity.class)
                         .putExtra(ExportActivity.EXTRA_URI, e.uri).putExtra(ExportActivity.EXTRA_NAME, e.name)
                         .putExtra(ExportActivity.EXTRA_TITLE, titleOf(e))
-                        .putExtra(ExportActivity.EXTRA_READER, e.reader > 0 && !Demo.is(ShelfActivity.this, e.uri) ? e.reader
+                        .putExtra(ExportActivity.EXTRA_READER, Cast.available(ShelfActivity.this, e.reader)
+                                && !Demo.is(ShelfActivity.this, e.uri) ? e.reader
                                 : Prefs.role(ShelfActivity.this, Cast.NARRATOR)));
             }
         }));
@@ -740,8 +741,8 @@ public final class ShelfActivity extends Activity {
             getString(R.string.shelf_about_size, getResources().getQuantityString(R.plurals.shelf_paragraphs, e.total, e.total),
                     getResources().getQuantityString(R.plurals.book_chapters, e.chapters.size(), e.chapters.size())),
             getString(R.string.shelf_about_place, where(e)),
-            // A book last read by a voice that has since left is told as the narrator's now.
-            getString(R.string.shelf_about_reader, Cast.name(this, Cast.exists(e.reader) ? e.reader
+            // A book last read by a voice that has since left, or stands hidden now, is told as the narrator's.
+            getString(R.string.shelf_about_reader, Cast.name(this, Cast.available(this, e.reader) ? e.reader
                     : Prefs.role(this, Cast.NARRATOR))),
             opened.isEmpty() ? "" : getString(R.string.shelf_about_opened, opened),
         };

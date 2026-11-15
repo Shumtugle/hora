@@ -1101,10 +1101,10 @@ public final class TalkActivity extends Activity {
                 StringBuilder sb = new StringBuilder();
                 String when = java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.LONG,
                         java.text.DateFormat.SHORT).format(now);
-                sb.append(getString(R.string.talk_file_head, Cast.name(TalkActivity.this, v), when, title))
+                sb.append(getString(R.string.talk_file_head, Cast.plainName(TalkActivity.this, v), when, title))
                         .append("\n\n");
                 for (Line l : lines) {
-                    sb.append("\u2014 ").append(l.mine ? getString(R.string.talk_you) : Cast.name(TalkActivity.this, v))
+                    sb.append("\u2014 ").append(l.mine ? getString(R.string.talk_you) : Cast.plainName(TalkActivity.this, v))
                             .append(": ").append(l.text).append("\n\n");
                 }
                 String stamp = new java.text.SimpleDateFormat("yyyy-MM-dd HH-mm", java.util.Locale.ROOT).format(now);
@@ -1152,7 +1152,7 @@ public final class TalkActivity extends Activity {
                 java.util.List<String[]> turns = new java.util.ArrayList<String[]>();
                 StringBuilder all = new StringBuilder();
                 for (Line l : lines) {
-                    all.append(l.mine ? getString(R.string.talk_you) : Cast.name(this, v)).append(": ")
+                    all.append(l.mine ? getString(R.string.talk_you) : Cast.plainName(this, v)).append(": ")
                             .append(l.text).append("\n");
                 }
                 turns.add(new String[] {"user", all.toString() + "\n" + getString(R.string.brain_title_prompt)});
@@ -1185,7 +1185,7 @@ public final class TalkActivity extends Activity {
 
     private void weather() {
         if (!Weather.hasPlace(this)) {
-            answer(Weather.line(this, "ask." + voice), "");
+            answer(Weather.line(this, "ask." + Cast.origin(voice)), "");
             startActivity(new Intent(this, PlaceActivity.class));
             return;
         }

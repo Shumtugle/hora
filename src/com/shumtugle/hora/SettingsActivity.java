@@ -700,9 +700,18 @@ public final class SettingsActivity extends Activity {
         if (!Beta.open(this)) {
             return;
         }
-        // The developer room holds settings only: what it opens is told in the note.
+        // What the room opens is told in the note, the beta voices by their names as they are now.
         beta.addView(Kit.section(this, getString(R.string.dev_section)));
-        TextView note = Ui.text(this, getString(R.string.dev_note), 13, Palette.MUTED);
+        StringBuilder hidden = new StringBuilder();
+        for (int v = 1; v <= Cast.LAST; v++) {
+            if (Cast.beta(v)) {
+                if (hidden.length() > 0) {
+                    hidden.append(", ");
+                }
+                hidden.append(Cast.name(this, v));
+            }
+        }
+        TextView note = Ui.text(this, getString(R.string.dev_note, hidden.toString()), 13, Palette.MUTED);
         note.setLineSpacing(0, 1.3f);
         note.setPadding(dp(4), 0, dp(4), 0);
         beta.addView(note, Kit.wide());

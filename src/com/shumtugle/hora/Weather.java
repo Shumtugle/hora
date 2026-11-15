@@ -106,6 +106,8 @@ final class Weather {
 
     /** The report for a voice, or null when the sky could not be reached. Call off the main thread. */
     static synchronized String report(Context c, int voice) {
+        // The words are the face's: an echo tells the weather as its face does.
+        voice = Cast.origin(voice);
         WeatherTalk.Facts f = facts(c);
         if (f == null) {
             return null;

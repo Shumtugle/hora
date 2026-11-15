@@ -138,7 +138,8 @@ final class Bot {
 
     /** Understands a request and carries it out; voice is the one that answers. */
     static Answer handle(Context c, String text, int voice) {
-        speaker = voice;
+        // Lines belong to the face: an echo says what its face says.
+        speaker = Cast.origin(voice);
         Resources r = SpeechLanguage.resources(c);
         intents(r).ownNames(ownNames(c));
         Intents.Hit hit = intents(r).match(text);
@@ -333,8 +334,11 @@ final class Bot {
     /** The five names as they stand now, in the troupe's order: "A, B, C, D and E". */
     private static String troupe(Context c, Resources r) {
         java.util.List<String> names = new java.util.ArrayList<String>();
+        // Echoes are earlier samples of voices already named: they are not named twice.
         for (int i = 0; i < Cast.size(c); i++) {
-            names.add(Cast.name(c, Cast.at(i)));
+            if (!Cast.echo(Cast.at(i))) {
+                names.add(Cast.spokenName(c, Cast.at(i)));
+            }
         }
         StringBuilder out = new StringBuilder();
         for (int i = 0; i < names.size(); i++) {
@@ -414,7 +418,7 @@ final class Bot {
         for (int pass = 0; pass < 2; pass++) {
             for (int at = 0; at < Cast.size(c); at++) {
                 int v = Cast.at(at);
-                String name = Intents.fold(pass == 0 ? Cast.name(c, v) : Cast.say(c, R.array.voice_names, v));
+                String name = Intents.fold(pass == 0 ? Cast.plainName(c, v) : Cast.say(c, R.array.voice_names, v));
                 if (name.isEmpty()) {
                     continue;
                 }

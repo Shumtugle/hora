@@ -361,7 +361,7 @@ public final class DayActivity extends Activity {
             return;
         }
         if (!Weather.hasPlace(this)) {
-            say(Weather.line(this, "ask." + voice));
+            say(Weather.line(this, "ask." + Cast.origin(voice)));
             Ui.choose(this, getString(R.string.place_question), getString(R.string.place_by_phone),
                     getString(R.string.place_by_name), getString(R.string.place_later),
                     new Runnable() {

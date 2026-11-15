@@ -42,7 +42,8 @@ final class Prefs {
      * Numbers that held a voice once, lost it, and have a new one now, with the mark set once each
      * is cleared of the choices made for its former voice.
      */
-    private static final int[] RETURNED = {Cast.LOW_M, Cast.HUSKY_M};
+    private static final int[] RETURNED = {Cast.LOW_M, Cast.HUSKY_M, Cast.ECHO_HOST, Cast.ECHO_SECOND,
+        Cast.ECHO_FOURTH};
 
     private static String clearedMark(int voice) {
         // The mark for the eighth voice keeps the name it was first saved under.
@@ -59,6 +60,66 @@ final class Prefs {
         for (int v : RETURNED) {
             forgetFormer(c, v);
         }
+        moveSounds(c, null);
+    }
+
+    /** Set once the sound settings followed the samples that moved to other faces. */
+    private static final String SOUNDS_MOVED = "sounds_moved_1";
+
+    /**
+     * Pairs of numbers, from and to: a sample that moved to another face takes the person's sound
+     * settings for it along (makeup, own tempo, breathing); a face that took a new sample starts
+     * from that sample's own. Names, roles and manners stay with the faces.
+     */
+    private static final int[][] SOUND_MOVES = {
+        {Cast.HOST, Cast.ECHO_HOST}, {2, Cast.ECHO_SECOND}, {4, Cast.ECHO_FOURTH},
+        {Cast.BETA_F, Cast.HOST}, {Cast.BETA_F2, 2}, {Cast.BETA_M, 4}, {Cast.HUSKY_M, Cast.BETA_M},
+    };
+
+    /**
+     * Moves the sound settings once. The values come from the settings as they are, or, after
+     * restoring an archive saved before the move, from that archive's own store, so that what this
+     * phone already moved is never moved a second time.
+     */
+    private static void moveSounds(Context c, org.json.JSONObject archived) {
+        SharedPreferences p = sp(c);
+        if (p.getBoolean(SOUNDS_MOVED, false)) {
+            return;
+        }
+        String[] keys = {GRIM_TIMBRE, GRIM_PITCH, GRIM_AIR, OWN_TEMPO, BREATH};
+        // Everything is read before anything is written: a number can be both a source and a target.
+        java.util.Map<String, Object> all = new java.util.HashMap<String, Object>();
+        if (archived == null) {
+            all.putAll(p.getAll());
+        } else {
+            java.util.Iterator<String> it = archived.keys();
+            while (it.hasNext()) {
+                String k = it.next();
+                org.json.JSONObject t = archived.optJSONObject(k);
+                if (t != null && t.has("i")) {
+                    all.put(k, t.optInt("i"));
+                }
+            }
+        }
+        SharedPreferences.Editor e = p.edit();
+        for (int[] m : SOUND_MOVES) {
+            for (String k : keys) {
+                e.remove(k + m[1]);
+            }
+        }
+        for (int[] m : SOUND_MOVES) {
+            for (String k : keys) {
+                Object v = all.get(k + m[0]);
+                if (v instanceof Integer) {
+                    e.putInt(k + m[1], (Integer) v);
+                }
+            }
+        }
+        // The sixth face's new sample has no settings of anyone's yet.
+        for (String k : keys) {
+            e.remove(k + Cast.BETA_F);
+        }
+        e.putBoolean(SOUNDS_MOVED, true).commit();
     }
 
     private static void forgetFormer(Context c, int v) {
@@ -96,6 +157,12 @@ final class Prefs {
                 sp(c).edit().remove(clearedMark(v)).commit();
                 forgetFormer(c, v);
             }
+        }
+        if (store == null || !store.has(SOUNDS_MOVED)) {
+            // Saved before the samples moved: its sound settings belong to the samples' old places.
+            sp(c).edit().remove(SOUNDS_MOVED).commit();
+            // An archive without settings gives nothing to move: the moved places start clean.
+            moveSounds(c, store != null ? store : new org.json.JSONObject());
         }
     }
 
@@ -408,13 +475,13 @@ final class Prefs {
     /** The voice process picks it up with the next sample it reads. */
     // Starting makeup per voice, measured on the bench against good human readers (breathiness
     // and top band): the smooth, dark samples get a little brightness and air; the voices whose
-    // samples are already breathy or rough are left as they are. The first voice's sample was
-    // made anew and is bright by itself, so it needs none; so was the second voice's. By voice
+    // samples are already breathy or rough are left as they are. Makeup belongs to the sample,
+    // not to the face: when a face took another sample, the sample's makeup went with it. By voice
     // number from 1.
-    private static final int[] TIMBRE_DEFAULT = {0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0};
-    private static final int[] AIR_DEFAULT = {0, 0, 0, 0, 3, 0, 1, 0, 0, 0, 0};
+    private static final int[] TIMBRE_DEFAULT = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5};
+    private static final int[] AIR_DEFAULT = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3};
     /** Pitch makeup by voice: the later voices were set by ear on the phone. */
-    private static final int[] PITCH_DEFAULT = {0, 0, 0, 0, 0, 0, 4, -1, 0, 1, 0};
+    private static final int[] PITCH_DEFAULT = {0, 4, 1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0};
 
     static int defaultTimbre(int voice) {
         return voice >= 1 && voice < TIMBRE_DEFAULT.length ? TIMBRE_DEFAULT[voice] : 0;
@@ -461,7 +528,7 @@ final class Prefs {
     static final int OWN_TEMPO_MAX = 6;
     private static final float OWN_TEMPO_STEP = 0.05f;
     /** By voice: every voice reads at the common tempo until the person sets its own. */
-    private static final int[] OWN_TEMPO_DEFAULT = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private static final int[] OWN_TEMPO_DEFAULT = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     static int defaultOwnTempo(int voice) {
         return voice >= 1 && voice < OWN_TEMPO_DEFAULT.length ? OWN_TEMPO_DEFAULT[voice] : 0;
@@ -815,7 +882,8 @@ final class Prefs {
     // Every voice reads whole sentences by default, as it does for other apps: cut into breath
     // groups, each piece lost the sentence's melody and ended as if the sentence had.
     private static final int[] BREATH_DEFAULT = {Breath.NONE, Breath.NONE, Breath.NONE,
-        Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE};
+        Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE, Breath.NONE,
+        Breath.NONE, Breath.NONE, Breath.NONE};
 
     static int breathShared(Context c, int voice) {
         int v = Math.max(1, Math.min(Cast.LAST, voice));

@@ -58,6 +58,11 @@ public final class MainActivity extends Activity {
         if (Ui.stale(this, built)) {
             return;
         }
+        if (dots.length > 0 && dots.length != Cast.size(this)) {
+            // The developer room opened or closed while the screen was away: the row is laid out anew.
+            recreate();
+            return;
+        }
         // The voices, or the title page, may have changed the voice.
         showVoice(Prefs.role(this, Cast.TALK));
         showCard(voice);
